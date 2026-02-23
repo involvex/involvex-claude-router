@@ -27,12 +27,56 @@ const checkClaudeInstalled = async () => {
   }
 };
 
+// Lenient JSON parser: handles JSONC comments, trailing commas, and missing commas.
+// Uses a character-level pass to strip comments without touching string values,
+// so URLs like "http://..." are never mangled.
+const stripJsoncComments = text => {
+  let out = "";
+  let i = 0;
+  while (i < text.length) {
+    // Quoted string — copy verbatim, respecting escape sequences
+    if (text[i] === '"') {
+      let j = i + 1;
+      while (j < text.length) {
+        if (text[j] === "\\") {
+          j += 2;
+          continue;
+        }
+        if (text[j] === '"') {
+          j++;
+          break;
+        }
+        j++;
+      }
+      out += text.slice(i, j);
+      i = j;
+      // Block comment /* … */
+    } else if (text[i] === "/" && text[i + 1] === "*") {
+      const end = text.indexOf("*/", i + 2);
+      i = end === -1 ? text.length : end + 2;
+      // Line comment // …
+    } else if (text[i] === "/" && text[i + 1] === "/") {
+      while (i < text.length && text[i] !== "\n" && text[i] !== "\r") i++;
+    } else {
+      out += text[i++];
+    }
+  }
+  return out;
+};
+
+const parseJsonLenient = text =>
+  JSON.parse(
+    stripJsoncComments(text)
+      .replace(/,(\s*[}\]])/g, "$1") // remove trailing commas
+      .replace(/(["}\]])[ \t]*\r?\n([ \t]*["{\[])/g, "$1,\n$2"), // add missing commas
+  );
+
 // Read current settings
 const readSettings = async () => {
   try {
     const settingsPath = getClaudeSettingsPath();
     const content = await fs.readFile(settingsPath, "utf-8");
-    return JSON.parse(content);
+    return parseJsonLenient(content);
   } catch (error) {
     if (error.code === "ENOENT") {
       return null;
@@ -94,7 +138,7 @@ export async function POST(request) {
     let currentSettings = {};
     try {
       const content = await fs.readFile(settingsPath, "utf-8");
-      currentSettings = JSON.parse(content);
+      currentSettings = parseJsonLenient(content);
     } catch (error) {
       if (error.code !== "ENOENT") {
         throw error;
@@ -152,7 +196,7 @@ export async function DELETE() {
     let currentSettings = {};
     try {
       const content = await fs.readFile(settingsPath, "utf-8");
-      currentSettings = JSON.parse(content);
+      currentSettings = parseJsonLenient(content);
     } catch (error) {
       if (error.code === "ENOENT") {
         return NextResponse.json({

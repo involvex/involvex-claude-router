@@ -72,7 +72,7 @@ let dbInstance = null;
 
 // Get app name
 function getAppName() {
-  return "9router";
+  return "involvex-claude-router";
 }
 
 // Get user data directory based on platform
@@ -99,7 +99,7 @@ function getUserDataDir() {
       "[requestDetailsDb] Failed to get user data directory:",
       error.message,
     );
-    return path.join(process.cwd(), ".9router");
+    return path.join(process.cwd(), ".involvex-claude-router");
   }
 }
 

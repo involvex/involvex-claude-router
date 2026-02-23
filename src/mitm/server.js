@@ -11,7 +11,7 @@ const TARGET_HOST = "daily-cloudcode-pa.googleapis.com";
 const LOCAL_PORT = 443;
 const ROUTER_URL = "http://localhost:20128/v1/chat/completions";
 const API_KEY = process.env.ROUTER_API_KEY;
-const DB_FILE = path.join(os.homedir(), ".9router", "db.json");
+const DB_FILE = path.join(os.homedir(), ".involvex-claude-router", "db.json");
 
 // Toggle logging (set true to enable file logging for debugging)
 const ENABLE_FILE_LOG = false;
@@ -22,7 +22,7 @@ if (!API_KEY) {
 }
 
 // Load SSL certificates
-const certDir = path.join(os.homedir(), ".9router", "mitm");
+const certDir = path.join(os.homedir(), ".involvex-claude-router", "mitm");
 let sslOptions;
 try {
   sslOptions = {

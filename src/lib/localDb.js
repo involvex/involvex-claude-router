@@ -1,5 +1,6 @@
 import { JSONFile } from "lowdb/node";
 import { v4 as uuidv4 } from "uuid";
+import { fileURLToPath } from "url";
 import path from "node:path";
 import { Low } from "lowdb";
 import os from "node:os";
@@ -7,9 +8,17 @@ import fs from "node:fs";
 
 const isCloud = typeof caches !== "undefined" || typeof caches === "object";
 
-// Get app name - fixed constant to avoid Windows path issues in standalone build
+// Get app name from root package.json config
 function getAppName() {
-  return "9router";
+  if (isCloud) return "involvex-claude-router";
+  try {
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const rootPkgPath = path.resolve(__dirname, "../../../package.json");
+    const pkg = JSON.parse(fs.readFileSync(rootPkgPath, "utf-8"));
+    return pkg.config?.appName || "involvex-claude-router";
+  } catch {
+    return "involvex-claude-router";
+  }
 }
 
 // Get user data directory based on platform

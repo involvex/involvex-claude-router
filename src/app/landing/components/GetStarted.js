@@ -113,10 +113,10 @@ export default function GetStarted() {
                   <span className="text-purple-400">Data Location:</span>
                   <br />
                   <span className="text-gray-500"> macOS/Linux:</span>{" "}
-                  ~/.9router/db.json
+                  ~/.involvex-claude-router/db.json
                   <br />
                   <span className="text-gray-500"> Windows:</span>{" "}
-                  %APPDATA%/9router/db.json
+                  %APPDATA%/involvex-claude-router/db.json
                 </div>
               </div>
             </div>

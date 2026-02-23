@@ -10,6 +10,7 @@ export default function ProfilePage() {
   const { theme, setTheme, isDark } = useTheme();
   const [settings, setSettings] = useState({ fallbackStrategy: "fill-first" });
   const [loading, setLoading] = useState(true);
+  const [dbPath, setDbPath] = useState(null);
   const [passwords, setPasswords] = useState({
     current: "",
     new: "",
@@ -29,6 +30,10 @@ export default function ProfilePage() {
         console.error("Failed to fetch settings:", err);
         setLoading(false);
       });
+    fetch("/api/system/data-dir")
+      .then(res => res.json())
+      .then(data => setDbPath(data.dbFile))
+      .catch(() => {});
   }, []);
 
   const handlePasswordChange = async e => {
@@ -175,7 +180,7 @@ export default function ProfilePage() {
             <p className="text-sm text-text-muted">
               All data is stored locally in the{" "}
               <code className="bg-sidebar px-1 rounded">
-                ~/.9router/db.json
+                {dbPath || "~/.involvex-claude-router/db.json"}
               </code>{" "}
               file.
             </p>
@@ -415,7 +420,7 @@ export default function ProfilePage() {
               <div>
                 <p className="font-medium">Database Location</p>
                 <p className="text-sm text-text-muted font-mono">
-                  ~/.9router/db.json
+                  {dbPath || "~/.involvex-claude-router/db.json"}
                 </p>
               </div>
             </div>

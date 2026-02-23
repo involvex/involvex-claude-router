@@ -16,6 +16,9 @@
     "lint:fix": "eslint . --ignore-pattern dist --ignore-pattern node_modules --ignore-pattern .next --fix",
     "start": "next start"
   },
+  "config": {
+    "appName": "involvex-claude-router"
+  },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@xyflow/react": "^12.10.1",
