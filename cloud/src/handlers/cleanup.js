@@ -14,9 +14,8 @@ export async function handleCleanup(env) {
   log.info("CLEANUP", `Deleting records older than ${cutoffDate}`);
 
   try {
-    const result = await env.DB.prepare(
-      "DELETE FROM machines WHERE updatedAt < ?",
-    )
+    const result = await env.proxy_db
+      .prepare("DELETE FROM machines WHERE updatedAt < ?")
       .bind(cutoffDate)
       .run();
 

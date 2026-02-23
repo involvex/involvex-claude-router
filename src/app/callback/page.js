@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, startTransition } from "react";
 import { useSearchParams } from "next/navigation";
 
 /**
@@ -71,7 +71,7 @@ function CallbackContent() {
       return;
     }
 
-    setStatus("success");
+    startTransition(() => setStatus("success"));
     setTimeout(() => {
       window.close();
       setTimeout(() => setStatus("done"), 500);

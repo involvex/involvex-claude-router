@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, Fragment } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  Fragment,
+  startTransition,
+} from "react";
 import Badge from "@/shared/components/Badge";
 import Card from "@/shared/components/Card";
 import PropTypes from "prop-types";
@@ -114,7 +121,7 @@ export default function UsageTable({
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey);
-      if (saved) setExpanded(new Set(JSON.parse(saved)));
+      if (saved) startTransition(() => setExpanded(new Set(JSON.parse(saved))));
     } catch (e) {
       console.error(`Failed to load ${storageKey}:`, e);
     }

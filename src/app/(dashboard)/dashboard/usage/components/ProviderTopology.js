@@ -59,12 +59,15 @@ function ProviderNode({ data }) {
         style={{ backgroundColor: `${color}15` }}
       >
         {!imgError ? (
-          <img
-            src={imageUrl}
-            alt={label}
-            className="w-6 h-6 rounded-sm object-contain"
-            onError={() => setImgError(true)}
-          />
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageUrl}
+              alt={label}
+              className="w-6 h-6 rounded-sm object-contain"
+              onError={() => setImgError(true)}
+            />
+          </>
         ) : (
           <span
             className="text-sm font-bold"
@@ -133,6 +136,7 @@ function RouterNode({ data }) {
         className="!bg-transparent !border-0 !w-0 !h-0"
       />
 
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/favicon.svg"
         alt="9Router"
@@ -293,7 +297,7 @@ export default function ProviderTopology({
 
   const { nodes, edges } = useMemo(
     () => buildLayout(providers, activeSet, lastSet, errorSet),
-    [providers, activeKey, lastKey, errorKey],
+    [providers, activeSet, lastSet, errorSet],
   );
 
   // Stable key — only remount when provider list changes

@@ -6,10 +6,10 @@ import {
   CardSkeleton,
   SegmentedControl,
 } from "@/shared/components";
+import { useState, Suspense, useEffect, startTransition } from "react";
 import RequestDetailsTab from "./components/RequestDetailsTab";
 import { useSearchParams, useRouter } from "next/navigation";
 import ProviderLimits from "./components/ProviderLimits";
-import { useState, Suspense, useEffect } from "react";
 
 export default function UsagePage() {
   return (
@@ -33,7 +33,7 @@ function UsagePageContent() {
       tabFromUrl &&
       ["overview", "logs", "limits", "details"].includes(tabFromUrl)
     ) {
-      setActiveTab(tabFromUrl);
+      startTransition(() => setActiveTab(tabFromUrl));
     }
   }, [searchParams]);
 
