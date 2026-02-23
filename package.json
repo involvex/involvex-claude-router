@@ -8,8 +8,8 @@
   "author": "involvex",
   "scripts": {
     "prebuild": "bun run format && bun run lint:fix",
-    "build": "next build --webpack",
-    "dev": "next dev --webpack --port 20128",
+    "build": "next build --turbo",
+    "dev": "next dev --turbo --port 20128",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern node_modules --ignore-pattern .next",
