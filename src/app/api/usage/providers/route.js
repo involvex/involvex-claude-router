@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+import { AI_PROVIDERS, getProviderByAlias } from "@/shared/constants/providers";
 import { getRequestDetailsDb } from "@/lib/requestDetailsDb";
 import { getProviderNodes } from "@/lib/localDb";
-import { AI_PROVIDERS, getProviderByAlias } from "@/shared/constants/providers";
+import { NextResponse } from "next/server";
 
 /**
  * GET /api/usage/providers
@@ -39,7 +39,8 @@ export async function GET() {
       }
       // 2. Check predefined providers
       else {
-        const providerConfig = getProviderByAlias(providerId) || AI_PROVIDERS[providerId];
+        const providerConfig =
+          getProviderByAlias(providerId) || AI_PROVIDERS[providerId];
         if (providerConfig?.name) {
           name = providerConfig.name;
         }
@@ -47,7 +48,7 @@ export async function GET() {
 
       return {
         id: providerId,
-        name
+        name,
       };
     });
 
@@ -56,7 +57,7 @@ export async function GET() {
     console.error("[API] Failed to get providers:", error);
     return NextResponse.json(
       { error: "Failed to fetch providers" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

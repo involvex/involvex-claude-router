@@ -1,6 +1,6 @@
-import crypto from "crypto";
-import { BaseExecutor } from "./base.js";
 import { PROVIDERS } from "../config/constants.js";
+import { BaseExecutor } from "./base.js";
+import crypto from "crypto";
 
 /**
  * IFlowExecutor - Executor for iFlow API with HMAC-SHA256 signature
@@ -52,7 +52,12 @@ export class IFlowExecutor extends BaseExecutor {
     const apiKey = credentials.apiKey || credentials.accessToken || "";
 
     // Create signature
-    const signature = this.createIFlowSignature(userAgent, sessionID, timestamp, apiKey);
+    const signature = this.createIFlowSignature(
+      userAgent,
+      sessionID,
+      timestamp,
+      apiKey,
+    );
 
     // Build headers
     const headers = {
@@ -60,7 +65,7 @@ export class IFlowExecutor extends BaseExecutor {
       ...this.config.headers,
       "session-id": sessionID,
       "x-iflow-timestamp": timestamp.toString(),
-      "x-iflow-signature": signature
+      "x-iflow-signature": signature,
     };
 
     // Add authorization

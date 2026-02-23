@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
 import path from "path";
+import fs from "fs";
 
 export async function GET(request) {
   try {
@@ -8,7 +8,10 @@ export async function GET(request) {
     const file = searchParams.get("file");
 
     if (!file) {
-      return NextResponse.json({ success: false, error: "File parameter required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "File parameter required" },
+        { status: 400 },
+      );
     }
 
     // Security: only allow specific filenames
@@ -17,11 +20,14 @@ export async function GET(request) {
       "2_req_source.json",
       "3_req_openai.json",
       "4_req_target.json",
-      "5_res_provider.txt"
+      "5_res_provider.txt",
     ];
 
     if (!allowedFiles.includes(file)) {
-      return NextResponse.json({ success: false, error: "Invalid file name" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Invalid file name" },
+        { status: 400 },
+      );
     }
 
     const logsDir = path.join(process.cwd(), "logs", "translator");
@@ -29,7 +35,10 @@ export async function GET(request) {
 
     // Check if file exists
     if (!fs.existsSync(filePath)) {
-      return NextResponse.json({ success: false, error: "File not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "File not found" },
+        { status: 404 },
+      );
     }
 
     const content = fs.readFileSync(filePath, "utf-8");
@@ -37,6 +46,9 @@ export async function GET(request) {
     return NextResponse.json({ success: true, content });
   } catch (error) {
     console.error("Error loading file:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 },
+    );
   }
 }

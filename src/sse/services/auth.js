@@ -1,5 +1,16 @@
-import { getProviderConnections, validateApiKey, updateProviderConnection, getSettings } from "@/lib/localDb";
-import { isAccountUnavailable, getUnavailableUntil, getEarliestRateLimitedUntil, formatRetryAfter, checkFallbackError } from "open-sse/services/accountFallback.js";
+import {
+  isAccountUnavailable,
+  getUnavailableUntil,
+  getEarliestRateLimitedUntil,
+  formatRetryAfter,
+  checkFallbackError,
+} from "open-sse/services/accountFallback.js";
+import {
+  getProviderConnections,
+  validateApiKey,
+  updateProviderConnection,
+  getSettings,
+} from "@/lib/localDb";
 import { resolveProviderId } from "@/shared/constants/providers.js";
 import * as log from "../utils/logger.js";
 
@@ -52,7 +63,10 @@ function lockModel(connectionId, model, durationMs) {
   if (!connectionId || !model) return;
   const key = `${connectionId}:${model}`;
   modelLocks.set(key, Date.now() + durationMs);
-  log.warn("AUTH", `Model lock: ${model} on ${connectionId.slice(0, 8)} for ${Math.round(durationMs / 1000)}s`);
+  log.warn(
+    "AUTH",
+    `Model lock: ${model} on ${connectionId.slice(0, 8)} for ${Math.round(durationMs / 1000)}s`,
+  );
 }
 
 /**
@@ -69,11 +83,17 @@ function isMultiBucketProvider(provider) {
  * @param {string|null} excludeConnectionId - Connection ID to exclude (for retry with next account)
  * @param {string|null} model - Model name for per-model rate limit filtering
  */
-export async function getProviderCredentials(provider, excludeConnectionId = null, model = null) {
+export async function getProviderCredentials(
+  provider,
+  excludeConnectionId = null,
+  model = null,
+) {
   // Acquire mutex to prevent race conditions
   const currentMutex = selectionMutex;
   let resolveMutex;
-  selectionMutex = new Promise(resolve => { resolveMutex = resolve; });
+  selectionMutex = new Promise(resolve => {
+    resolveMutex = resolve;
+  });
 
   try {
     await currentMutex;
@@ -81,22 +101,46 @@ export async function getProviderCredentials(provider, excludeConnectionId = nul
     // Resolve alias to provider ID (e.g., "kc" -> "kilocode")
     const providerId = resolveProviderId(provider);
 
-    const connections = await getProviderConnections({ provider: providerId, isActive: true });
-    log.debug("AUTH", `${provider} | total connections: ${connections.length}, excludeId: ${excludeConnectionId || "none"}, model: ${model || "any"}`);
+    const connections = await getProviderConnections({
+      provider: providerId,
+      isActive: true,
+    });
+    log.debug(
+      "AUTH",
+      `${provider} | total connections: ${connections.length}, excludeId: ${excludeConnectionId || "none"}, model: ${model || "any"}`,
+    );
 
     if (connections.length === 0) {
       // Check all connections (including inactive) to see if rate limited
-      const allConnections = await getProviderConnections({ provider: providerId });
-      log.debug("AUTH", `${provider} | all connections (incl inactive): ${allConnections.length}`);
+      const allConnections = await getProviderConnections({
+        provider: providerId,
+      });
+      log.debug(
+        "AUTH",
+        `${provider} | all connections (incl inactive): ${allConnections.length}`,
+      );
       if (allConnections.length > 0) {
         const earliest = getEarliestRateLimitedUntil(allConnections);
         if (earliest) {
-          log.warn("AUTH", `${provider} | all ${allConnections.length} accounts rate limited (${formatRetryAfter(earliest)})`);
-          return { allRateLimited: true, retryAfter: earliest, retryAfterHuman: formatRetryAfter(earliest) };
+          log.warn(
+            "AUTH",
+            `${provider} | all ${allConnections.length} accounts rate limited (${formatRetryAfter(earliest)})`,
+          );
+          return {
+            allRateLimited: true,
+            retryAfter: earliest,
+            retryAfterHuman: formatRetryAfter(earliest),
+          };
         }
-        log.warn("AUTH", `${provider} | ${allConnections.length} accounts found but none active`);
+        log.warn(
+          "AUTH",
+          `${provider} | ${allConnections.length} accounts found but none active`,
+        );
         allConnections.forEach(c => {
-          log.debug("AUTH", `  → ${c.id?.slice(0, 8)} | isActive=${c.isActive} | rateLimitedUntil=${c.rateLimitedUntil || "none"} | testStatus=${c.testStatus}`);
+          log.debug(
+            "AUTH",
+            `  → ${c.id?.slice(0, 8)} | isActive=${c.isActive} | rateLimitedUntil=${c.rateLimitedUntil || "none"} | testStatus=${c.testStatus}`,
+          );
         });
       }
       log.warn("AUTH", `No credentials for ${provider}`);
@@ -112,13 +156,19 @@ export async function getProviderCredentials(provider, excludeConnectionId = nul
       return true;
     });
 
-    log.debug("AUTH", `${provider} | available: ${availableConnections.length}/${connections.length}`);
+    log.debug(
+      "AUTH",
+      `${provider} | available: ${availableConnections.length}/${connections.length}`,
+    );
     connections.forEach(c => {
       const excluded = excludeConnectionId && c.id === excludeConnectionId;
       const rateLimited = isAccountUnavailable(c.rateLimitedUntil);
       const modelLocked = multiBucket && model && isModelLocked(c.id, model);
       if (excluded || rateLimited || modelLocked) {
-        log.debug("AUTH", `  → ${c.id?.slice(0, 8)} | ${excluded ? "excluded" : ""} ${rateLimited ? `rateLimited until ${c.rateLimitedUntil}` : ""} ${modelLocked ? `modelLocked(${model})` : ""}`);
+        log.debug(
+          "AUTH",
+          `  → ${c.id?.slice(0, 8)} | ${excluded ? "excluded" : ""} ${rateLimited ? `rateLimited until ${c.rateLimitedUntil}` : ""} ${modelLocked ? `modelLocked(${model})` : ""}`,
+        );
       }
     });
 
@@ -126,27 +176,42 @@ export async function getProviderCredentials(provider, excludeConnectionId = nul
       const earliest = getEarliestRateLimitedUntil(connections);
       if (earliest) {
         // Find the connection with the earliest rateLimitedUntil to get its error info
-        const rateLimitedConns = connections.filter(c => c.rateLimitedUntil && new Date(c.rateLimitedUntil).getTime() > Date.now());
-        const earliestConn = rateLimitedConns.sort((a, b) => new Date(a.rateLimitedUntil) - new Date(b.rateLimitedUntil))[0];
-        log.warn("AUTH", `${provider} | all ${connections.length} active accounts rate limited (${formatRetryAfter(earliest)}) | lastErrorCode=${earliestConn?.errorCode}, lastError=${earliestConn?.lastError?.slice(0, 50)}`);
+        const rateLimitedConns = connections.filter(
+          c =>
+            c.rateLimitedUntil &&
+            new Date(c.rateLimitedUntil).getTime() > Date.now(),
+        );
+        const earliestConn = rateLimitedConns.sort(
+          (a, b) => new Date(a.rateLimitedUntil) - new Date(b.rateLimitedUntil),
+        )[0];
+        log.warn(
+          "AUTH",
+          `${provider} | all ${connections.length} active accounts rate limited (${formatRetryAfter(earliest)}) | lastErrorCode=${earliestConn?.errorCode}, lastError=${earliestConn?.lastError?.slice(0, 50)}`,
+        );
         return {
           allRateLimited: true,
           retryAfter: earliest,
           retryAfterHuman: formatRetryAfter(earliest),
           lastError: earliestConn?.lastError || null,
-          lastErrorCode: earliestConn?.errorCode || null
+          lastErrorCode: earliestConn?.errorCode || null,
         };
       }
       if (multiBucket && model) {
-        log.warn("AUTH", `${provider} | all accounts model-locked for ${model}`);
+        log.warn(
+          "AUTH",
+          `${provider} | all accounts model-locked for ${model}`,
+        );
         return {
           allRateLimited: true,
           retryAfter: new Date(Date.now() + 60000).toISOString(),
           retryAfterHuman: "reset after 1m",
-          lastError: `All accounts rate limited for model ${model}`
+          lastError: `All accounts rate limited for model ${model}`,
         };
       }
-      log.warn("AUTH", `${provider} | all ${connections.length} accounts unavailable`);
+      log.warn(
+        "AUTH",
+        `${provider} | all ${connections.length} accounts unavailable`,
+      );
       return null;
     }
 
@@ -159,7 +224,8 @@ export async function getProviderCredentials(provider, excludeConnectionId = nul
 
       // Sort by lastUsed (most recent first) to find current candidate
       const byRecency = [...availableConnections].sort((a, b) => {
-        if (!a.lastUsedAt && !b.lastUsedAt) return (a.priority || 999) - (b.priority || 999);
+        if (!a.lastUsedAt && !b.lastUsedAt)
+          return (a.priority || 999) - (b.priority || 999);
         if (!a.lastUsedAt) return 1;
         if (!b.lastUsedAt) return -1;
         return new Date(b.lastUsedAt) - new Date(a.lastUsedAt);
@@ -174,12 +240,13 @@ export async function getProviderCredentials(provider, excludeConnectionId = nul
         // Update lastUsedAt and increment count (await to ensure persistence)
         await updateProviderConnection(connection.id, {
           lastUsedAt: new Date().toISOString(),
-          consecutiveUseCount: (connection.consecutiveUseCount || 0) + 1
+          consecutiveUseCount: (connection.consecutiveUseCount || 0) + 1,
         });
       } else {
         // Pick the least recently used (excluding current if possible)
         const sortedByOldest = [...availableConnections].sort((a, b) => {
-          if (!a.lastUsedAt && !b.lastUsedAt) return (a.priority || 999) - (b.priority || 999);
+          if (!a.lastUsedAt && !b.lastUsedAt)
+            return (a.priority || 999) - (b.priority || 999);
           if (!a.lastUsedAt) return -1;
           if (!b.lastUsedAt) return 1;
           return new Date(a.lastUsedAt) - new Date(b.lastUsedAt);
@@ -190,7 +257,7 @@ export async function getProviderCredentials(provider, excludeConnectionId = nul
         // Update lastUsedAt and reset count to 1 (await to ensure persistence)
         await updateProviderConnection(connection.id, {
           lastUsedAt: new Date().toISOString(),
-          consecutiveUseCount: 1
+          consecutiveUseCount: 1,
         });
       }
     } else {
@@ -209,7 +276,7 @@ export async function getProviderCredentials(provider, excludeConnectionId = nul
       // Include current status for optimization check
       testStatus: connection.testStatus,
       lastError: connection.lastError,
-      rateLimitedUntil: connection.rateLimitedUntil
+      rateLimitedUntil: connection.rateLimitedUntil,
     };
   } finally {
     if (resolveMutex) resolveMutex();
@@ -227,13 +294,23 @@ export async function getProviderCredentials(provider, excludeConnectionId = nul
  * @param {string|null} model - The specific model that triggered the error
  * @returns {{ shouldFallback: boolean, cooldownMs: number }}
  */
-export async function markAccountUnavailable(connectionId, status, errorText, provider = null, model = null) {
+export async function markAccountUnavailable(
+  connectionId,
+  status,
+  errorText,
+  provider = null,
+  model = null,
+) {
   // Read current connection to get backoffLevel
   const connections = await getProviderConnections({ provider });
   const conn = connections.find(c => c.id === connectionId);
   const backoffLevel = conn?.backoffLevel || 0;
 
-  const { shouldFallback, cooldownMs, newBackoffLevel } = checkFallbackError(status, errorText, backoffLevel);
+  const { shouldFallback, cooldownMs, newBackoffLevel } = checkFallbackError(
+    status,
+    errorText,
+    backoffLevel,
+  );
   if (!shouldFallback) return { shouldFallback: false, cooldownMs: 0 };
 
   if (isMultiBucketProvider(provider) && status === 429 && model) {
@@ -243,7 +320,8 @@ export async function markAccountUnavailable(connectionId, status, errorText, pr
   }
 
   const rateLimitedUntil = getUnavailableUntil(cooldownMs);
-  const reason = typeof errorText === "string" ? errorText.slice(0, 100) : "Provider error";
+  const reason =
+    typeof errorText === "string" ? errorText.slice(0, 100) : "Provider error";
 
   await updateProviderConnection(connectionId, {
     rateLimitedUntil,
@@ -251,7 +329,7 @@ export async function markAccountUnavailable(connectionId, status, errorText, pr
     lastError: reason,
     errorCode: status,
     lastErrorAt: new Date().toISOString(),
-    backoffLevel: newBackoffLevel ?? backoffLevel
+    backoffLevel: newBackoffLevel ?? backoffLevel,
   });
 
   if (provider && status && reason) {
@@ -267,20 +345,21 @@ export async function markAccountUnavailable(connectionId, status, errorText, pr
  */
 export async function clearAccountError(connectionId, currentConnection) {
   // Only update if currently has error status
-  const hasError = currentConnection.testStatus === "unavailable" ||
-                   currentConnection.lastError ||
-                   currentConnection.rateLimitedUntil;
-  
+  const hasError =
+    currentConnection.testStatus === "unavailable" ||
+    currentConnection.lastError ||
+    currentConnection.rateLimitedUntil;
+
   if (!hasError) return; // Skip if already clean
-  
+
   await updateProviderConnection(connectionId, {
     testStatus: "active",
     lastError: null,
     lastErrorAt: null,
     rateLimitedUntil: null,
-    backoffLevel: 0
+    backoffLevel: 0,
   });
-  log.info("AUTH", `Account ${connectionId.slice(0,8)} error cleared`);
+  log.info("AUTH", `Account ${connectionId.slice(0, 8)} error cleared`);
 }
 
 /**

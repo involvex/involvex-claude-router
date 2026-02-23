@@ -1,10 +1,21 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import {
+  ClaudeToolCard,
+  CodexToolCard,
+  DroidToolCard,
+  OpenClawToolCard,
+  DefaultToolCard,
+  AntigravityToolCard,
+} from "./components";
+import {
+  PROVIDER_MODELS,
+  getModelsByProviderId,
+  PROVIDER_ID_TO_ALIAS,
+} from "@/shared/constants/models";
 import { Card, CardSkeleton } from "@/shared/components";
+import { useState, useEffect, useCallback } from "react";
 import { CLI_TOOLS } from "@/shared/constants/cliTools";
-import { PROVIDER_MODELS, getModelsByProviderId, PROVIDER_ID_TO_ALIAS } from "@/shared/constants/models";
-import { ClaudeToolCard, CodexToolCard, DroidToolCard, OpenClawToolCard, DefaultToolCard, AntigravityToolCard } from "./components";
 
 const CLOUD_URL = process.env.NEXT_PUBLIC_CLOUD_URL;
 
@@ -78,7 +89,7 @@ export default function CLIToolsPageClient({ machineId }) {
     const activeProviders = getActiveProviders();
     const models = [];
     const seenModels = new Set();
-    
+
     activeProviders.forEach(conn => {
       const alias = PROVIDER_ID_TO_ALIAS[conn.provider] || conn.provider;
       const providerModels = getModelsByProviderId(conn.provider);
@@ -97,25 +108,28 @@ export default function CLIToolsPageClient({ machineId }) {
         }
       });
     });
-    
+
     return models;
   };
 
-  const handleModelMappingChange = useCallback((toolId, modelAlias, targetModel) => {
-    setModelMappings(prev => {
-      // Prevent unnecessary updates if value hasn't changed
-      if (prev[toolId]?.[modelAlias] === targetModel) {
-        return prev;
-      }
-      return {
-        ...prev,
-        [toolId]: {
-          ...prev[toolId],
-          [modelAlias]: targetModel,
-        },
-      };
-    });
-  }, []);
+  const handleModelMappingChange = useCallback(
+    (toolId, modelAlias, targetModel) => {
+      setModelMappings(prev => {
+        // Prevent unnecessary updates if value hasn't changed
+        if (prev[toolId]?.[modelAlias] === targetModel) {
+          return prev;
+        }
+        return {
+          ...prev,
+          [toolId]: {
+            ...prev[toolId],
+            [modelAlias]: targetModel,
+          },
+        };
+      });
+    },
+    [],
+  );
 
   const getBaseUrl = () => {
     if (tunnelEnabled && tunnelUrl) {
@@ -162,21 +176,62 @@ export default function CLIToolsPageClient({ machineId }) {
             {...commonProps}
             activeProviders={getActiveProviders()}
             modelMappings={modelMappings[toolId] || {}}
-            onModelMappingChange={(alias, target) => handleModelMappingChange(toolId, alias, target)}
+            onModelMappingChange={(alias, target) =>
+              handleModelMappingChange(toolId, alias, target)
+            }
             hasActiveProviders={hasActiveProviders}
             cloudEnabled={cloudEnabled}
           />
         );
       case "codex":
-        return <CodexToolCard key={toolId} {...commonProps} activeProviders={getActiveProviders()} cloudEnabled={cloudEnabled} />;
+        return (
+          <CodexToolCard
+            key={toolId}
+            {...commonProps}
+            activeProviders={getActiveProviders()}
+            cloudEnabled={cloudEnabled}
+          />
+        );
       case "droid":
-        return <DroidToolCard key={toolId} {...commonProps} activeProviders={getActiveProviders()} hasActiveProviders={hasActiveProviders} cloudEnabled={cloudEnabled} />;
+        return (
+          <DroidToolCard
+            key={toolId}
+            {...commonProps}
+            activeProviders={getActiveProviders()}
+            hasActiveProviders={hasActiveProviders}
+            cloudEnabled={cloudEnabled}
+          />
+        );
       case "openclaw":
-        return <OpenClawToolCard key={toolId} {...commonProps} activeProviders={getActiveProviders()} hasActiveProviders={hasActiveProviders} cloudEnabled={cloudEnabled} />;
+        return (
+          <OpenClawToolCard
+            key={toolId}
+            {...commonProps}
+            activeProviders={getActiveProviders()}
+            hasActiveProviders={hasActiveProviders}
+            cloudEnabled={cloudEnabled}
+          />
+        );
       case "antigravity":
-        return <AntigravityToolCard key={toolId} {...commonProps} activeProviders={getActiveProviders()} hasActiveProviders={hasActiveProviders} cloudEnabled={cloudEnabled} />;
+        return (
+          <AntigravityToolCard
+            key={toolId}
+            {...commonProps}
+            activeProviders={getActiveProviders()}
+            hasActiveProviders={hasActiveProviders}
+            cloudEnabled={cloudEnabled}
+          />
+        );
       default:
-        return <DefaultToolCard key={toolId} toolId={toolId} {...commonProps} activeProviders={getActiveProviders()} cloudEnabled={cloudEnabled} />;
+        return (
+          <DefaultToolCard
+            key={toolId}
+            toolId={toolId}
+            {...commonProps}
+            activeProviders={getActiveProviders()}
+            cloudEnabled={cloudEnabled}
+          />
+        );
     }
   };
 
@@ -185,17 +240,25 @@ export default function CLIToolsPageClient({ machineId }) {
       {!hasActiveProviders && (
         <Card className="border-yellow-500/50 bg-yellow-500/5">
           <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-yellow-500">warning</span>
+            <span className="material-symbols-outlined text-yellow-500">
+              warning
+            </span>
             <div>
-              <p className="font-medium text-yellow-600 dark:text-yellow-400">No active providers</p>
-              <p className="text-sm text-text-muted">Please add and connect providers first to configure CLI tools.</p>
+              <p className="font-medium text-yellow-600 dark:text-yellow-400">
+                No active providers
+              </p>
+              <p className="text-sm text-text-muted">
+                Please add and connect providers first to configure CLI tools.
+              </p>
             </div>
           </div>
         </Card>
       )}
 
       <div className="flex flex-col gap-4">
-        {Object.entries(CLI_TOOLS).map(([toolId, tool]) => renderToolCard(toolId, tool))}
+        {Object.entries(CLI_TOOLS).map(([toolId, tool]) =>
+          renderToolCard(toolId, tool),
+        )}
       </div>
     </div>
   );

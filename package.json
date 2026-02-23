@@ -1,11 +1,19 @@
 {
-  "name": "9router-app",
+  "name": "@involvex/claude-router",
   "version": "0.2.95",
-  "description": "9Router web dashboard",
   "private": true,
+  "description": "Involvex's Claude Router Web dashboard",
+  "funding": "https://github.com/sponsors/involvex",
+  "license": "MIT",
+  "author": "involvex",
   "scripts": {
-    "dev": "next dev --webpack --port 20128",
+    "prebuild": "bun run format && bun run lint:fix",
     "build": "next build --webpack",
+    "dev": "next dev --webpack --port 20128",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern node_modules --ignore-pattern .next",
+    "lint:fix": "eslint . --ignore-pattern dist --ignore-pattern node_modules --ignore-pattern .next --fix",
     "start": "next start"
   },
   "dependencies": {
@@ -37,6 +45,16 @@
     "@tailwindcss/postcss": "^4.1.18",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "prettier": "^3.8.1",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "prettier-plugin-packagejson": "^3.0.0",
+    "prettier-plugin-sort-imports": "^1.8.11",
     "tailwindcss": "^4"
-  }
+  },
+  "sponsor": {
+    "url": "https://github.com/sponsors/involvex"
+  },
+  "trustedDependencies": [
+    "unrs-resolver"
+  ]
 }

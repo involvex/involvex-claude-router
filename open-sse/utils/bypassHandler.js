@@ -1,7 +1,7 @@
-import { detectFormat } from "../services/provider.js";
 import { translateResponse, initState } from "../translator/index.js";
-import { FORMATS } from "../translator/formats.js";
+import { detectFormat } from "../services/provider.js";
 import { SKIP_PATTERNS } from "../config/constants.js";
+import { FORMATS } from "../translator/formats.js";
 import { formatSSE } from "./stream.js";
 
 /**
@@ -13,10 +13,13 @@ export function handleBypassRequest(body, model, userAgent = "") {
   if (!body.messages?.length) return null;
 
   const messages = body.messages;
-  const getText = (content) => {
+  const getText = content => {
     if (typeof content === "string") return content;
     if (Array.isArray(content)) {
-      return content.filter(c => c.type === "text").map(c => c.text).join(" ");
+      return content
+        .filter(c => c.type === "text")
+        .map(c => c.text)
+        .join(" ");
     }
     return "";
   };
@@ -59,7 +62,7 @@ export function handleBypassRequest(body, model, userAgent = "") {
   const sourceFormat = detectFormat(body);
   const stream = body.stream !== false;
 
-  return stream 
+  return stream
     ? createStreamingResponse(sourceFormat, model)
     : createNonStreamingResponse(sourceFormat, model);
 }
@@ -77,19 +80,21 @@ function createOpenAIResponse(model) {
     object: "chat.completion",
     created,
     model,
-    choices: [{
-      index: 0,
-      message: {
-        role: "assistant",
-        content: text
+    choices: [
+      {
+        index: 0,
+        message: {
+          role: "assistant",
+          content: text,
+        },
+        finish_reason: "stop",
       },
-      finish_reason: "stop"
-    }],
+    ],
     usage: {
       prompt_tokens: 1,
       completion_tokens: 1,
-      total_tokens: 2
-    }
+      total_tokens: 2,
+    },
   };
 }
 
@@ -107,9 +112,9 @@ function createNonStreamingResponse(sourceFormat, model) {
       response: new Response(JSON.stringify(openaiResponse), {
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      })
+          "Access-Control-Allow-Origin": "*",
+        },
+      }),
     };
   }
 
@@ -121,7 +126,12 @@ function createNonStreamingResponse(sourceFormat, model) {
   const allTranslated = [];
 
   for (const chunk of openaiChunks) {
-    const translated = translateResponse(FORMATS.OPENAI, sourceFormat, chunk, state);
+    const translated = translateResponse(
+      FORMATS.OPENAI,
+      sourceFormat,
+      chunk,
+      state,
+    );
     if (translated?.length > 0) {
       allTranslated.push(...translated);
     }
@@ -141,9 +151,9 @@ function createNonStreamingResponse(sourceFormat, model) {
     response: new Response(JSON.stringify(finalResponse), {
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
-      }
-    })
+        "Access-Control-Allow-Origin": "*",
+      },
+    }),
   };
 }
 
@@ -163,7 +173,12 @@ function createStreamingResponse(sourceFormat, model) {
   const translatedChunks = [];
 
   for (const chunk of openaiChunks) {
-    const translated = translateResponse(FORMATS.OPENAI, sourceFormat, chunk, state);
+    const translated = translateResponse(
+      FORMATS.OPENAI,
+      sourceFormat,
+      chunk,
+      state,
+    );
     if (translated?.length > 0) {
       for (const item of translated) {
         translatedChunks.push(formatSSE(item, sourceFormat));
@@ -188,10 +203,10 @@ function createStreamingResponse(sourceFormat, model) {
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-        "Access-Control-Allow-Origin": "*"
-      }
-    })
+        Connection: "keep-alive",
+        "Access-Control-Allow-Origin": "*",
+      },
+    }),
   };
 }
 
@@ -244,14 +259,16 @@ function createOpenAIStreamingChunks(completeResponse) {
       object: "chat.completion.chunk",
       created,
       model,
-      choices: [{
-        index: 0,
-        delta: {
-          role: "assistant",
-          content
+      choices: [
+        {
+          index: 0,
+          delta: {
+            role: "assistant",
+            content,
+          },
+          finish_reason: null,
         },
-        finish_reason: null
-      }]
+      ],
     },
     // Final chunk with finish_reason
     {
@@ -259,12 +276,14 @@ function createOpenAIStreamingChunks(completeResponse) {
       object: "chat.completion.chunk",
       created,
       model,
-      choices: [{
-        index: 0,
-        delta: {},
-        finish_reason: "stop"
-      }],
-      usage: completeResponse.usage
-    }
+      choices: [
+        {
+          index: 0,
+          delta: {},
+          finish_reason: "stop",
+        },
+      ],
+      usage: completeResponse.usage,
+    },
   ];
 }

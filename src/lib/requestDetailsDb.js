@@ -3,7 +3,7 @@ import path from "path";
 import os from "os";
 import fs from "fs";
 
-const isCloud = typeof caches !== 'undefined' || typeof caches === 'object';
+const isCloud = typeof caches !== "undefined" || typeof caches === "object";
 
 // ============================================================================
 // CONFIGURATION: Batch Processing Settings
@@ -18,25 +18,38 @@ async function getObservabilityConfig() {
     const { getSettings } = await import("@/lib/localDb");
     const settings = await getSettings();
     const envEnabled = process.env.OBSERVABILITY_ENABLED !== "false";
-    const enabled = typeof settings.observabilityEnabled === "boolean"
-      ? settings.observabilityEnabled
-      : envEnabled;
+    const enabled =
+      typeof settings.observabilityEnabled === "boolean"
+        ? settings.observabilityEnabled
+        : envEnabled;
 
     return {
       enabled,
-      maxRecords: settings.observabilityMaxRecords || parseInt(process.env.OBSERVABILITY_MAX_RECORDS || '1000', 10),
-      batchSize: settings.observabilityBatchSize || parseInt(process.env.OBSERVABILITY_BATCH_SIZE || '20', 10),
-      flushIntervalMs: settings.observabilityFlushIntervalMs || parseInt(process.env.OBSERVABILITY_FLUSH_INTERVAL_MS || '5000', 10),
-      maxJsonSize: (settings.observabilityMaxJsonSize || parseInt(process.env.OBSERVABILITY_MAX_JSON_SIZE || '1024', 10)) * 1024
+      maxRecords:
+        settings.observabilityMaxRecords ||
+        parseInt(process.env.OBSERVABILITY_MAX_RECORDS || "1000", 10),
+      batchSize:
+        settings.observabilityBatchSize ||
+        parseInt(process.env.OBSERVABILITY_BATCH_SIZE || "20", 10),
+      flushIntervalMs:
+        settings.observabilityFlushIntervalMs ||
+        parseInt(process.env.OBSERVABILITY_FLUSH_INTERVAL_MS || "5000", 10),
+      maxJsonSize:
+        (settings.observabilityMaxJsonSize ||
+          parseInt(process.env.OBSERVABILITY_MAX_JSON_SIZE || "1024", 10)) *
+        1024,
     };
   } catch (error) {
-    console.error("[requestDetailsDb] Failed to load observability config:", error);
+    console.error(
+      "[requestDetailsDb] Failed to load observability config:",
+      error,
+    );
     return {
       enabled: true,
       maxRecords: 1000,
       batchSize: 20,
       flushIntervalMs: 5000,
-      maxJsonSize: 1024 * 1024
+      maxJsonSize: 1024 * 1024,
     };
   }
 }
@@ -47,7 +60,7 @@ let cachedConfigTs = 0;
 const CONFIG_CACHE_TTL_MS = 5000;
 
 async function getCachedObservabilityConfig() {
-  if (!cachedConfig || (Date.now() - cachedConfigTs) > CONFIG_CACHE_TTL_MS) {
+  if (!cachedConfig || Date.now() - cachedConfigTs > CONFIG_CACHE_TTL_MS) {
     cachedConfig = await getObservabilityConfig();
     cachedConfigTs = Date.now();
   }
@@ -74,12 +87,18 @@ function getUserDataDir() {
     const appName = getAppName();
 
     if (platform === "win32") {
-      return path.join(process.env.APPDATA || path.join(homeDir, "AppData", "Roaming"), appName);
+      return path.join(
+        process.env.APPDATA || path.join(homeDir, "AppData", "Roaming"),
+        appName,
+      );
     } else {
       return path.join(homeDir, `.${appName}`);
     }
   } catch (error) {
-    console.error("[requestDetailsDb] Failed to get user data directory:", error.message);
+    console.error(
+      "[requestDetailsDb] Failed to get user data directory:",
+      error.message,
+    );
     return path.join(process.cwd(), ".9router");
   }
 }
@@ -95,7 +114,10 @@ if (!isCloud && fs && typeof fs.existsSync === "function") {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
   } catch (error) {
-    console.error("[requestDetailsDb] Failed to create data directory:", error.message);
+    console.error(
+      "[requestDetailsDb] Failed to create data directory:",
+      error.message,
+    );
   }
 }
 
@@ -135,10 +157,10 @@ export async function getRequestDetailsDb() {
         prepare: () => ({
           run: () => {},
           get: () => null,
-          all: () => []
+          all: () => [],
         }),
         exec: () => {},
-        pragma: () => {}
+        pragma: () => {},
       };
     }
     return dbInstance;
@@ -148,10 +170,10 @@ export async function getRequestDetailsDb() {
     const db = new Database(DB_FILE);
 
     // Configure for better concurrency
-    db.pragma('journal_mode = WAL');        // Write-Ahead Logging for concurrent access
-    db.pragma('synchronous = NORMAL');       // Faster than FULL, still safe
-    db.pragma('cache_size = -64000');        // 64MB cache
-    db.pragma('temp_store = MEMORY');        // Use memory for temp tables
+    db.pragma("journal_mode = WAL"); // Write-Ahead Logging for concurrent access
+    db.pragma("synchronous = NORMAL"); // Faster than FULL, still safe
+    db.pragma("cache_size = -64000"); // 64MB cache
+    db.pragma("temp_store = MEMORY"); // Use memory for temp tables
 
     // Create table with indexes
     db.exec(`
@@ -198,7 +220,7 @@ export async function getRequestDetailsDb() {
 function generateDetailId(model) {
   const timestamp = new Date().toISOString();
   const random = Math.random().toString(36).substring(2, 8);
-  const modelPart = model ? model.replace(/[^a-zA-Z0-9-]/g, '-') : 'unknown';
+  const modelPart = model ? model.replace(/[^a-zA-Z0-9-]/g, "-") : "unknown";
   return `${timestamp}-${random}-${modelPart}`;
 }
 
@@ -244,7 +266,7 @@ async function flushToDatabase() {
     `);
 
     // Execute all writes in a single transaction for atomicity
-    const transaction = db.transaction((items) => {
+    const transaction = db.transaction(items => {
       const maxJsonSize = config.maxJsonSize;
 
       for (const item of items) {
@@ -273,7 +295,7 @@ async function flushToDatabase() {
           safeJsonStringify(item.request || {}, maxJsonSize),
           safeJsonStringify(item.providerRequest || {}, maxJsonSize),
           safeJsonStringify(item.providerResponse || {}, maxJsonSize),
-          safeJsonStringify(item.response || {}, maxJsonSize)
+          safeJsonStringify(item.response || {}, maxJsonSize),
         );
       }
 
@@ -301,11 +323,18 @@ function safeJsonStringify(obj, maxSize) {
     const str = JSON.stringify(obj);
     if (str.length > maxSize) {
       // Return valid JSON instead of truncated invalid string
-      return JSON.stringify({ _truncated: true, _originalSize: str.length, _preview: str.substring(0, 200) });
+      return JSON.stringify({
+        _truncated: true,
+        _originalSize: str.length,
+        _preview: str.substring(0, 200),
+      });
     }
     return str;
   } catch (error) {
-    return JSON.stringify({ error: "Failed to stringify object", message: error.message });
+    return JSON.stringify({
+      error: "Failed to stringify object",
+      message: error.message,
+    });
   }
 }
 
@@ -313,13 +342,21 @@ function safeJsonStringify(obj, maxSize) {
  * Sanitize sensitive headers from request
  */
 function sanitizeHeaders(headers) {
-  if (!headers || typeof headers !== 'object') return {};
+  if (!headers || typeof headers !== "object") return {};
 
-  const sensitiveKeys = ['authorization', 'x-api-key', 'cookie', 'token', 'api-key'];
+  const sensitiveKeys = [
+    "authorization",
+    "x-api-key",
+    "cookie",
+    "token",
+    "api-key",
+  ];
   const sanitized = { ...headers };
 
   for (const key of Object.keys(sanitized)) {
-    if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))) {
+    if (
+      sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))
+    ) {
       delete sanitized[key];
     }
   }
@@ -383,16 +420,18 @@ function ensureShutdownHandler() {
 
     // Flush any remaining data in buffer
     if (writeBuffer.length > 0) {
-      console.log(`[requestDetailsDb] Flushing ${writeBuffer.length} items before shutdown...`);
+      console.log(
+        `[requestDetailsDb] Flushing ${writeBuffer.length} items before shutdown...`,
+      );
       await flushToDatabase();
     }
   };
 
   // Register handlers for various termination signals
-  process.on('beforeExit', handler);
-  process.on('SIGINT', handler);
-  process.on('SIGTERM', handler);
-  process.on('exit', handler);
+  process.on("beforeExit", handler);
+  process.on("SIGINT", handler);
+  process.on("SIGTERM", handler);
+  process.on("exit", handler);
 
   shutdownHandlerRegistered = true;
 }
@@ -406,53 +445,63 @@ export async function getRequestDetails(filter = {}) {
   const db = await getRequestDetailsDb();
 
   if (isCloud) {
-    return { details: [], pagination: { page: 1, pageSize: filter.pageSize || 50, totalItems: 0, totalPages: 0, hasNext: false, hasPrev: false } };
+    return {
+      details: [],
+      pagination: {
+        page: 1,
+        pageSize: filter.pageSize || 50,
+        totalItems: 0,
+        totalPages: 0,
+        hasNext: false,
+        hasPrev: false,
+      },
+    };
   }
 
-  let query = 'SELECT * FROM request_details WHERE 1=1';
+  let query = "SELECT * FROM request_details WHERE 1=1";
   const params = [];
 
   if (filter.provider) {
-    query += ' AND provider = ?';
+    query += " AND provider = ?";
     params.push(filter.provider);
   }
 
   if (filter.model) {
-    query += ' AND model = ?';
+    query += " AND model = ?";
     params.push(filter.model);
   }
 
   if (filter.connectionId) {
-    query += ' AND connection_id = ?';
+    query += " AND connection_id = ?";
     params.push(filter.connectionId);
   }
 
   if (filter.status) {
-    query += ' AND status = ?';
+    query += " AND status = ?";
     params.push(filter.status);
   }
 
   if (filter.startDate) {
-    query += ' AND timestamp >= ?';
+    query += " AND timestamp >= ?";
     params.push(new Date(filter.startDate).getTime());
   }
 
   if (filter.endDate) {
-    query += ' AND timestamp <= ?';
+    query += " AND timestamp <= ?";
     params.push(new Date(filter.endDate).getTime());
   }
 
   // Get total count first
-  const countQuery = query.replace('SELECT *', 'SELECT COUNT(*)');
+  const countQuery = query.replace("SELECT *", "SELECT COUNT(*)");
   const countStmt = db.prepare(countQuery);
   const totalResult = countStmt.get(...params);
-  const total = totalResult['COUNT(*)'];
+  const total = totalResult["COUNT(*)"];
 
   // Add pagination
-  query += ' ORDER BY timestamp DESC';
+  query += " ORDER BY timestamp DESC";
   const page = filter.page || 1;
   const pageSize = filter.pageSize || 50;
-  query += ' LIMIT ? OFFSET ?';
+  query += " LIMIT ? OFFSET ?";
   params.push(pageSize, (page - 1) * pageSize);
 
   // Execute query
@@ -461,8 +510,11 @@ export async function getRequestDetails(filter = {}) {
 
   // Safe JSON parse — returns fallback on corrupt/truncated data
   const safeJsonParse = (str, fallback = {}) => {
-    try { return JSON.parse(str || '{}'); }
-    catch { return fallback; }
+    try {
+      return JSON.parse(str || "{}");
+    } catch {
+      return fallback;
+    }
   };
 
   // Convert back to original format
@@ -478,7 +530,7 @@ export async function getRequestDetails(filter = {}) {
     request: safeJsonParse(row.request),
     providerRequest: safeJsonParse(row.provider_request),
     providerResponse: safeJsonParse(row.provider_response),
-    response: safeJsonParse(row.response)
+    response: safeJsonParse(row.response),
   }));
 
   return {
@@ -489,8 +541,8 @@ export async function getRequestDetails(filter = {}) {
       totalItems: total,
       totalPages: Math.ceil(total / pageSize),
       hasNext: page < Math.ceil(total / pageSize),
-      hasPrev: page > 1
-    }
+      hasPrev: page > 1,
+    },
   };
 }
 
@@ -504,14 +556,17 @@ export async function getRequestDetailById(id) {
 
   if (isCloud) return null;
 
-  const stmt = db.prepare('SELECT * FROM request_details WHERE id = ?');
+  const stmt = db.prepare("SELECT * FROM request_details WHERE id = ?");
   const row = stmt.get(id);
 
   if (!row) return null;
 
   const safeJsonParse = (str, fallback = {}) => {
-    try { return JSON.parse(str || '{}'); }
-    catch { return fallback; }
+    try {
+      return JSON.parse(str || "{}");
+    } catch {
+      return fallback;
+    }
   };
 
   return {
@@ -526,6 +581,6 @@ export async function getRequestDetailById(id) {
     request: safeJsonParse(row.request),
     providerRequest: safeJsonParse(row.provider_request),
     providerResponse: safeJsonParse(row.provider_response),
-    response: safeJsonParse(row.response)
+    response: safeJsonParse(row.response),
   };
 }

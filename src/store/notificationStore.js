@@ -10,7 +10,7 @@ let idCounter = 0;
 export const useNotificationStore = create((set, get) => ({
   notifications: [],
 
-  addNotification: (notification) => {
+  addNotification: notification => {
     const id = ++idCounter;
     const entry = {
       id,
@@ -22,7 +22,7 @@ export const useNotificationStore = create((set, get) => ({
       createdAt: Date.now(),
     };
 
-    set((s) => ({ notifications: [...s.notifications, entry] }));
+    set(s => ({ notifications: [...s.notifications, entry] }));
 
     // Auto-dismiss
     if (entry.duration > 0) {
@@ -32,14 +32,18 @@ export const useNotificationStore = create((set, get) => ({
     return id;
   },
 
-  removeNotification: (id) => {
-    set((s) => ({ notifications: s.notifications.filter((n) => n.id !== id) }));
+  removeNotification: id => {
+    set(s => ({ notifications: s.notifications.filter(n => n.id !== id) }));
   },
 
   clearAll: () => set({ notifications: [] }),
 
-  success: (message, title) => get().addNotification({ type: "success", message, title }),
-  error: (message, title) => get().addNotification({ type: "error", message, title, duration: 8000 }),
-  warning: (message, title) => get().addNotification({ type: "warning", message, title }),
-  info: (message, title) => get().addNotification({ type: "info", message, title }),
+  success: (message, title) =>
+    get().addNotification({ type: "success", message, title }),
+  error: (message, title) =>
+    get().addNotification({ type: "error", message, title, duration: 8000 }),
+  warning: (message, title) =>
+    get().addNotification({ type: "warning", message, title }),
+  info: (message, title) =>
+    get().addNotification({ type: "info", message, title }),
 }));

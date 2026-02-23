@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Card, Button, Input, Select, Toggle } from "@/shared/components";
 import { AI_PROVIDERS, AUTH_METHODS } from "@/shared/constants/config";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import Link from "next/link";
 
-const providerOptions = Object.values(AI_PROVIDERS).map((p) => ({
+const providerOptions = Object.values(AI_PROVIDERS).map(p => ({
   value: p.id,
   label: p.name,
 }));
 
-const authMethodOptions = Object.values(AUTH_METHODS).map((m) => ({
+const authMethodOptions = Object.values(AUTH_METHODS).map(m => ({
   value: m.id,
   label: m.name,
 }));
@@ -29,9 +29,9 @@ export default function NewProviderPage() {
   const [errors, setErrors] = useState({});
 
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: null }));
+      setErrors(prev => ({ ...prev, [field]: null }));
     }
   };
 
@@ -45,7 +45,7 @@ export default function NewProviderPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -83,7 +83,9 @@ export default function NewProviderPage() {
           <span className="material-symbols-outlined text-lg">arrow_back</span>
           Back to Providers
         </Link>
-        <h1 className="text-3xl font-semibold tracking-tight">Add New Provider</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Add New Provider
+        </h1>
         <p className="text-text-muted mt-2">
           Configure a new AI provider to use with your applications.
         </p>
@@ -91,13 +93,16 @@ export default function NewProviderPage() {
 
       {/* Form */}
       <Card>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-6"
+        >
           {/* Provider Selection */}
           <Select
             label="Provider"
             options={providerOptions}
             value={formData.provider}
-            onChange={(e) => handleChange("provider", e.target.value)}
+            onChange={e => handleChange("provider", e.target.value)}
             placeholder="Select a provider"
             error={errors.provider}
             required
@@ -106,9 +111,7 @@ export default function NewProviderPage() {
           {/* Provider Info */}
           {selectedProvider && (
             <Card.Section className="flex items-center gap-3">
-              <div
-                className="size-10 rounded-lg flex items-center justify-center bg-bg border border-border"
-              >
+              <div className="size-10 rounded-lg flex items-center justify-center bg-bg border border-border">
                 <span
                   className="material-symbols-outlined text-xl"
                   style={{ color: selectedProvider.color }}
@@ -118,9 +121,7 @@ export default function NewProviderPage() {
               </div>
               <div>
                 <p className="font-medium">{selectedProvider.name}</p>
-                <p className="text-sm text-text-muted">
-                  Selected provider
-                </p>
+                <p className="text-sm text-text-muted">Selected provider</p>
               </div>
             </Card.Section>
           )}
@@ -131,7 +132,7 @@ export default function NewProviderPage() {
               Authentication Method <span className="text-red-500">*</span>
             </label>
             <div className="flex gap-3">
-              {authMethodOptions.map((method) => (
+              {authMethodOptions.map(method => (
                 <button
                   key={method.value}
                   type="button"
@@ -158,7 +159,7 @@ export default function NewProviderPage() {
               type="password"
               placeholder="Enter your API key"
               value={formData.apiKey}
-              onChange={(e) => handleChange("apiKey", e.target.value)}
+              onChange={e => handleChange("apiKey", e.target.value)}
               error={errors.apiKey}
               hint="Your API key will be encrypted and stored securely."
               required
@@ -171,7 +172,11 @@ export default function NewProviderPage() {
               <p className="text-sm text-text-muted mb-4">
                 Connect your account using OAuth2 authentication.
               </p>
-              <Button type="button" variant="secondary" icon="link">
+              <Button
+                type="button"
+                variant="secondary"
+                icon="link"
+              >
                 Connect with OAuth2
               </Button>
             </Card.Section>
@@ -182,14 +187,14 @@ export default function NewProviderPage() {
             label="Display Name"
             placeholder="e.g., Production API, Dev Environment"
             value={formData.displayName}
-            onChange={(e) => handleChange("displayName", e.target.value)}
+            onChange={e => handleChange("displayName", e.target.value)}
             hint="Optional. A friendly name to identify this configuration."
           />
 
           {/* Active Toggle */}
           <Toggle
             checked={formData.isActive}
-            onChange={(checked) => handleChange("isActive", checked)}
+            onChange={checked => handleChange("isActive", checked)}
             label="Active"
             description="Enable this provider for use in your applications"
           />
@@ -203,12 +208,24 @@ export default function NewProviderPage() {
 
           {/* Actions */}
           <div className="flex gap-3 pt-4 border-t border-border">
-            <Link href="/dashboard/providers" className="flex-1">
-              <Button type="button" variant="ghost" fullWidth>
+            <Link
+              href="/dashboard/providers"
+              className="flex-1"
+            >
+              <Button
+                type="button"
+                variant="ghost"
+                fullWidth
+              >
                 Cancel
               </Button>
             </Link>
-            <Button type="submit" loading={loading} fullWidth className="flex-1">
+            <Button
+              type="submit"
+              loading={loading}
+              fullWidth
+              className="flex-1"
+            >
               Create Provider
             </Button>
           </div>
@@ -217,4 +234,3 @@ export default function NewProviderPage() {
     </div>
   );
 }
-

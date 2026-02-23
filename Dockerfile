@@ -10,14 +10,17 @@ RUN npm run build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-LABEL org.opencontainers.image.title="9router"
+LABEL org.opencontainers.image.title="involvex-claude-router" \
+      org.opencontainers.image.description="Involvex's Claude Router Web dashboard" \
+      org.opencontainers.image.version="0.2.95" \
+      org.opencontainers.image.authors="Involvex"
 
 ENV NODE_ENV=production
 ENV PORT=20128
 ENV HOSTNAME=0.0.0.0
 
 # Runtime writable location for localDb when DATA_DIR is configured to /app/data
-RUN mkdir -p /app/data
+RUN mkdir -p /involvex-claude-router-data
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/static ./.next/static

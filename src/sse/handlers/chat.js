@@ -5,15 +5,18 @@ import {
   extractApiKey,
   isValidApiKey,
 } from "../services/auth.js";
-import { getSettings } from "@/lib/localDb";
+import {
+  updateProviderCredentials,
+  checkAndRefreshToken,
+} from "../services/tokenRefresh.js";
+import { errorResponse, unavailableResponse } from "open-sse/utils/error.js";
+import { getProjectIdForConnection } from "open-sse/services/projectId.js";
 import { getModelInfo, getComboModels } from "../services/model.js";
 import { handleChatCore } from "open-sse/handlers/chatCore.js";
-import { errorResponse, unavailableResponse } from "open-sse/utils/error.js";
 import { handleComboChat } from "open-sse/services/combo.js";
 import { HTTP_STATUS } from "open-sse/config/constants.js";
+import { getSettings } from "@/lib/localDb";
 import * as log from "../utils/logger.js";
-import { updateProviderCredentials, checkAndRefreshToken } from "../services/tokenRefresh.js";
-import { getProjectIdForConnection } from "open-sse/services/projectId.js";
 
 /**
  * Handle chat completion request
@@ -28,26 +31,29 @@ export async function handleChat(request, clientRawRequest = null) {
     log.warn("CHAT", "Invalid JSON body");
     return errorResponse(HTTP_STATUS.BAD_REQUEST, "Invalid JSON body");
   }
-  
+
   // Build clientRawRequest for logging (if not provided)
   if (!clientRawRequest) {
     const url = new URL(request.url);
     clientRawRequest = {
       endpoint: url.pathname,
       body,
-      headers: Object.fromEntries(request.headers.entries())
+      headers: Object.fromEntries(request.headers.entries()),
     };
   }
 
   // Log request endpoint and model
   const url = new URL(request.url);
   const modelStr = body.model;
-  
+
   // Count messages (support both messages[] and input[] formats)
   const msgCount = body.messages?.length || body.input?.length || 0;
   const toolCount = body.tools?.length || 0;
   const effort = body.reasoning_effort || body.reasoning?.effort || null;
-  log.request("POST", `${url.pathname} | ${modelStr} | ${msgCount} msgs${toolCount ? ` | ${toolCount} tools` : ""}${effort ? ` | effort=${effort}` : ""}`);
+  log.request(
+    "POST",
+    `${url.pathname} | ${modelStr} | ${msgCount} msgs${toolCount ? ` | ${toolCount} tools` : ""}${effort ? ` | effort=${effort}` : ""}`,
+  );
 
   // Log API key (masked)
   const authHeader = request.headers.get("Authorization");
@@ -85,19 +91,32 @@ export async function handleChat(request, clientRawRequest = null) {
     return handleComboChat({
       body,
       models: comboModels,
-      handleSingleModel: (b, m) => handleSingleModelChat(b, m, clientRawRequest, request, apiKey),
-      log
+      handleSingleModel: (b, m) =>
+        handleSingleModelChat(b, m, clientRawRequest, request, apiKey),
+      log,
     });
   }
 
   // Single model request
-  return handleSingleModelChat(body, modelStr, clientRawRequest, request, apiKey);
+  return handleSingleModelChat(
+    body,
+    modelStr,
+    clientRawRequest,
+    request,
+    apiKey,
+  );
 }
 
 /**
  * Handle single model chat request
  */
-async function handleSingleModelChat(body, modelStr, clientRawRequest = null, request = null, apiKey = null) {
+async function handleSingleModelChat(
+  body,
+  modelStr,
+  clientRawRequest = null,
+  request = null,
+  apiKey = null,
+) {
   const modelInfo = await getModelInfo(modelStr);
   if (!modelInfo.provider) {
     log.warn("CHAT", "Invalid model format", { model: modelStr });
@@ -122,37 +141,69 @@ async function handleSingleModelChat(body, modelStr, clientRawRequest = null, re
   let lastStatus = null;
 
   while (true) {
-    const credentials = await getProviderCredentials(provider, excludeConnectionId, model);
+    const credentials = await getProviderCredentials(
+      provider,
+      excludeConnectionId,
+      model,
+    );
 
     // All accounts unavailable
     if (!credentials || credentials.allRateLimited) {
       if (credentials?.allRateLimited) {
         const errorMsg = lastError || credentials.lastError || "Unavailable";
-        const status = lastStatus || Number(credentials.lastErrorCode) || HTTP_STATUS.SERVICE_UNAVAILABLE;
-        log.warn("CHAT", `[${provider}/${model}] ${errorMsg} (${credentials.retryAfterHuman})`);
-        return unavailableResponse(status, `[${provider}/${model}] ${errorMsg}`, credentials.retryAfter, credentials.retryAfterHuman);
+        const status =
+          lastStatus ||
+          Number(credentials.lastErrorCode) ||
+          HTTP_STATUS.SERVICE_UNAVAILABLE;
+        log.warn(
+          "CHAT",
+          `[${provider}/${model}] ${errorMsg} (${credentials.retryAfterHuman})`,
+        );
+        return unavailableResponse(
+          status,
+          `[${provider}/${model}] ${errorMsg}`,
+          credentials.retryAfter,
+          credentials.retryAfterHuman,
+        );
       }
       if (!excludeConnectionId) {
         log.error("AUTH", `No credentials for provider: ${provider}`);
-        return errorResponse(HTTP_STATUS.BAD_REQUEST, `No credentials for provider: ${provider}`);
+        return errorResponse(
+          HTTP_STATUS.BAD_REQUEST,
+          `No credentials for provider: ${provider}`,
+        );
       }
       log.warn("CHAT", "No more accounts available", { provider });
-      return errorResponse(lastStatus || HTTP_STATUS.SERVICE_UNAVAILABLE, lastError || "All accounts unavailable");
+      return errorResponse(
+        lastStatus || HTTP_STATUS.SERVICE_UNAVAILABLE,
+        lastError || "All accounts unavailable",
+      );
     }
 
     // Log account selection
     const accountId = credentials.connectionId.slice(0, 8);
     log.info("AUTH", `Using ${provider} account: ${accountId}...`);
 
-    const refreshedCredentials = await checkAndRefreshToken(provider, credentials);
+    const refreshedCredentials = await checkAndRefreshToken(
+      provider,
+      credentials,
+    );
 
     // Ensure real project ID is available for providers that need it (P0 fix: cold miss)
-    if ((provider === "antigravity" || provider === "gemini-cli") && !refreshedCredentials.projectId) {
-      const pid = await getProjectIdForConnection(credentials.connectionId, refreshedCredentials.accessToken);
+    if (
+      (provider === "antigravity" || provider === "gemini-cli") &&
+      !refreshedCredentials.projectId
+    ) {
+      const pid = await getProjectIdForConnection(
+        credentials.connectionId,
+        refreshedCredentials.accessToken,
+      );
       if (pid) {
         refreshedCredentials.projectId = pid;
         // Persist to DB in background so subsequent requests have it immediately
-        updateProviderCredentials(credentials.connectionId, { projectId: pid }).catch(() => { });
+        updateProviderCredentials(credentials.connectionId, {
+          projectId: pid,
+        }).catch(() => {});
       }
     }
 
@@ -166,26 +217,35 @@ async function handleSingleModelChat(body, modelStr, clientRawRequest = null, re
       connectionId: credentials.connectionId,
       userAgent,
       apiKey,
-      onCredentialsRefreshed: async (newCreds) => {
+      onCredentialsRefreshed: async newCreds => {
         await updateProviderCredentials(credentials.connectionId, {
           accessToken: newCreds.accessToken,
           refreshToken: newCreds.refreshToken,
           providerSpecificData: newCreds.providerSpecificData,
-          testStatus: "active"
+          testStatus: "active",
         });
       },
       onRequestSuccess: async () => {
         await clearAccountError(credentials.connectionId, credentials);
-      }
+      },
     });
-    
+
     if (result.success) return result.response;
 
     // Mark account unavailable (auto-calculates cooldown with exponential backoff)
-    const { shouldFallback } = await markAccountUnavailable(credentials.connectionId, result.status, result.error, provider, model);
-    
+    const { shouldFallback } = await markAccountUnavailable(
+      credentials.connectionId,
+      result.status,
+      result.error,
+      provider,
+      model,
+    );
+
     if (shouldFallback) {
-      log.warn("AUTH", `Account ${accountId}... unavailable (${result.status}), trying fallback`);
+      log.warn(
+        "AUTH",
+        `Account ${accountId}... unavailable (${result.status}), trying fallback`,
+      );
       excludeConnectionId = credentials.connectionId;
       lastError = result.error;
       lastStatus = result.status;

@@ -52,7 +52,4 @@ export {
 } from "./providers.js";
 
 // Re-export from models.js for backward compatibility
-export {
-  PROVIDER_MODELS,
-  AI_MODELS,
-} from "./models.js";
+export { PROVIDER_MODELS, AI_MODELS } from "./models.js";

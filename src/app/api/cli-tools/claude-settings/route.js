@@ -15,7 +15,6 @@ const getClaudeSettingsPath = () => {
   return path.join(homeDir, ".claude", "settings.json");
 };
 
-
 // Check if claude CLI is installed
 const checkClaudeInstalled = async () => {
   try {
@@ -46,7 +45,7 @@ const readSettings = async () => {
 export async function GET() {
   try {
     const isInstalled = await checkClaudeInstalled();
-    
+
     if (!isInstalled) {
       return NextResponse.json({
         installed: false,
@@ -56,7 +55,7 @@ export async function GET() {
     }
 
     const settings = await readSettings();
-    const has9Router = !!(settings?.env?.ANTHROPIC_BASE_URL);
+    const has9Router = !!settings?.env?.ANTHROPIC_BASE_URL;
 
     return NextResponse.json({
       installed: true,
@@ -68,7 +67,7 @@ export async function GET() {
     console.log("Error checking claude settings:", error);
     return NextResponse.json(
       { error: "Failed to check claude settings" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -77,11 +76,11 @@ export async function GET() {
 export async function POST(request) {
   try {
     const { env } = await request.json();
-    
+
     if (!env || typeof env !== "object") {
       return NextResponse.json(
         { error: "Invalid env object" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -104,8 +103,8 @@ export async function POST(request) {
 
     // Normalize ANTHROPIC_BASE_URL to ensure /v1 suffix
     if (env.ANTHROPIC_BASE_URL) {
-      env.ANTHROPIC_BASE_URL = env.ANTHROPIC_BASE_URL.endsWith("/v1") 
-        ? env.ANTHROPIC_BASE_URL 
+      env.ANTHROPIC_BASE_URL = env.ANTHROPIC_BASE_URL.endsWith("/v1")
+        ? env.ANTHROPIC_BASE_URL
         : `${env.ANTHROPIC_BASE_URL}/v1`;
     }
 
@@ -113,7 +112,7 @@ export async function POST(request) {
     const newSettings = {
       ...currentSettings,
       env: {
-        ...(currentSettings.env || {}),
+        ...currentSettings.env,
         ...env,
       },
     };
@@ -129,7 +128,7 @@ export async function POST(request) {
     console.log("Error updating claude settings:", error);
     return NextResponse.json(
       { error: "Failed to update claude settings" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -166,10 +165,10 @@ export async function DELETE() {
 
     // Remove specified env fields
     if (currentSettings.env) {
-      RESET_ENV_KEYS.forEach((key) => {
+      RESET_ENV_KEYS.forEach(key => {
         delete currentSettings.env[key];
       });
-      
+
       // Clean up empty env object
       if (Object.keys(currentSettings.env).length === 0) {
         delete currentSettings.env;
@@ -187,8 +186,7 @@ export async function DELETE() {
     console.log("Error resetting claude settings:", error);
     return NextResponse.json(
       { error: "Failed to reset claude settings" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

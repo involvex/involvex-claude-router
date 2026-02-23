@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import { Card, Button, Select } from "@/shared/components";
+import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 
 // Dynamically import Monaco Editor (client-side only)
@@ -51,7 +51,7 @@ export default function TranslatorPage() {
   });
   const [loading, setLoading] = useState({});
 
-  const toggleExpand = (stepId) => {
+  const toggleExpand = stepId => {
     setExpanded({ ...expanded, [stepId]: !expanded[stepId] });
   };
 
@@ -65,11 +65,12 @@ export default function TranslatorPage() {
       }
 
       const body = JSON.parse(step4Content);
-      
+
       // Get credentials (you may need to prompt user or use stored credentials)
       const credentials = {
-        accessToken: prompt("Enter access token (or leave empty):") || undefined,
-        apiKey: prompt("Enter API key (or leave empty):") || undefined
+        accessToken:
+          prompt("Enter access token (or leave empty):") || undefined,
+        apiKey: prompt("Enter API key (or leave empty):") || undefined,
       };
 
       const res = await fetch("/api/translator/send", {
@@ -78,29 +79,29 @@ export default function TranslatorPage() {
         body: JSON.stringify({
           provider,
           body,
-          credentials
-        })
+          credentials,
+        }),
       });
 
       const data = await res.json();
-      
+
       if (data.success) {
         // Update step 5 with provider response
         setSteps({ ...steps, 5: data.body });
-        
+
         // Save step 5
         await fetch("/api/translator/save", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             file: "5_res_provider.txt",
-            content: data.body
-          })
+            content: data.body,
+          }),
         });
-        
+
         // Expand step 5
         setExpanded({ ...expanded, 4: false, 5: true });
-        
+
         alert(`Request sent! Status: ${data.status} ${data.statusText}`);
       } else {
         alert(data.error || "Failed to send request");
@@ -111,7 +112,7 @@ export default function TranslatorPage() {
     setLoading({ ...loading, "send-provider": false });
   };
 
-  const handleLoad = async (stepId) => {
+  const handleLoad = async stepId => {
     setLoading({ ...loading, [`load-${stepId}`]: true });
     try {
       const step = STEPS.find(s => s.id === stepId);
@@ -128,11 +129,11 @@ export default function TranslatorPage() {
     setLoading({ ...loading, [`load-${stepId}`]: false });
   };
 
-  const handleLean = (stepId) => {
+  const handleLean = stepId => {
     try {
       const content = steps[stepId];
       if (!content) return;
-      
+
       const obj = JSON.parse(content);
       const leaned = leanJSON(obj);
       setSteps({ ...steps, [stepId]: JSON.stringify(leaned, null, 2) });
@@ -141,11 +142,11 @@ export default function TranslatorPage() {
     }
   };
 
-  const handleFormat = (stepId) => {
+  const handleFormat = stepId => {
     try {
       const content = steps[stepId];
       if (!content) return;
-      
+
       const obj = JSON.parse(content);
       setSteps({ ...steps, [stepId]: JSON.stringify(obj, null, 2) });
     } catch (err) {
@@ -153,11 +154,11 @@ export default function TranslatorPage() {
     }
   };
 
-  const handleCopy = async (stepId) => {
+  const handleCopy = async stepId => {
     try {
       const content = steps[stepId];
       if (!content) return;
-      
+
       await navigator.clipboard.writeText(content);
       alert("Copied to clipboard!");
     } catch (err) {
@@ -165,7 +166,7 @@ export default function TranslatorPage() {
     }
   };
 
-  const handleUpdate = async (stepId) => {
+  const handleUpdate = async stepId => {
     setLoading({ ...loading, [`update-${stepId}`]: true });
     try {
       const step = STEPS.find(s => s.id === stepId);
@@ -174,8 +175,8 @@ export default function TranslatorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           file: step.file,
-          content: steps[stepId]
-        })
+          content: steps[stepId],
+        }),
       });
       const data = await res.json();
       if (data.success) {
@@ -189,7 +190,7 @@ export default function TranslatorPage() {
     setLoading({ ...loading, [`update-${stepId}`]: false });
   };
 
-  const handleSubmit = async (stepId) => {
+  const handleSubmit = async stepId => {
     setLoading({ ...loading, [`submit-${stepId}`]: true });
     try {
       // 1. Save current step
@@ -199,8 +200,8 @@ export default function TranslatorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           file: currentStep.file,
-          content: steps[stepId]
-        })
+          content: steps[stepId],
+        }),
       });
 
       // Step 4: Send to provider instead of translate
@@ -210,10 +211,10 @@ export default function TranslatorPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             provider,
-            body: JSON.parse(steps[4])
-          })
+            body: JSON.parse(steps[4]),
+          }),
         });
-        
+
         if (!res.ok) {
           const errorData = await res.json();
           alert(errorData.error || "Failed to send request");
@@ -225,27 +226,27 @@ export default function TranslatorPage() {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let fullResponse = "";
-        
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          
+
           const chunk = decoder.decode(value, { stream: true });
           fullResponse += chunk;
         }
-        
+
         // Save to step 5
         setSteps({ ...steps, 5: fullResponse });
-        
+
         await fetch("/api/translator/save", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             file: "5_res_provider.txt",
-            content: fullResponse
-          })
+            content: fullResponse,
+          }),
         });
-        
+
         setExpanded({ ...expanded, [stepId]: false, 5: true });
         alert("Request sent to provider successfully!");
       } else {
@@ -256,27 +257,27 @@ export default function TranslatorPage() {
           body: JSON.stringify({
             step: stepId,
             provider,
-            body: JSON.parse(steps[stepId])
-          })
+            body: JSON.parse(steps[stepId]),
+          }),
         });
         const data = await res.json();
-        
+
         if (data.success) {
           const nextStepId = stepId + 1;
           const nextContent = JSON.stringify(data.result, null, 2);
-          
+
           setSteps({ ...steps, [nextStepId]: nextContent });
-          
+
           const nextStep = STEPS.find(s => s.id === nextStepId);
           await fetch("/api/translator/save", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               file: nextStep.file,
-              content: nextContent
-            })
+              content: nextContent,
+            }),
           });
-          
+
           setExpanded({ ...expanded, [stepId]: false, [nextStepId]: true });
         } else {
           alert(data.error || "Translation failed");
@@ -292,7 +293,9 @@ export default function TranslatorPage() {
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-text-main">Translator Debug</h1>
+          <h1 className="text-2xl font-bold text-text-main">
+            Translator Debug
+          </h1>
           <p className="text-sm text-text-muted mt-1">
             Debug translation flow between formats
           </p>
@@ -308,11 +311,11 @@ export default function TranslatorPage() {
             </label>
             <Select
               value={provider}
-              onChange={(e) => setProvider(e.target.value)}
+              onChange={e => setProvider(e.target.value)}
               options={PROVIDERS}
             />
           </div>
-          
+
           <div className="pt-6">
             <Button
               icon="send"
@@ -326,7 +329,7 @@ export default function TranslatorPage() {
       </Card>
 
       {/* Steps */}
-      {STEPS.map((step) => (
+      {STEPS.map(step => (
         <Card key={step.id}>
           <div className="p-4 space-y-3">
             {/* Header with expand/collapse */}
@@ -341,7 +344,9 @@ export default function TranslatorPage() {
                 <h3 className="text-sm font-semibold text-text-main">
                   {step.id}. {step.name}
                 </h3>
-                <span className="text-xs text-text-muted ml-2">{step.file}</span>
+                <span className="text-xs text-text-muted ml-2">
+                  {step.file}
+                </span>
                 {steps[step.id] && (
                   <span className="text-xs text-green-500 ml-2">
                     ({steps[step.id].length} chars)
@@ -380,7 +385,9 @@ export default function TranslatorPage() {
                     height="400px"
                     defaultLanguage="json"
                     value={steps[step.id]}
-                    onChange={(value) => setSteps({ ...steps, [step.id]: value || "" })}
+                    onChange={value =>
+                      setSteps({ ...steps, [step.id]: value || "" })
+                    }
                     theme="vs-dark"
                     options={{
                       minimap: { enabled: false },
@@ -457,13 +464,15 @@ function leanJSON(obj, maxTextLen = 2222) {
   // Recursive function to truncate all strings
   function truncateDeep(item) {
     if (typeof item === "string") {
-      return item.length > maxTextLen ? item.slice(0, maxTextLen) + "..." : item;
+      return item.length > maxTextLen
+        ? item.slice(0, maxTextLen) + "..."
+        : item;
     }
-    
+
     if (Array.isArray(item)) {
       return item.map(truncateDeep);
     }
-    
+
     if (item && typeof item === "object") {
       const truncated = {};
       for (const key in item) {
@@ -471,7 +480,7 @@ function leanJSON(obj, maxTextLen = 2222) {
       }
       return truncated;
     }
-    
+
     return item;
   }
 

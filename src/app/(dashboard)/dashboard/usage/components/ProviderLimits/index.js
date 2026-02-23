@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import Image from "next/image";
-import ProviderLimitCard from "./ProviderLimitCard";
-import QuotaTable from "./QuotaTable";
-import { parseQuotaData, calculatePercentage } from "./utils";
-import Card from "@/shared/components/Card";
-import Button from "@/shared/components/Button";
-import { CardSkeleton } from "@/shared/components/Loading";
 import { USAGE_SUPPORTED_PROVIDERS } from "@/shared/constants/providers";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { parseQuotaData, calculatePercentage } from "./utils";
+import { CardSkeleton } from "@/shared/components/Loading";
+import ProviderLimitCard from "./ProviderLimitCard";
+import Button from "@/shared/components/Button";
+import Card from "@/shared/components/Card";
+import QuotaTable from "./QuotaTable";
+import Image from "next/image";
 
 const REFRESH_INTERVAL_MS = 60000; // 60 seconds
 
@@ -31,7 +31,7 @@ export default function ProviderLimits() {
     try {
       const response = await fetch("/api/providers/client");
       if (!response.ok) throw new Error("Failed to fetch connections");
-      
+
       const data = await response.json();
       const connectionList = data.connections || [];
       setConnections(connectionList);
@@ -45,28 +45,35 @@ export default function ProviderLimits() {
 
   // Fetch quota for a specific connection
   const fetchQuota = useCallback(async (connectionId, provider) => {
-    setLoading((prev) => ({ ...prev, [connectionId]: true }));
-    setErrors((prev) => ({ ...prev, [connectionId]: null }));
+    setLoading(prev => ({ ...prev, [connectionId]: true }));
+    setErrors(prev => ({ ...prev, [connectionId]: null }));
 
     try {
-      console.log(`[ProviderLimits] Fetching quota for ${provider} (${connectionId})`);
+      console.log(
+        `[ProviderLimits] Fetching quota for ${provider} (${connectionId})`,
+      );
       const response = await fetch(`/api/usage/${connectionId}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         const errorMsg = errorData.error || response.statusText;
-        
+
         // Handle different error types gracefully
         if (response.status === 404) {
           // Connection not found - skip silently
-          console.warn(`[ProviderLimits] Connection not found for ${provider}, skipping`);
+          console.warn(
+            `[ProviderLimits] Connection not found for ${provider}, skipping`,
+          );
           return;
         }
-        
+
         if (response.status === 401) {
           // Auth error - show message instead of throwing
-          console.warn(`[ProviderLimits] Auth error for ${provider}:`, errorMsg);
-          setQuotaData((prev) => ({
+          console.warn(
+            `[ProviderLimits] Auth error for ${provider}:`,
+            errorMsg,
+          );
+          setQuotaData(prev => ({
             ...prev,
             [connectionId]: {
               quotas: [],
@@ -75,17 +82,17 @@ export default function ProviderLimits() {
           }));
           return;
         }
-        
+
         throw new Error(`HTTP ${response.status}: ${errorMsg}`);
       }
 
       const data = await response.json();
       console.log(`[ProviderLimits] Got quota for ${provider}:`, data);
-      
+
       // Parse quota data using provider-specific parser
       const parsedQuotas = parseQuotaData(provider, data);
-      
-      setQuotaData((prev) => ({
+
+      setQuotaData(prev => ({
         ...prev,
         [connectionId]: {
           quotas: parsedQuotas,
@@ -95,13 +102,16 @@ export default function ProviderLimits() {
         },
       }));
     } catch (error) {
-      console.error(`[ProviderLimits] Error fetching quota for ${provider} (${connectionId}):`, error);
-      setErrors((prev) => ({
+      console.error(
+        `[ProviderLimits] Error fetching quota for ${provider} (${connectionId}):`,
+        error,
+      );
+      setErrors(prev => ({
         ...prev,
         [connectionId]: error.message || "Failed to fetch quota",
       }));
     } finally {
-      setLoading((prev) => ({ ...prev, [connectionId]: false }));
+      setLoading(prev => ({ ...prev, [connectionId]: false }));
     }
   }, []);
 
@@ -111,7 +121,7 @@ export default function ProviderLimits() {
       await fetchQuota(connectionId, provider);
       setLastUpdated(new Date());
     },
-    [fetchQuota]
+    [fetchQuota],
   );
 
   // Refresh all providers
@@ -123,15 +133,17 @@ export default function ProviderLimits() {
 
     try {
       const conns = await fetchConnections();
-      
+
       // Filter only supported OAuth providers
       const oauthConnections = conns.filter(
-        (conn) => USAGE_SUPPORTED_PROVIDERS.includes(conn.provider) && conn.authType === "oauth"
+        conn =>
+          USAGE_SUPPORTED_PROVIDERS.includes(conn.provider) &&
+          conn.authType === "oauth",
       );
-      
+
       // Fetch quota for supported OAuth connections only
       await Promise.all(
-        oauthConnections.map((conn) => fetchQuota(conn.id, conn.provider))
+        oauthConnections.map(conn => fetchQuota(conn.id, conn.provider)),
       );
 
       setLastUpdated(new Date());
@@ -174,7 +186,7 @@ export default function ProviderLimits() {
 
     // Countdown interval
     countdownRef.current = setInterval(() => {
-      setCountdown((prev) => {
+      setCountdown(prev => {
         if (prev <= 1) return 60;
         return prev - 1;
       });
@@ -202,7 +214,7 @@ export default function ProviderLimits() {
         // Resume auto-refresh when tab becomes visible
         intervalRef.current = setInterval(refreshAll, REFRESH_INTERVAL_MS);
         countdownRef.current = setInterval(() => {
-          setCountdown((prev) => (prev <= 1 ? 60 : prev - 1));
+          setCountdown(prev => (prev <= 1 ? 60 : prev - 1));
         }, 1000);
       }
     };
@@ -230,13 +242,15 @@ export default function ProviderLimits() {
   }, [lastUpdated]);
 
   // Filter only supported providers
-  const filteredConnections = connections.filter((conn) =>
-    USAGE_SUPPORTED_PROVIDERS.includes(conn.provider) && conn.authType === "oauth"
+  const filteredConnections = connections.filter(
+    conn =>
+      USAGE_SUPPORTED_PROVIDERS.includes(conn.provider) &&
+      conn.authType === "oauth",
   );
 
   // Sort providers: antigravity first, then kiro, then others alphabetically
   const sortedConnections = [...filteredConnections].sort((a, b) => {
-    const getProviderPriority = (provider) => {
+    const getProviderPriority = provider => {
       if (provider === "antigravity") return 1;
       if (provider === "kiro") return 2;
       return 3;
@@ -256,18 +270,18 @@ export default function ProviderLimits() {
   // Calculate summary stats
   const totalProviders = sortedConnections.length;
   const activeWithLimits = Object.values(quotaData).filter(
-    (data) => data?.quotas?.length > 0
+    data => data?.quotas?.length > 0,
   ).length;
-  
+
   // Count low quotas (remaining < 30%)
   const lowQuotasCount = Object.values(quotaData).reduce((count, data) => {
     if (!data?.quotas) return count;
-    
-    const hasLowQuota = data.quotas.some((quota) => {
+
+    const hasLowQuota = data.quotas.some(quota => {
       const percentage = calculatePercentage(quota.used, quota.total);
       return percentage < 30 && quota.total > 0;
     });
-    
+
     return count + (hasLowQuota ? 1 : 0);
   }, 0);
 
@@ -297,7 +311,8 @@ export default function ProviderLimits() {
             No Providers Connected
           </h3>
           <p className="mt-2 text-sm text-text-muted max-w-md mx-auto">
-            Connect to providers with OAuth to track your API quota limits and usage.
+            Connect to providers with OAuth to track your API quota limits and
+            usage.
           </p>
         </div>
       </Card>
@@ -320,7 +335,7 @@ export default function ProviderLimits() {
         <div className="flex items-center gap-2">
           {/* Auto-refresh toggle */}
           <button
-            onClick={() => setAutoRefresh((prev) => !prev)}
+            onClick={() => setAutoRefresh(prev => !prev)}
             className="flex items-center gap-2 px-3 py-2 rounded-lg border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
             title={autoRefresh ? "Disable auto-refresh" : "Enable auto-refresh"}
           >
@@ -353,14 +368,17 @@ export default function ProviderLimits() {
 
       {/* Provider Cards Grid */}
       <div className="flex flex-col gap-4">
-        {sortedConnections.map((conn) => {
+        {sortedConnections.map(conn => {
           const quota = quotaData[conn.id];
           const isLoading = loading[conn.id];
           const error = errors[conn.id];
 
           // Use table layout for all providers
           return (
-            <Card key={conn.id} padding="none">
+            <Card
+              key={conn.id}
+              padding="none"
+            >
               <div className="p-6 border-b border-black/10 dark:border-white/10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -383,14 +401,16 @@ export default function ProviderLimits() {
                       )}
                     </div>
                   </div>
-                  
+
                   <button
                     onClick={() => refreshProvider(conn.id, conn.provider)}
                     disabled={isLoading}
                     className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
                     title="Refresh quota"
                   >
-                    <span className={`material-symbols-outlined text-[20px] text-text-muted ${isLoading ? "animate-spin" : ""}`}>
+                    <span
+                      className={`material-symbols-outlined text-[20px] text-text-muted ${isLoading ? "animate-spin" : ""}`}
+                    >
                       refresh
                     </span>
                   </button>

@@ -38,21 +38,29 @@ export default function Select({
             error
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
               : "",
-            selectClassName
+            selectClassName,
           )}
           {...props}
         >
-          <option value="" disabled>
+          <option
+            value=""
+            disabled
+          >
             {placeholder}
           </option>
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
+          {options.map(option => (
+            <option
+              key={option.value}
+              value={option.value}
+            >
               {option.label}
             </option>
           ))}
         </select>
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-text-muted">
-          <span className="material-symbols-outlined text-[20px]">expand_more</span>
+          <span className="material-symbols-outlined text-[20px]">
+            expand_more
+          </span>
         </div>
       </div>
       {error && (
@@ -61,10 +69,7 @@ export default function Select({
           {error}
         </p>
       )}
-      {hint && !error && (
-        <p className="text-xs text-text-muted">{hint}</p>
-      )}
+      {hint && !error && <p className="text-xs text-text-muted">{hint}</p>}
     </div>
   );
 }
-

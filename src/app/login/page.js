@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Card, Button, Input } from "@/shared/components";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export default function LoginPage() {
   const [password, setPassword] = useState("");
@@ -15,7 +15,8 @@ export default function LoginPage() {
     async function checkAuth() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-      const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+      const baseUrl =
+        typeof window !== "undefined" ? window.location.origin : "";
 
       try {
         const res = await fetch(`${baseUrl}/api/settings`, {
@@ -43,7 +44,7 @@ export default function LoginPage() {
     checkAuth();
   }, [router]);
 
-  const handleLogin = async (e) => {
+  const handleLogin = async e => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -86,18 +87,23 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-primary mb-2">9Router</h1>
-          <p className="text-text-muted">Enter your password to access the dashboard</p>
+          <p className="text-text-muted">
+            Enter your password to access the dashboard
+          </p>
         </div>
 
         <Card>
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+          <form
+            onSubmit={handleLogin}
+            className="flex flex-col gap-4"
+          >
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">Password</label>
               <Input
                 type="password"
                 placeholder="Enter password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 required
                 autoFocus
               />
@@ -114,7 +120,8 @@ export default function LoginPage() {
             </Button>
 
             <p className="text-xs text-center text-text-muted mt-2">
-              Default password is <code className="bg-sidebar px-1 rounded">123456</code>
+              Default password is{" "}
+              <code className="bg-sidebar px-1 rounded">123456</code>
             </p>
           </form>
         </Card>

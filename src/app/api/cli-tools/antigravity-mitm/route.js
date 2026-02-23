@@ -1,8 +1,16 @@
 "use server";
 
-import { NextResponse } from "next/server";
-import { getMitmStatus, startMitm, stopMitm, getCachedPassword, setCachedPassword, loadEncryptedPassword, initDbHooks } from "@/mitm/manager";
+import {
+  getMitmStatus,
+  startMitm,
+  stopMitm,
+  getCachedPassword,
+  setCachedPassword,
+  loadEncryptedPassword,
+  initDbHooks,
+} from "@/mitm/manager";
 import { getSettings, updateSettings } from "@/lib/localDb";
+import { NextResponse } from "next/server";
 
 // Inject DB hooks so manager.js (CJS) can persist settings without dynamic import issues
 initDbHooks(getSettings, updateSettings);
@@ -20,7 +28,10 @@ export async function GET() {
     });
   } catch (error) {
     console.log("Error getting MITM status:", error.message);
-    return NextResponse.json({ error: "Failed to get MITM status" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to get MITM status" },
+      { status: 500 },
+    );
   }
 }
 
@@ -30,12 +41,16 @@ export async function POST(request) {
     const { apiKey, sudoPassword } = await request.json();
     const isWin = process.platform === "win32";
     // Priority: request password → in-memory cache → encrypted db
-    const pwd = sudoPassword || getCachedPassword() || await loadEncryptedPassword() || "";
+    const pwd =
+      sudoPassword ||
+      getCachedPassword() ||
+      (await loadEncryptedPassword()) ||
+      "";
 
     if (!apiKey || (!isWin && !pwd)) {
       return NextResponse.json(
         { error: isWin ? "Missing apiKey" : "Missing apiKey or sudoPassword" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -49,7 +64,10 @@ export async function POST(request) {
     });
   } catch (error) {
     console.log("Error starting MITM:", error.message);
-    return NextResponse.json({ error: error.message || "Failed to start MITM proxy" }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Failed to start MITM proxy" },
+      { status: 500 },
+    );
   }
 }
 
@@ -58,10 +76,17 @@ export async function DELETE(request) {
   try {
     const { sudoPassword } = await request.json();
     const isWin = process.platform === "win32";
-    const pwd = sudoPassword || getCachedPassword() || await loadEncryptedPassword() || "";
+    const pwd =
+      sudoPassword ||
+      getCachedPassword() ||
+      (await loadEncryptedPassword()) ||
+      "";
 
     if (!isWin && !pwd) {
-      return NextResponse.json({ error: "Missing sudoPassword" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing sudoPassword" },
+        { status: 400 },
+      );
     }
 
     await stopMitm(pwd);
@@ -70,6 +95,9 @@ export async function DELETE(request) {
     return NextResponse.json({ success: true, running: false });
   } catch (error) {
     console.log("Error stopping MITM:", error.message);
-    return NextResponse.json({ error: error.message || "Failed to stop MITM proxy" }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Failed to stop MITM proxy" },
+      { status: 500 },
+    );
   }
 }

@@ -1,15 +1,15 @@
 "use client";
 
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { THEME_CONFIG } from "@/shared/constants/config";
+import { persist } from "zustand/middleware";
+import { create } from "zustand";
 
 const useThemeStore = create(
   persist(
     (set, get) => ({
       theme: THEME_CONFIG.defaultTheme,
 
-      setTheme: (theme) => {
+      setTheme: theme => {
         set({ theme });
         applyTheme(theme);
       },
@@ -28,8 +28,8 @@ const useThemeStore = create(
     }),
     {
       name: THEME_CONFIG.storageKey,
-    }
-  )
+    },
+  ),
 );
 
 // Apply theme to document
@@ -51,4 +51,3 @@ function applyTheme(theme) {
 }
 
 export default useThemeStore;
-

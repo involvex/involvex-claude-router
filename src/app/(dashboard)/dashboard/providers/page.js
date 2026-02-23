@@ -1,31 +1,56 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import PropTypes from "prop-types";
-import { Card, CardSkeleton, Badge, Button, Input, Modal, Select, Toggle } from "@/shared/components";
+import {
+  FREE_PROVIDERS,
+  OPENAI_COMPATIBLE_PREFIX,
+  ANTHROPIC_COMPATIBLE_PREFIX,
+} from "@/shared/constants/providers";
+import {
+  Card,
+  CardSkeleton,
+  Badge,
+  Button,
+  Input,
+  Modal,
+  Select,
+  Toggle,
+} from "@/shared/components";
 import { OAUTH_PROVIDERS, APIKEY_PROVIDERS } from "@/shared/constants/config";
-import { FREE_PROVIDERS, OPENAI_COMPATIBLE_PREFIX, ANTHROPIC_COMPATIBLE_PREFIX } from "@/shared/constants/providers";
-import Link from "next/link";
-import { getErrorCode, getRelativeTime } from "@/shared/utils";
-import { useNotificationStore } from "@/store/notificationStore";
 import ModelAvailabilityBadge from "./components/ModelAvailabilityBadge";
+import { useNotificationStore } from "@/store/notificationStore";
+import { getErrorCode, getRelativeTime } from "@/shared/utils";
+import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import Image from "next/image";
+import Link from "next/link";
 
 function getStatusDisplay(connected, error, errorCode) {
   const parts = [];
   if (connected > 0) {
     parts.push(
-      <Badge key="connected" variant="success" size="sm" dot>
+      <Badge
+        key="connected"
+        variant="success"
+        size="sm"
+        dot
+      >
         {connected} Connected
-      </Badge>
+      </Badge>,
     );
   }
   if (error > 0) {
-    const errText = errorCode ? `${error} Error (${errorCode})` : `${error} Error`;
+    const errText = errorCode
+      ? `${error} Error (${errorCode})`
+      : `${error} Error`;
     parts.push(
-      <Badge key="error" variant="error" size="sm" dot>
+      <Badge
+        key="error"
+        variant="error"
+        size="sm"
+        dot
+      >
         {errText}
-      </Badge>
+      </Badge>,
     );
   }
   if (parts.length === 0) {
@@ -44,21 +69,34 @@ function getConnectionErrorTag(connection) {
     explicitType === "auth_missing" ||
     explicitType === "token_refresh_failed" ||
     explicitType === "token_expired"
-  ) return "AUTH";
+  )
+    return "AUTH";
   if (explicitType === "upstream_rate_limited") return "429";
   if (explicitType === "upstream_unavailable") return "5XX";
   if (explicitType === "network_error") return "NET";
 
   const numericCode = Number(connection.errorCode);
-  if (Number.isFinite(numericCode) && numericCode >= 400) return String(numericCode);
+  if (Number.isFinite(numericCode) && numericCode >= 400)
+    return String(numericCode);
 
   const fromMessage = getErrorCode(connection.lastError);
   if (fromMessage === "401" || fromMessage === "403") return "AUTH";
   if (fromMessage && fromMessage !== "ERR") return fromMessage;
 
   const msg = (connection.lastError || "").toLowerCase();
-  if (msg.includes("runtime") || msg.includes("not runnable") || msg.includes("not installed")) return "RUNTIME";
-  if (msg.includes("invalid api key") || msg.includes("token invalid") || msg.includes("revoked") || msg.includes("unauthorized")) return "AUTH";
+  if (
+    msg.includes("runtime") ||
+    msg.includes("not runnable") ||
+    msg.includes("not installed")
+  )
+    return "RUNTIME";
+  if (
+    msg.includes("invalid api key") ||
+    msg.includes("token invalid") ||
+    msg.includes("revoked") ||
+    msg.includes("unauthorized")
+  )
+    return "AUTH";
 
   return "ERR";
 }
@@ -68,7 +106,8 @@ export default function ProvidersPage() {
   const [providerNodes, setProviderNodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddCompatibleModal, setShowAddCompatibleModal] = useState(false);
-  const [showAddAnthropicCompatibleModal, setShowAddAnthropicCompatibleModal] = useState(false);
+  const [showAddAnthropicCompatibleModal, setShowAddAnthropicCompatibleModal] =
+    useState(false);
   const [testingMode, setTestingMode] = useState(null);
   const [testResults, setTestResults] = useState(null);
   const notify = useNotificationStore();
@@ -82,7 +121,8 @@ export default function ProvidersPage() {
         ]);
         const connectionsData = await connectionsRes.json();
         const nodesData = await nodesRes.json();
-        if (connectionsRes.ok) setConnections(connectionsData.connections || []);
+        if (connectionsRes.ok)
+          setConnections(connectionsData.connections || []);
         if (nodesRes.ok) setProviderNodes(nodesData.nodes || []);
       } catch (error) {
         console.log("Error fetching data:", error);
@@ -95,33 +135,42 @@ export default function ProvidersPage() {
 
   const getProviderStats = (providerId, authType) => {
     const providerConnections = connections.filter(
-      (c) => c.provider === providerId && c.authType === authType
+      c => c.provider === providerId && c.authType === authType,
     );
 
-    const getEffectiveStatus = (conn) => {
-      const isCooldown = conn.rateLimitedUntil && new Date(conn.rateLimitedUntil).getTime() > Date.now();
-      return conn.testStatus === "unavailable" && !isCooldown ? "active" : conn.testStatus;
+    const getEffectiveStatus = conn => {
+      const isCooldown =
+        conn.rateLimitedUntil &&
+        new Date(conn.rateLimitedUntil).getTime() > Date.now();
+      return conn.testStatus === "unavailable" && !isCooldown
+        ? "active"
+        : conn.testStatus;
     };
 
-    const connected = providerConnections.filter((c) => {
+    const connected = providerConnections.filter(c => {
       const status = getEffectiveStatus(c);
       return status === "active" || status === "success";
     }).length;
 
-    const errorConns = providerConnections.filter((c) => {
+    const errorConns = providerConnections.filter(c => {
       const status = getEffectiveStatus(c);
-      return status === "error" || status === "expired" || status === "unavailable";
+      return (
+        status === "error" || status === "expired" || status === "unavailable"
+      );
     });
 
     const error = errorConns.length;
     const total = providerConnections.length;
-    const allDisabled = total > 0 && providerConnections.every((c) => c.isActive === false);
+    const allDisabled =
+      total > 0 && providerConnections.every(c => c.isActive === false);
 
     const latestError = errorConns.sort(
-      (a, b) => new Date(b.lastErrorAt || 0) - new Date(a.lastErrorAt || 0)
+      (a, b) => new Date(b.lastErrorAt || 0) - new Date(a.lastErrorAt || 0),
     )[0];
     const errorCode = latestError ? getConnectionErrorTag(latestError) : null;
-    const errorTime = latestError?.lastErrorAt ? getRelativeTime(latestError.lastErrorAt) : null;
+    const errorTime = latestError?.lastErrorAt
+      ? getRelativeTime(latestError.lastErrorAt)
+      : null;
 
     return { connected, error, total, errorCode, errorTime, allDisabled };
   };
@@ -129,21 +178,23 @@ export default function ProvidersPage() {
   // Toggle all connections for a provider on/off
   const handleToggleProvider = async (providerId, authType, newActive) => {
     const providerConns = connections.filter(
-      (c) => c.provider === providerId && c.authType === authType
+      c => c.provider === providerId && c.authType === authType,
     );
-    setConnections((prev) =>
-      prev.map((c) =>
-        c.provider === providerId && c.authType === authType ? { ...c, isActive: newActive } : c
-      )
+    setConnections(prev =>
+      prev.map(c =>
+        c.provider === providerId && c.authType === authType
+          ? { ...c, isActive: newActive }
+          : c,
+      ),
     );
     await Promise.allSettled(
-      providerConns.map((c) =>
+      providerConns.map(c =>
         fetch(`/api/providers/${c.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ isActive: newActive }),
-        })
-      )
+        }),
+      ),
     );
   };
 
@@ -173,8 +224,8 @@ export default function ProvidersPage() {
   };
 
   const compatibleProviders = providerNodes
-    .filter((node) => node.type === "openai-compatible")
-    .map((node) => ({
+    .filter(node => node.type === "openai-compatible")
+    .map(node => ({
       id: node.id,
       name: node.name || "OpenAI Compatible",
       color: "#10A37F",
@@ -183,8 +234,8 @@ export default function ProvidersPage() {
     }));
 
   const anthropicCompatibleProviders = providerNodes
-    .filter((node) => node.type === "anthropic-compatible")
-    .map((node) => ({
+    .filter(node => node.type === "anthropic-compatible")
+    .map(node => ({
       id: node.id,
       name: node.name || "Anthropic Compatible",
       color: "#D97757",
@@ -236,7 +287,7 @@ export default function ProvidersPage() {
               provider={info}
               stats={getProviderStats(key, "oauth")}
               authType="oauth"
-              onToggle={(active) => handleToggleProvider(key, "oauth", active)}
+              onToggle={active => handleToggleProvider(key, "oauth", active)}
             />
           ))}
         </div>
@@ -255,8 +306,8 @@ export default function ProvidersPage() {
               testingMode === "free"
                 ? "bg-primary/20 border-primary/40 text-primary animate-pulse"
                 : "bg-bg border-border text-text-muted hover:text-text-main hover:border-primary/40"
-              }`}
-              title="Test all Free connections"
+            }`}
+            title="Test all Free connections"
             aria-label="Test all Free provider connections"
           >
             <span className="material-symbols-outlined text-[14px]">
@@ -273,7 +324,7 @@ export default function ProvidersPage() {
               provider={info}
               stats={getProviderStats(key, "oauth")}
               authType="free"
-              onToggle={(active) => handleToggleProvider(key, "oauth", active)}
+              onToggle={active => handleToggleProvider(key, "oauth", active)}
             />
           ))}
         </div>
@@ -292,8 +343,8 @@ export default function ProvidersPage() {
               testingMode === "apikey"
                 ? "bg-primary/20 border-primary/40 text-primary animate-pulse"
                 : "bg-bg border-border text-text-muted hover:text-text-main hover:border-primary/40"
-              }`}
-              title="Test all API Key connections"
+            }`}
+            title="Test all API Key connections"
             aria-label="Test all API Key connections"
           >
             <span className="material-symbols-outlined text-[14px]">
@@ -310,7 +361,7 @@ export default function ProvidersPage() {
               provider={info}
               stats={getProviderStats(key, "apikey")}
               authType="apikey"
-              onToggle={(active) => handleToggleProvider(key, "apikey", active)}
+              onToggle={active => handleToggleProvider(key, "apikey", active)}
             />
           ))}
         </div>
@@ -323,7 +374,8 @@ export default function ProvidersPage() {
             API Key Compatible Providers{" "}
           </h2>
           <div className="flex gap-2">
-            {(compatibleProviders.length > 0 || anthropicCompatibleProviders.length > 0) && (
+            {(compatibleProviders.length > 0 ||
+              anthropicCompatibleProviders.length > 0) && (
               <button
                 onClick={() => handleBatchTest("compatible")}
                 disabled={!!testingMode}
@@ -340,7 +392,11 @@ export default function ProvidersPage() {
                 {testingMode === "compatible" ? "Testing..." : "Test All"}
               </button>
             )}
-            <Button size="sm" icon="add" onClick={() => setShowAddAnthropicCompatibleModal(true)}>
+            <Button
+              size="sm"
+              icon="add"
+              onClick={() => setShowAddAnthropicCompatibleModal(true)}
+            >
               Add Anthropic Compatible
             </Button>
             <Button
@@ -354,26 +410,36 @@ export default function ProvidersPage() {
             </Button>
           </div>
         </div>
-        {compatibleProviders.length === 0 && anthropicCompatibleProviders.length === 0 ? (
+        {compatibleProviders.length === 0 &&
+        anthropicCompatibleProviders.length === 0 ? (
           <div className="text-center py-8 border border-dashed border-border rounded-xl">
-            <span className="material-symbols-outlined text-[32px] text-text-muted mb-2">extension</span>
-            <p className="text-text-muted text-sm">No compatible providers added yet</p>
+            <span className="material-symbols-outlined text-[32px] text-text-muted mb-2">
+              extension
+            </span>
+            <p className="text-text-muted text-sm">
+              No compatible providers added yet
+            </p>
             <p className="text-text-muted text-xs mt-1">
-              Use the buttons above to add OpenAI or Anthropic compatible endpoints
+              Use the buttons above to add OpenAI or Anthropic compatible
+              endpoints
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {[...compatibleProviders, ...anthropicCompatibleProviders].map((info) => (
-              <ApiKeyProviderCard
-                key={info.id}
-                providerId={info.id}
-                provider={info}
-                stats={getProviderStats(info.id, "apikey")}
-                authType="compatible"
-                onToggle={(active) => handleToggleProvider(info.id, "apikey", active)}
-              />
-            ))}
+            {[...compatibleProviders, ...anthropicCompatibleProviders].map(
+              info => (
+                <ApiKeyProviderCard
+                  key={info.id}
+                  providerId={info.id}
+                  provider={info}
+                  stats={getProviderStats(info.id, "apikey")}
+                  authType="compatible"
+                  onToggle={active =>
+                    handleToggleProvider(info.id, "apikey", active)
+                  }
+                />
+              ),
+            )}
           </div>
         )}
       </div>
@@ -381,16 +447,16 @@ export default function ProvidersPage() {
       <AddOpenAICompatibleModal
         isOpen={showAddCompatibleModal}
         onClose={() => setShowAddCompatibleModal(false)}
-        onCreated={(node) => {
-          setProviderNodes((prev) => [...prev, node]);
+        onCreated={node => {
+          setProviderNodes(prev => [...prev, node]);
           setShowAddCompatibleModal(false);
         }}
       />
       <AddAnthropicCompatibleModal
         isOpen={showAddAnthropicCompatibleModal}
         onClose={() => setShowAddAnthropicCompatibleModal(false)}
-        onCreated={(node) => {
-          setProviderNodes((prev) => [...prev, node]);
+        onCreated={node => {
+          setProviderNodes(prev => [...prev, node]);
           setShowAddAnthropicCompatibleModal(false);
         }}
       />
@@ -404,7 +470,7 @@ export default function ProvidersPage() {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div
             className="relative bg-surface border border-border rounded-xl w-full max-w-[600px] max-h-[80vh] overflow-y-auto shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-3 border-b border-border bg-surface/95 backdrop-blur-sm rounded-t-xl">
               <h3 className="font-semibold">Test Results</h3>
@@ -436,10 +502,18 @@ function ProviderCard({ providerId, provider, stats, authType, onToggle }) {
     apikey: "bg-amber-500",
     compatible: "bg-orange-500",
   };
-  const dotLabels = { free: "Free", oauth: "OAuth", apikey: "API Key", compatible: "Compatible" };
+  const dotLabels = {
+    free: "Free",
+    oauth: "OAuth",
+    apikey: "API Key",
+    compatible: "Compatible",
+  };
 
   return (
-    <Link href={`/dashboard/providers/${providerId}`} className="group">
+    <Link
+      href={`/dashboard/providers/${providerId}`}
+      className="group"
+    >
       <Card
         padding="xs"
         className={`h-full hover:bg-black/[0.01] dark:hover:bg-white/[0.01] transition-colors cursor-pointer ${allDisabled ? "opacity-50" : ""}`}
@@ -451,7 +525,10 @@ function ProviderCard({ providerId, provider, stats, authType, onToggle }) {
               style={{ backgroundColor: `${provider.color}15` }}
             >
               {imgError ? (
-                <span className="text-xs font-bold" style={{ color: provider.color }}>
+                <span
+                  className="text-xs font-bold"
+                  style={{ color: provider.color }}
+                >
                   {provider.textIcon || provider.id.slice(0, 2).toUpperCase()}
                 </span>
               ) : (
@@ -467,21 +544,26 @@ function ProviderCard({ providerId, provider, stats, authType, onToggle }) {
               )}
             </div>
             <div>
-              <h3 className="font-semibold">
-                {provider.name}
-              </h3>
+              <h3 className="font-semibold">{provider.name}</h3>
               <div className="flex items-center gap-2 text-xs flex-wrap">
                 {allDisabled ? (
-                  <Badge variant="default" size="sm">
+                  <Badge
+                    variant="default"
+                    size="sm"
+                  >
                     <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[12px]">pause_circle</span>
+                      <span className="material-symbols-outlined text-[12px]">
+                        pause_circle
+                      </span>
                       Disabled
                     </span>
                   </Badge>
                 ) : (
                   <>
                     {getStatusDisplay(connected, error, errorCode)}
-                    {errorTime && <span className="text-text-muted">{errorTime}</span>}
+                    {errorTime && (
+                      <span className="text-text-muted">{errorTime}</span>
+                    )}
                   </>
                 )}
               </div>
@@ -491,7 +573,7 @@ function ProviderCard({ providerId, provider, stats, authType, onToggle }) {
             {stats.total > 0 && (
               <div
                 className="opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   e.stopPropagation();
                   onToggle(!allDisabled ? false : true);
@@ -530,10 +612,18 @@ ProviderCard.propTypes = {
   onToggle: PropTypes.func,
 };
 
-function ApiKeyProviderCard({ providerId, provider, stats, authType, onToggle }) {
+function ApiKeyProviderCard({
+  providerId,
+  provider,
+  stats,
+  authType,
+  onToggle,
+}) {
   const { connected, error, errorCode, errorTime, allDisabled } = stats;
   const isCompatible = providerId.startsWith(OPENAI_COMPATIBLE_PREFIX);
-  const isAnthropicCompatible = providerId.startsWith(ANTHROPIC_COMPATIBLE_PREFIX);
+  const isAnthropicCompatible = providerId.startsWith(
+    ANTHROPIC_COMPATIBLE_PREFIX,
+  );
   const [imgError, setImgError] = useState(false);
 
   const dotColors = {
@@ -542,16 +632,27 @@ function ApiKeyProviderCard({ providerId, provider, stats, authType, onToggle })
     apikey: "bg-amber-500",
     compatible: "bg-orange-500",
   };
-  const dotLabels = { free: "Free", oauth: "OAuth", apikey: "API Key", compatible: "Compatible" };
+  const dotLabels = {
+    free: "Free",
+    oauth: "OAuth",
+    apikey: "API Key",
+    compatible: "Compatible",
+  };
 
   const getIconPath = () => {
-    if (isCompatible) return provider.apiType === "responses" ? "/providers/oai-r.png" : "/providers/oai-cc.png";
+    if (isCompatible)
+      return provider.apiType === "responses"
+        ? "/providers/oai-r.png"
+        : "/providers/oai-cc.png";
     if (isAnthropicCompatible) return "/providers/anthropic-m.png";
     return `/providers/${provider.id}.png`;
   };
 
   return (
-    <Link href={`/dashboard/providers/${providerId}`} className="group">
+    <Link
+      href={`/dashboard/providers/${providerId}`}
+      className="group"
+    >
       <Card
         padding="xs"
         className={`h-full hover:bg-black/[0.01] dark:hover:bg-white/[0.01] transition-colors cursor-pointer ${allDisabled ? "opacity-50" : ""}`}
@@ -563,7 +664,10 @@ function ApiKeyProviderCard({ providerId, provider, stats, authType, onToggle })
               style={{ backgroundColor: `${provider.color}15` }}
             >
               {imgError ? (
-                <span className="text-xs font-bold" style={{ color: provider.color }}>
+                <span
+                  className="text-xs font-bold"
+                  style={{ color: provider.color }}
+                >
                   {provider.textIcon || provider.id.slice(0, 2).toUpperCase()}
                 </span>
               ) : (
@@ -579,14 +683,17 @@ function ApiKeyProviderCard({ providerId, provider, stats, authType, onToggle })
               )}
             </div>
             <div>
-              <h3 className="font-semibold">
-                {provider.name}
-              </h3>
+              <h3 className="font-semibold">{provider.name}</h3>
               <div className="flex items-center gap-2 text-xs flex-wrap">
                 {allDisabled ? (
-                  <Badge variant="default" size="sm">
+                  <Badge
+                    variant="default"
+                    size="sm"
+                  >
                     <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[12px]">pause_circle</span>
+                      <span className="material-symbols-outlined text-[12px]">
+                        pause_circle
+                      </span>
                       Disabled
                     </span>
                   </Badge>
@@ -594,14 +701,26 @@ function ApiKeyProviderCard({ providerId, provider, stats, authType, onToggle })
                   <>
                     {getStatusDisplay(connected, error, errorCode)}
                     {isCompatible && (
-                      <Badge variant="default" size="sm">
-                        {provider.apiType === "responses" ? "Responses" : "Chat"}
+                      <Badge
+                        variant="default"
+                        size="sm"
+                      >
+                        {provider.apiType === "responses"
+                          ? "Responses"
+                          : "Chat"}
                       </Badge>
                     )}
                     {isAnthropicCompatible && (
-                      <Badge variant="default" size="sm">Messages</Badge>
+                      <Badge
+                        variant="default"
+                        size="sm"
+                      >
+                        Messages
+                      </Badge>
                     )}
-                    {errorTime && <span className="text-text-muted">{errorTime}</span>}
+                    {errorTime && (
+                      <span className="text-text-muted">{errorTime}</span>
+                    )}
                   </>
                 )}
               </div>
@@ -611,7 +730,7 @@ function ApiKeyProviderCard({ providerId, provider, stats, authType, onToggle })
             {stats.total > 0 && (
               <div
                 className="opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   e.stopPropagation();
                   onToggle(!allDisabled ? false : true);
@@ -670,11 +789,16 @@ function AddOpenAICompatibleModal({ isOpen, onClose, onCreated }) {
 
   useEffect(() => {
     const defaultBaseUrl = "https://api.openai.com/v1";
-    setFormData((prev) => ({ ...prev, baseUrl: defaultBaseUrl }));
+    setFormData(prev => ({ ...prev, baseUrl: defaultBaseUrl }));
   }, [formData.apiType]);
 
   const handleSubmit = async () => {
-    if (!formData.name.trim() || !formData.prefix.trim() || !formData.baseUrl.trim()) return;
+    if (
+      !formData.name.trim() ||
+      !formData.prefix.trim() ||
+      !formData.baseUrl.trim()
+    )
+      return;
     setSubmitting(true);
     try {
       const res = await fetch("/api/provider-nodes", {
@@ -691,7 +815,12 @@ function AddOpenAICompatibleModal({ isOpen, onClose, onCreated }) {
       const data = await res.json();
       if (res.ok) {
         onCreated(data.node);
-        setFormData({ name: "", prefix: "", apiType: "chat", baseUrl: "https://api.openai.com/v1" });
+        setFormData({
+          name: "",
+          prefix: "",
+          apiType: "chat",
+          baseUrl: "https://api.openai.com/v1",
+        });
         setCheckKey("");
         setValidationResult(null);
       }
@@ -708,7 +837,11 @@ function AddOpenAICompatibleModal({ isOpen, onClose, onCreated }) {
       const res = await fetch("/api/provider-nodes/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ baseUrl: formData.baseUrl, apiKey: checkKey, type: "openai-compatible" }),
+        body: JSON.stringify({
+          baseUrl: formData.baseUrl,
+          apiKey: checkKey,
+          type: "openai-compatible",
+        }),
       });
       const data = await res.json();
       setValidationResult(data.valid ? "success" : "failed");
@@ -720,19 +853,23 @@ function AddOpenAICompatibleModal({ isOpen, onClose, onCreated }) {
   };
 
   return (
-    <Modal isOpen={isOpen} title="Add OpenAI Compatible" onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      title="Add OpenAI Compatible"
+      onClose={onClose}
+    >
       <div className="flex flex-col gap-4">
         <Input
           label="Name"
           value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          onChange={e => setFormData({ ...formData, name: e.target.value })}
           placeholder="OpenAI Compatible (Prod)"
           hint="Required. A friendly label for this node."
         />
         <Input
           label="Prefix"
           value={formData.prefix}
-          onChange={(e) => setFormData({ ...formData, prefix: e.target.value })}
+          onChange={e => setFormData({ ...formData, prefix: e.target.value })}
           placeholder="oc-prod"
           hint="Required. Used as the provider prefix for model IDs."
         />
@@ -740,12 +877,12 @@ function AddOpenAICompatibleModal({ isOpen, onClose, onCreated }) {
           label="API Type"
           options={apiTypeOptions}
           value={formData.apiType}
-          onChange={(e) => setFormData({ ...formData, apiType: e.target.value })}
+          onChange={e => setFormData({ ...formData, apiType: e.target.value })}
         />
         <Input
           label="Base URL"
           value={formData.baseUrl}
-          onChange={(e) => setFormData({ ...formData, baseUrl: e.target.value })}
+          onChange={e => setFormData({ ...formData, baseUrl: e.target.value })}
           placeholder="https://api.openai.com/v1"
           hint="Use the base URL (ending in /v1) for your OpenAI-compatible API."
         />
@@ -754,11 +891,15 @@ function AddOpenAICompatibleModal({ isOpen, onClose, onCreated }) {
             label="API Key (for Check)"
             type="password"
             value={checkKey}
-            onChange={(e) => setCheckKey(e.target.value)}
+            onChange={e => setCheckKey(e.target.value)}
             className="flex-1"
           />
           <div className="pt-6">
-            <Button onClick={handleValidate} disabled={!checkKey || validating || !formData.baseUrl.trim()} variant="secondary">
+            <Button
+              onClick={handleValidate}
+              disabled={!checkKey || validating || !formData.baseUrl.trim()}
+              variant="secondary"
+            >
               {validating ? "Checking..." : "Check"}
             </Button>
           </div>
@@ -769,10 +910,25 @@ function AddOpenAICompatibleModal({ isOpen, onClose, onCreated }) {
           </Badge>
         )}
         <div className="flex gap-2">
-          <Button onClick={handleSubmit} fullWidth disabled={!formData.name.trim() || !formData.prefix.trim() || !formData.baseUrl.trim() || submitting}>
+          <Button
+            onClick={handleSubmit}
+            fullWidth
+            disabled={
+              !formData.name.trim() ||
+              !formData.prefix.trim() ||
+              !formData.baseUrl.trim() ||
+              submitting
+            }
+          >
             {submitting ? "Creating..." : "Create"}
           </Button>
-          <Button onClick={onClose} variant="ghost" fullWidth>Cancel</Button>
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            fullWidth
+          >
+            Cancel
+          </Button>
         </div>
       </div>
     </Modal>
@@ -804,7 +960,12 @@ function AddAnthropicCompatibleModal({ isOpen, onClose, onCreated }) {
   }, [isOpen]);
 
   const handleSubmit = async () => {
-    if (!formData.name.trim() || !formData.prefix.trim() || !formData.baseUrl.trim()) return;
+    if (
+      !formData.name.trim() ||
+      !formData.prefix.trim() ||
+      !formData.baseUrl.trim()
+    )
+      return;
     setSubmitting(true);
     try {
       const res = await fetch("/api/provider-nodes", {
@@ -820,7 +981,11 @@ function AddAnthropicCompatibleModal({ isOpen, onClose, onCreated }) {
       const data = await res.json();
       if (res.ok) {
         onCreated(data.node);
-        setFormData({ name: "", prefix: "", baseUrl: "https://api.anthropic.com/v1" });
+        setFormData({
+          name: "",
+          prefix: "",
+          baseUrl: "https://api.anthropic.com/v1",
+        });
         setCheckKey("");
         setValidationResult(null);
       }
@@ -837,7 +1002,11 @@ function AddAnthropicCompatibleModal({ isOpen, onClose, onCreated }) {
       const res = await fetch("/api/provider-nodes/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ baseUrl: formData.baseUrl, apiKey: checkKey, type: "anthropic-compatible" }),
+        body: JSON.stringify({
+          baseUrl: formData.baseUrl,
+          apiKey: checkKey,
+          type: "anthropic-compatible",
+        }),
       });
       const data = await res.json();
       setValidationResult(data.valid ? "success" : "failed");
@@ -849,26 +1018,30 @@ function AddAnthropicCompatibleModal({ isOpen, onClose, onCreated }) {
   };
 
   return (
-    <Modal isOpen={isOpen} title="Add Anthropic Compatible" onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      title="Add Anthropic Compatible"
+      onClose={onClose}
+    >
       <div className="flex flex-col gap-4">
         <Input
           label="Name"
           value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          onChange={e => setFormData({ ...formData, name: e.target.value })}
           placeholder="Anthropic Compatible (Prod)"
           hint="Required. A friendly label for this node."
         />
         <Input
           label="Prefix"
           value={formData.prefix}
-          onChange={(e) => setFormData({ ...formData, prefix: e.target.value })}
+          onChange={e => setFormData({ ...formData, prefix: e.target.value })}
           placeholder="ac-prod"
           hint="Required. Used as the provider prefix for model IDs."
         />
         <Input
           label="Base URL"
           value={formData.baseUrl}
-          onChange={(e) => setFormData({ ...formData, baseUrl: e.target.value })}
+          onChange={e => setFormData({ ...formData, baseUrl: e.target.value })}
           placeholder="https://api.anthropic.com/v1"
           hint="Use the base URL (ending in /v1) for your Anthropic-compatible API. The system will append /messages."
         />
@@ -877,11 +1050,15 @@ function AddAnthropicCompatibleModal({ isOpen, onClose, onCreated }) {
             label="API Key (for Check)"
             type="password"
             value={checkKey}
-            onChange={(e) => setCheckKey(e.target.value)}
+            onChange={e => setCheckKey(e.target.value)}
             className="flex-1"
           />
           <div className="pt-6">
-            <Button onClick={handleValidate} disabled={!checkKey || validating || !formData.baseUrl.trim()} variant="secondary">
+            <Button
+              onClick={handleValidate}
+              disabled={!checkKey || validating || !formData.baseUrl.trim()}
+              variant="secondary"
+            >
               {validating ? "Checking..." : "Check"}
             </Button>
           </div>
@@ -892,10 +1069,25 @@ function AddAnthropicCompatibleModal({ isOpen, onClose, onCreated }) {
           </Badge>
         )}
         <div className="flex gap-2">
-          <Button onClick={handleSubmit} fullWidth disabled={!formData.name.trim() || !formData.prefix.trim() || !formData.baseUrl.trim() || submitting}>
+          <Button
+            onClick={handleSubmit}
+            fullWidth
+            disabled={
+              !formData.name.trim() ||
+              !formData.prefix.trim() ||
+              !formData.baseUrl.trim() ||
+              submitting
+            }
+          >
             {submitting ? "Creating..." : "Create"}
           </Button>
-          <Button onClick={onClose} variant="ghost" fullWidth>Cancel</Button>
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            fullWidth
+          >
+            Cancel
+          </Button>
         </div>
       </div>
     </Modal>
@@ -912,7 +1104,9 @@ function ProviderTestResultsView({ results }) {
   if (results.error && !results.results) {
     return (
       <div className="text-center py-6">
-        <span className="material-symbols-outlined text-red-500 text-[32px] mb-2 block">error</span>
+        <span className="material-symbols-outlined text-red-500 text-[32px] mb-2 block">
+          error
+        </span>
         <p className="text-sm text-red-400">{results.error}</p>
       </div>
     );
@@ -920,7 +1114,14 @@ function ProviderTestResultsView({ results }) {
 
   const { summary, mode } = results;
   const items = results.results || [];
-  const modeLabel = { oauth: "OAuth", free: "Free", apikey: "API Key", provider: "Provider", all: "All" }[mode] || mode;
+  const modeLabel =
+    {
+      oauth: "OAuth",
+      free: "Free",
+      apikey: "API Key",
+      provider: "Provider",
+      all: "All",
+    }[mode] || mode;
 
   return (
     <div className="flex flex-col gap-3">
@@ -935,7 +1136,9 @@ function ProviderTestResultsView({ results }) {
               {summary.failed} failed
             </span>
           )}
-          <span className="text-text-muted ml-auto">{summary.total} tested</span>
+          <span className="text-text-muted ml-auto">
+            {summary.total} tested
+          </span>
         </div>
       )}
       {items.map((r, i) => (
@@ -943,7 +1146,9 @@ function ProviderTestResultsView({ results }) {
           key={r.connectionId || i}
           className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-black/[0.03] dark:bg-white/[0.03]"
         >
-          <span className={`material-symbols-outlined text-[16px] ${r.valid ? "text-emerald-500" : "text-red-500"}`}>
+          <span
+            className={`material-symbols-outlined text-[16px] ${r.valid ? "text-emerald-500" : "text-red-500"}`}
+          >
             {r.valid ? "check_circle" : "error"}
           </span>
           <div className="flex-1 min-w-0">
@@ -951,11 +1156,15 @@ function ProviderTestResultsView({ results }) {
             <span className="text-text-muted ml-1.5">({r.provider})</span>
           </div>
           {r.latencyMs !== undefined && (
-            <span className="text-text-muted font-mono tabular-nums">{r.latencyMs}ms</span>
+            <span className="text-text-muted font-mono tabular-nums">
+              {r.latencyMs}ms
+            </span>
           )}
           <span
             className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
-              r.valid ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
+              r.valid
+                ? "bg-emerald-500/15 text-emerald-400"
+                : "bg-red-500/15 text-red-400"
             }`}
           >
             {r.valid ? "OK" : r.diagnosis?.type || "ERROR"}

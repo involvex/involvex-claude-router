@@ -7,17 +7,17 @@ export {
   findModelName,
   getModelTargetFormat,
   PROVIDER_ID_TO_ALIAS,
-  getModelsByProviderId
+  getModelsByProviderId,
 } from "open-sse/config/providerModels.js";
 
-import { AI_PROVIDERS, isOpenAICompatibleProvider } from "./providers.js";
 import { PROVIDER_MODELS as MODELS } from "open-sse/config/providerModels.js";
+import { AI_PROVIDERS, isOpenAICompatibleProvider } from "./providers.js";
 
 // Providers that accept any model (passthrough)
 const PASSTHROUGH_PROVIDERS = new Set(
   Object.entries(AI_PROVIDERS)
     .filter(([, p]) => p.passthroughModels)
-    .map(([key]) => key)
+    .map(([key]) => key),
 );
 
 // Wrap isValidModel with passthrough providers
@@ -31,5 +31,5 @@ export function isValidModel(aliasOrId, modelId) {
 
 // Legacy AI_MODELS for backward compatibility
 export const AI_MODELS = Object.entries(MODELS).flatMap(([alias, models]) =>
-  models.map(m => ({ provider: alias, model: m.id, name: m.name }))
+  models.map(m => ({ provider: alias, model: m.id, name: m.name })),
 );

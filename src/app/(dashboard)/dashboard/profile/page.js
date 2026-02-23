@@ -1,33 +1,37 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Card, Button, Badge, Toggle, Input } from "@/shared/components";
-import { useTheme } from "@/shared/hooks/useTheme";
-import { cn } from "@/shared/utils/cn";
 import { APP_CONFIG } from "@/shared/constants/config";
+import { useTheme } from "@/shared/hooks/useTheme";
+import { useState, useEffect } from "react";
+import { cn } from "@/shared/utils/cn";
 
 export default function ProfilePage() {
   const { theme, setTheme, isDark } = useTheme();
   const [settings, setSettings] = useState({ fallbackStrategy: "fill-first" });
   const [loading, setLoading] = useState(true);
-  const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
+  const [passwords, setPasswords] = useState({
+    current: "",
+    new: "",
+    confirm: "",
+  });
   const [passStatus, setPassStatus] = useState({ type: "", message: "" });
   const [passLoading, setPassLoading] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings")
-      .then((res) => res.json())
-      .then((data) => {
+      .then(res => res.json())
+      .then(data => {
         setSettings(data);
         setLoading(false);
       })
-      .catch((err) => {
+      .catch(err => {
         console.error("Failed to fetch settings:", err);
         setLoading(false);
       });
   }, []);
 
-  const handlePasswordChange = async (e) => {
+  const handlePasswordChange = async e => {
     e.preventDefault();
     if (passwords.new !== passwords.confirm) {
       setPassStatus({ type: "error", message: "Passwords do not match" });
@@ -50,10 +54,16 @@ export default function ProfilePage() {
       const data = await res.json();
 
       if (res.ok) {
-        setPassStatus({ type: "success", message: "Password updated successfully" });
+        setPassStatus({
+          type: "success",
+          message: "Password updated successfully",
+        });
         setPasswords({ current: "", new: "", confirm: "" });
       } else {
-        setPassStatus({ type: "error", message: data.error || "Failed to update password" });
+        setPassStatus({
+          type: "error",
+          message: data.error || "Failed to update password",
+        });
       }
     } catch (err) {
       setPassStatus({ type: "error", message: "An error occurred" });
@@ -62,7 +72,7 @@ export default function ProfilePage() {
     }
   };
 
-  const updateFallbackStrategy = async (strategy) => {
+  const updateFallbackStrategy = async strategy => {
     try {
       const res = await fetch("/api/settings", {
         method: "PATCH",
@@ -77,7 +87,7 @@ export default function ProfilePage() {
     }
   };
 
-  const updateStickyLimit = async (limit) => {
+  const updateStickyLimit = async limit => {
     const numLimit = parseInt(limit);
     if (isNaN(numLimit) || numLimit < 1) return;
 
@@ -95,7 +105,7 @@ export default function ProfilePage() {
     }
   };
 
-  const updateRequireLogin = async (requireLogin) => {
+  const updateRequireLogin = async requireLogin => {
     try {
       const res = await fetch("/api/settings", {
         method: "PATCH",
@@ -128,7 +138,7 @@ export default function ProfilePage() {
     }
   };
 
-  const updateObservabilityEnabled = async (enabled) => {
+  const updateObservabilityEnabled = async enabled => {
     try {
       const res = await fetch("/api/settings", {
         method: "PATCH",
@@ -152,7 +162,9 @@ export default function ProfilePage() {
         <Card>
           <div className="flex items-center gap-4 mb-4">
             <div className="size-12 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center">
-              <span className="material-symbols-outlined text-2xl">computer</span>
+              <span className="material-symbols-outlined text-2xl">
+                computer
+              </span>
             </div>
             <div>
               <h2 className="text-xl font-semibold">Local Mode</h2>
@@ -161,7 +173,11 @@ export default function ProfilePage() {
           </div>
           <div className="pt-4 border-t border-border">
             <p className="text-sm text-text-muted">
-              All data is stored locally in the <code className="bg-sidebar px-1 rounded">~/.9router/db.json</code> file.
+              All data is stored locally in the{" "}
+              <code className="bg-sidebar px-1 rounded">
+                ~/.9router/db.json
+              </code>{" "}
+              file.
             </p>
           </div>
         </Card>
@@ -170,7 +186,9 @@ export default function ProfilePage() {
         <Card>
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
-              <span className="material-symbols-outlined text-[20px]">shield</span>
+              <span className="material-symbols-outlined text-[20px]">
+                shield
+              </span>
             </div>
             <h3 className="text-lg font-semibold">Security</h3>
           </div>
@@ -179,7 +197,8 @@ export default function ProfilePage() {
               <div>
                 <p className="font-medium">Require login</p>
                 <p className="text-sm text-text-muted">
-                  When ON, dashboard requires password. When OFF, access without login.
+                  When ON, dashboard requires password. When OFF, access without
+                  login.
                 </p>
               </div>
               <Toggle
@@ -189,15 +208,22 @@ export default function ProfilePage() {
               />
             </div>
             {settings.requireLogin === true && (
-              <form onSubmit={handlePasswordChange} className="flex flex-col gap-4 pt-4 border-t border-border/50">
+              <form
+                onSubmit={handlePasswordChange}
+                className="flex flex-col gap-4 pt-4 border-t border-border/50"
+              >
                 {settings.hasPassword && (
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">Current Password</label>
+                    <label className="text-sm font-medium">
+                      Current Password
+                    </label>
                     <Input
                       type="password"
                       placeholder="Enter current password"
                       value={passwords.current}
-                      onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                      onChange={e =>
+                        setPasswords({ ...passwords, current: e.target.value })
+                      }
                       required
                     />
                   </div>
@@ -216,30 +242,42 @@ export default function ProfilePage() {
                       type="password"
                       placeholder="Enter new password"
                       value={passwords.new}
-                      onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+                      onChange={e =>
+                        setPasswords({ ...passwords, new: e.target.value })
+                      }
                       required
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">Confirm New Password</label>
+                    <label className="text-sm font-medium">
+                      Confirm New Password
+                    </label>
                     <Input
                       type="password"
                       placeholder="Confirm new password"
                       value={passwords.confirm}
-                      onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                      onChange={e =>
+                        setPasswords({ ...passwords, confirm: e.target.value })
+                      }
                       required
                     />
                   </div>
                 </div>
 
                 {passStatus.message && (
-                  <p className={`text-sm ${passStatus.type === "error" ? "text-red-500" : "text-green-500"}`}>
+                  <p
+                    className={`text-sm ${passStatus.type === "error" ? "text-red-500" : "text-green-500"}`}
+                  >
                     {passStatus.message}
                   </p>
                 )}
 
                 <div className="pt-2">
-                  <Button type="submit" variant="primary" loading={passLoading}>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    loading={passLoading}
+                  >
                     {settings.hasPassword ? "Update Password" : "Set Password"}
                   </Button>
                 </div>
@@ -252,7 +290,9 @@ export default function ProfilePage() {
         <Card>
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
-              <span className="material-symbols-outlined text-[20px]">route</span>
+              <span className="material-symbols-outlined text-[20px]">
+                route
+              </span>
             </div>
             <h3 className="text-lg font-semibold">Routing Strategy</h3>
           </div>
@@ -266,7 +306,13 @@ export default function ProfilePage() {
               </div>
               <Toggle
                 checked={settings.fallbackStrategy === "round-robin"}
-                onChange={() => updateFallbackStrategy(settings.fallbackStrategy === "round-robin" ? "fill-first" : "round-robin")}
+                onChange={() =>
+                  updateFallbackStrategy(
+                    settings.fallbackStrategy === "round-robin"
+                      ? "fill-first"
+                      : "round-robin",
+                  )
+                }
                 disabled={loading}
               />
             </div>
@@ -285,7 +331,7 @@ export default function ProfilePage() {
                   min="1"
                   max="10"
                   value={settings.stickyRoundRobinLimit || 3}
-                  onChange={(e) => updateStickyLimit(e.target.value)}
+                  onChange={e => updateStickyLimit(e.target.value)}
                   disabled={loading}
                   className="w-20 text-center"
                 />
@@ -304,7 +350,9 @@ export default function ProfilePage() {
         <Card>
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-purple-500/10 text-purple-500">
-              <span className="material-symbols-outlined text-[20px]">palette</span>
+              <span className="material-symbols-outlined text-[20px]">
+                palette
+              </span>
             </div>
             <h3 className="text-lg font-semibold">Appearance</h3>
           </div>
@@ -325,7 +373,7 @@ export default function ProfilePage() {
             {/* Theme Options */}
             <div className="pt-4 border-t border-border">
               <div className="inline-flex p-1 rounded-lg bg-black/5 dark:bg-white/5">
-                {["light", "dark", "system"].map((option) => (
+                {["light", "dark", "system"].map(option => (
                   <button
                     key={option}
                     type="button"
@@ -334,11 +382,15 @@ export default function ProfilePage() {
                       "flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all",
                       theme === option
                         ? "bg-white dark:bg-white/10 text-text-main shadow-sm"
-                        : "text-text-muted hover:text-text-main"
+                        : "text-text-muted hover:text-text-main",
                     )}
                   >
                     <span className="material-symbols-outlined text-[20px]">
-                      {option === "light" ? "light_mode" : option === "dark" ? "dark_mode" : "contrast"}
+                      {option === "light"
+                        ? "light_mode"
+                        : option === "dark"
+                          ? "dark_mode"
+                          : "contrast"}
                     </span>
                     <span className="capitalize">{option}</span>
                   </button>
@@ -352,7 +404,9 @@ export default function ProfilePage() {
         <Card>
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-green-500/10 text-green-500">
-              <span className="material-symbols-outlined text-[20px]">database</span>
+              <span className="material-symbols-outlined text-[20px]">
+                database
+              </span>
             </div>
             <h3 className="text-lg font-semibold">Data</h3>
           </div>
@@ -360,7 +414,9 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between p-4 rounded-lg bg-bg border border-border">
               <div>
                 <p className="font-medium">Database Location</p>
-                <p className="text-sm text-text-muted font-mono">~/.9router/db.json</p>
+                <p className="text-sm text-text-muted font-mono">
+                  ~/.9router/db.json
+                </p>
               </div>
             </div>
           </div>
@@ -370,7 +426,9 @@ export default function ProfilePage() {
         <Card>
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500">
-              <span className="material-symbols-outlined text-[20px]">monitoring</span>
+              <span className="material-symbols-outlined text-[20px]">
+                monitoring
+              </span>
             </div>
             <h3 className="text-lg font-semibold">Observability</h3>
           </div>
@@ -389,93 +447,127 @@ export default function ProfilePage() {
               />
             </div>
 
-            <div className={cn("flex flex-col gap-4", !observabilityEnabled && "opacity-60")}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Max Records</p>
-                <p className="text-sm text-text-muted">
-                  Maximum request detail records to keep (older records are auto-deleted)
-                </p>
+            <div
+              className={cn(
+                "flex flex-col gap-4",
+                !observabilityEnabled && "opacity-60",
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Max Records</p>
+                  <p className="text-sm text-text-muted">
+                    Maximum request detail records to keep (older records are
+                    auto-deleted)
+                  </p>
+                </div>
+                <Input
+                  type="number"
+                  min="100"
+                  max="10000"
+                  step="100"
+                  value={settings.observabilityMaxRecords || 1000}
+                  onChange={e =>
+                    updateObservabilitySetting(
+                      "observabilityMaxRecords",
+                      parseInt(e.target.value),
+                    )
+                  }
+                  disabled={loading || !observabilityEnabled}
+                  className="w-28 text-center"
+                />
               </div>
-              <Input
-                type="number"
-                min="100"
-                max="10000"
-                step="100"
-                value={settings.observabilityMaxRecords || 1000}
-                onChange={(e) => updateObservabilitySetting("observabilityMaxRecords", parseInt(e.target.value))}
-                disabled={loading || !observabilityEnabled}
-                className="w-28 text-center"
-              />
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Batch Size</p>
-                <p className="text-sm text-text-muted">
-                  Number of items to accumulate before writing to database (higher = better performance)
-                </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Batch Size</p>
+                  <p className="text-sm text-text-muted">
+                    Number of items to accumulate before writing to database
+                    (higher = better performance)
+                  </p>
+                </div>
+                <Input
+                  type="number"
+                  min="5"
+                  max="100"
+                  step="5"
+                  value={settings.observabilityBatchSize || 20}
+                  onChange={e =>
+                    updateObservabilitySetting(
+                      "observabilityBatchSize",
+                      parseInt(e.target.value),
+                    )
+                  }
+                  disabled={loading || !observabilityEnabled}
+                  className="w-28 text-center"
+                />
               </div>
-              <Input
-                type="number"
-                min="5"
-                max="100"
-                step="5"
-                value={settings.observabilityBatchSize || 20}
-                onChange={(e) => updateObservabilitySetting("observabilityBatchSize", parseInt(e.target.value))}
-                disabled={loading || !observabilityEnabled}
-                className="w-28 text-center"
-              />
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Flush Interval (ms)</p>
-                <p className="text-sm text-text-muted">
-                  Maximum time to wait before flushing buffer (prevents data loss during low traffic)
-                </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Flush Interval (ms)</p>
+                  <p className="text-sm text-text-muted">
+                    Maximum time to wait before flushing buffer (prevents data
+                    loss during low traffic)
+                  </p>
+                </div>
+                <Input
+                  type="number"
+                  min="1000"
+                  max="30000"
+                  step="1000"
+                  value={settings.observabilityFlushIntervalMs || 5000}
+                  onChange={e =>
+                    updateObservabilitySetting(
+                      "observabilityFlushIntervalMs",
+                      parseInt(e.target.value),
+                    )
+                  }
+                  disabled={loading || !observabilityEnabled}
+                  className="w-28 text-center"
+                />
               </div>
-              <Input
-                type="number"
-                min="1000"
-                max="30000"
-                step="1000"
-                value={settings.observabilityFlushIntervalMs || 5000}
-                onChange={(e) => updateObservabilitySetting("observabilityFlushIntervalMs", parseInt(e.target.value))}
-                disabled={loading || !observabilityEnabled}
-                className="w-28 text-center"
-              />
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Max JSON Size (KB)</p>
-                <p className="text-sm text-text-muted">
-                  Maximum size for each JSON field (request/response) before truncation
-                </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Max JSON Size (KB)</p>
+                  <p className="text-sm text-text-muted">
+                    Maximum size for each JSON field (request/response) before
+                    truncation
+                  </p>
+                </div>
+                <Input
+                  type="number"
+                  min="100"
+                  max="10240"
+                  step="100"
+                  value={settings.observabilityMaxJsonSize || 1024}
+                  onChange={e =>
+                    updateObservabilitySetting(
+                      "observabilityMaxJsonSize",
+                      parseInt(e.target.value),
+                    )
+                  }
+                  disabled={loading || !observabilityEnabled}
+                  className="w-28 text-center"
+                />
               </div>
-              <Input
-                type="number"
-                min="100"
-                max="10240"
-                step="100"
-                value={settings.observabilityMaxJsonSize || 1024}
-                onChange={(e) => updateObservabilitySetting("observabilityMaxJsonSize", parseInt(e.target.value))}
-                disabled={loading || !observabilityEnabled}
-                className="w-28 text-center"
-              />
-            </div>
 
-            <p className="text-xs text-text-muted italic pt-2 border-t border-border/50">
-              Current: Keeps {settings.observabilityMaxRecords || 1000} records, batches every {settings.observabilityBatchSize || 20} requests, max {settings.observabilityMaxJsonSize || 1024}KB per field
-            </p>
+              <p className="text-xs text-text-muted italic pt-2 border-t border-border/50">
+                Current: Keeps {settings.observabilityMaxRecords || 1000}{" "}
+                records, batches every {settings.observabilityBatchSize || 20}{" "}
+                requests, max {settings.observabilityMaxJsonSize || 1024}KB per
+                field
+              </p>
             </div>
           </div>
         </Card>
 
         {/* App Info */}
         <div className="text-center text-sm text-text-muted py-4">
-          <p>{APP_CONFIG.name} v{APP_CONFIG.version}</p>
+          <p>
+            {APP_CONFIG.name} v{APP_CONFIG.version}
+          </p>
           <p className="mt-1">Local Mode - All data stored on your machine</p>
         </div>
       </div>

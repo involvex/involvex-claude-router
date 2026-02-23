@@ -1,10 +1,18 @@
 "use client";
 
+import {
+  OAUTH_PROVIDERS,
+  APIKEY_PROVIDERS,
+  isOpenAICompatibleProvider,
+  isAnthropicCompatibleProvider,
+} from "@/shared/constants/providers";
+import {
+  getModelsByProviderId,
+  PROVIDER_ID_TO_ALIAS,
+} from "@/shared/constants/models";
 import { useState, useMemo, useEffect } from "react";
 import PropTypes from "prop-types";
 import Modal from "./Modal";
-import { getModelsByProviderId, PROVIDER_ID_TO_ALIAS } from "@/shared/constants/models";
-import { OAUTH_PROVIDERS, APIKEY_PROVIDERS, isOpenAICompatibleProvider, isAnthropicCompatibleProvider } from "@/shared/constants/providers";
 
 // Provider order: OAuth first, then API Key (matches dashboard/providers)
 const PROVIDER_ORDER = [
@@ -44,7 +52,8 @@ export default function ModelSelectModal({
   const fetchProviderNodes = async () => {
     try {
       const res = await fetch("/api/provider-nodes");
-      if (!res.ok) throw new Error(`Failed to fetch provider nodes: ${res.status}`);
+      if (!res.ok)
+        throw new Error(`Failed to fetch provider nodes: ${res.status}`);
       const data = await res.json();
       setProviderNodes(data.nodes || []);
     } catch (error) {
@@ -57,18 +66,21 @@ export default function ModelSelectModal({
     if (isOpen) fetchProviderNodes();
   }, [isOpen]);
 
-  const allProviders = useMemo(() => ({ ...OAUTH_PROVIDERS, ...APIKEY_PROVIDERS }), []);
+  const allProviders = useMemo(
+    () => ({ ...OAUTH_PROVIDERS, ...APIKEY_PROVIDERS }),
+    [],
+  );
 
   // Group models by provider with priority order
   const groupedModels = useMemo(() => {
     const groups = {};
-    
+
     // Get all active provider IDs from connections
     const activeConnectionIds = activeProviders.map(p => p.provider);
-    
+
     // Only show connected providers (including both standard and custom)
     const providerIdsToShow = new Set([
-      ...activeConnectionIds,  // Only connected providers
+      ...activeConnectionIds, // Only connected providers
     ]);
 
     // Sort by PROVIDER_ORDER
@@ -78,11 +90,16 @@ export default function ModelSelectModal({
       return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
     });
 
-    sortedProviderIds.forEach((providerId) => {
+    sortedProviderIds.forEach(providerId => {
       const alias = PROVIDER_ID_TO_ALIAS[providerId] || providerId;
-      const providerInfo = allProviders[providerId] || { name: providerId, color: "#666" };
-      const isCustomProvider = isOpenAICompatibleProvider(providerId) || isAnthropicCompatibleProvider(providerId);
-      
+      const providerInfo = allProviders[providerId] || {
+        name: providerId,
+        color: "#666",
+      };
+      const isCustomProvider =
+        isOpenAICompatibleProvider(providerId) ||
+        isAnthropicCompatibleProvider(providerId);
+
       if (providerInfo.passthroughModels) {
         const aliasModels = Object.entries(modelAliases)
           .filter(([, fullModel]) => fullModel.startsWith(`${alias}/`))
@@ -91,12 +108,14 @@ export default function ModelSelectModal({
             name: aliasName,
             value: fullModel,
           }));
-        
+
         if (aliasModels.length > 0) {
           // Check for custom name from providerNodes (for compatible providers)
-          const matchedNode = providerNodes.find(node => node.id === providerId);
+          const matchedNode = providerNodes.find(
+            node => node.id === providerId,
+          );
           const displayName = matchedNode?.name || providerInfo.name;
-          
+
           groups[providerId] = {
             name: displayName,
             alias: alias,
@@ -108,7 +127,7 @@ export default function ModelSelectModal({
         // Match provider node to get custom name
         const matchedNode = providerNodes.find(node => node.id === providerId);
         const displayName = matchedNode?.name || providerInfo.name;
-        
+
         // Get models from modelAliases using providerId (not prefix)
         // modelAliases format: { alias: "providerId/modelId" }
         const nodeModels = Object.entries(modelAliases)
@@ -118,7 +137,7 @@ export default function ModelSelectModal({
             name: aliasName,
             value: fullModel,
           }));
-        
+
         // Only add to groups if there are models (consistent with other provider types)
         if (nodeModels.length > 0) {
           groups[providerId] = {
@@ -137,7 +156,7 @@ export default function ModelSelectModal({
             name: providerInfo.name,
             alias: alias,
             color: providerInfo.color,
-            models: models.map((m) => ({
+            models: models.map(m => ({
               id: m.id,
               name: m.name,
               value: `${alias}/${m.id}`,
@@ -166,13 +185,13 @@ export default function ModelSelectModal({
 
     Object.entries(groupedModels).forEach(([providerId, group]) => {
       const matchedModels = group.models.filter(
-        (m) =>
+        m =>
           m.name.toLowerCase().includes(query) ||
-          m.id.toLowerCase().includes(query)
+          m.id.toLowerCase().includes(query),
       );
 
       const providerNameMatches = group.name.toLowerCase().includes(query);
-      
+
       if (matchedModels.length > 0 || providerNameMatches) {
         filtered[providerId] = {
           ...group,
@@ -184,7 +203,7 @@ export default function ModelSelectModal({
     return filtered;
   }, [groupedModels, searchQuery]);
 
-  const handleSelect = (model) => {
+  const handleSelect = model => {
     onSelect(model);
     onClose();
     setSearchQuery("");
@@ -211,7 +230,7 @@ export default function ModelSelectModal({
             type="text"
             placeholder="Search..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className="w-full pl-8 pr-3 py-1.5 bg-surface border border-border rounded text-xs focus:outline-none focus:ring-1 focus:ring-primary/50"
           />
         </div>
@@ -223,22 +242,33 @@ export default function ModelSelectModal({
         {filteredCombos.length > 0 && (
           <div>
             <div className="flex items-center gap-1.5 mb-1.5 sticky top-0 bg-surface py-0.5">
-              <span className="material-symbols-outlined text-primary text-[14px]">layers</span>
+              <span className="material-symbols-outlined text-primary text-[14px]">
+                layers
+              </span>
               <span className="text-xs font-medium text-primary">Combos</span>
-              <span className="text-[10px] text-text-muted">({filteredCombos.length})</span>
+              <span className="text-[10px] text-text-muted">
+                ({filteredCombos.length})
+              </span>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {filteredCombos.map((combo) => {
+              {filteredCombos.map(combo => {
                 const isSelected = selectedModel === combo.name;
                 return (
                   <button
                     key={combo.id}
-                    onClick={() => handleSelect({ id: combo.name, name: combo.name, value: combo.name })}
+                    onClick={() =>
+                      handleSelect({
+                        id: combo.name,
+                        name: combo.name,
+                        value: combo.name,
+                      })
+                    }
                     className={`
                       px-2 py-1 rounded-xl text-xs font-medium transition-all border hover:cursor-pointer
-                      ${isSelected 
-                        ? "bg-primary text-white border-primary" 
-                        : "bg-surface border-border text-text-main hover:border-primary/50 hover:bg-primary/5"
+                      ${
+                        isSelected
+                          ? "bg-primary text-white border-primary"
+                          : "bg-surface border-border text-text-main hover:border-primary/50 hover:bg-primary/5"
                       }
                     `}
                   >
@@ -268,7 +298,7 @@ export default function ModelSelectModal({
             </div>
 
             <div className="flex flex-wrap gap-1.5">
-              {group.models.map((model) => {
+              {group.models.map(model => {
                 const isSelected = selectedModel === model.value;
                 return (
                   <button
@@ -276,9 +306,10 @@ export default function ModelSelectModal({
                     onClick={() => handleSelect(model)}
                     className={`
                       px-2 py-1 rounded-xl text-xs font-medium transition-all border hover:cursor-pointer
-                      ${isSelected 
-                        ? "bg-primary text-white border-primary" 
-                        : "bg-surface border-border text-text-main hover:border-primary/50 hover:bg-primary/5"
+                      ${
+                        isSelected
+                          ? "bg-primary text-white border-primary"
+                          : "bg-surface border-border text-text-main hover:border-primary/50 hover:bg-primary/5"
                       }
                     `}
                   >
@@ -290,14 +321,15 @@ export default function ModelSelectModal({
           </div>
         ))}
 
-        {Object.keys(filteredGroups).length === 0 && filteredCombos.length === 0 && (
-          <div className="text-center py-4 text-text-muted">
-            <span className="material-symbols-outlined text-2xl mb-1 block">
-              search_off
-            </span>
-            <p className="text-xs">No models found</p>
-          </div>
-        )}
+        {Object.keys(filteredGroups).length === 0 &&
+          filteredCombos.length === 0 && (
+            <div className="text-center py-4 text-text-muted">
+              <span className="material-symbols-outlined text-2xl mb-1 block">
+                search_off
+              </span>
+              <p className="text-xs">No models found</p>
+            </div>
+          )}
       </div>
     </Modal>
   );
@@ -311,9 +343,8 @@ ModelSelectModal.propTypes = {
   activeProviders: PropTypes.arrayOf(
     PropTypes.shape({
       provider: PropTypes.string.isRequired,
-    })
+    }),
   ),
   title: PropTypes.string,
   modelAliases: PropTypes.object,
 };
-

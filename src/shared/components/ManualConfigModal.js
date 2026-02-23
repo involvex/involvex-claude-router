@@ -1,10 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import Modal from "./Modal";
 import Button from "./Button";
+import Modal from "./Modal";
 
-export default function ManualConfigModal({ isOpen, onClose, title = "Manual Configuration", configs = [] }) {
+export default function ManualConfigModal({
+  isOpen,
+  onClose,
+  title = "Manual Configuration",
+  configs = [],
+}) {
   const [copiedIndex, setCopiedIndex] = useState(null);
 
   const copyToClipboard = async (text, index) => {
@@ -18,12 +23,22 @@ export default function ManualConfigModal({ isOpen, onClose, title = "Manual Con
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} size="xl">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+      size="xl"
+    >
       <div className="flex flex-col gap-4">
         {configs.map((config, index) => (
-          <div key={index} className="flex flex-col gap-2">
+          <div
+            key={index}
+            className="flex flex-col gap-2"
+          >
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-text-main">{config.filename}</span>
+              <span className="text-sm font-medium text-text-main">
+                {config.filename}
+              </span>
               <Button
                 variant="ghost"
                 size="sm"

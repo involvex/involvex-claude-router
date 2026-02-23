@@ -1,5 +1,5 @@
-import { handleChat } from "@/sse/handlers/chat.js";
 import { initTranslators } from "open-sse/translator/index.js";
+import { handleChat } from "@/sse/handlers/chat.js";
 
 let initialized = false;
 
@@ -22,8 +22,8 @@ export async function OPTIONS() {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "*"
-    }
+      "Access-Control-Allow-Headers": "*",
+    },
   });
 }
 
@@ -37,25 +37,29 @@ export async function POST(request, { params }) {
   try {
     const { path } = await params;
     // path = ["provider", "model:generateContent"] or ["model:generateContent"]
-    
+
     let model;
     if (path.length >= 2) {
       // Format: /v1beta/models/provider/model:generateContent
       const provider = path[0];
       const modelAction = path[1];
-      const modelName = modelAction.replace(":generateContent", "").replace(":streamGenerateContent", "");
+      const modelName = modelAction
+        .replace(":generateContent", "")
+        .replace(":streamGenerateContent", "");
       model = `${provider}/${modelName}`;
     } else {
       // Format: /v1beta/models/model:generateContent
       const modelAction = path[0];
-      model = modelAction.replace(":generateContent", "").replace(":streamGenerateContent", "");
+      model = modelAction
+        .replace(":generateContent", "")
+        .replace(":streamGenerateContent", "");
     }
 
     const body = await request.json();
-    
+
     // Convert Gemini format to OpenAI/internal format
     const convertedBody = convertGeminiToInternal(body, model);
-    
+
     // Create new request with converted body
     const newRequest = new Request(request.url, {
       method: "POST",
@@ -68,7 +72,7 @@ export async function POST(request, { params }) {
     console.log("Error handling Gemini request:", error);
     return Response.json(
       { error: { message: error.message, code: 500 } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -81,9 +85,8 @@ function convertGeminiToInternal(geminiBody, model) {
 
   // Convert system instruction
   if (geminiBody.systemInstruction) {
-    const systemText = geminiBody.systemInstruction.parts
-      ?.map(p => p.text)
-      .join("\n") || "";
+    const systemText =
+      geminiBody.systemInstruction.parts?.map(p => p.text).join("\n") || "";
     if (systemText) {
       messages.push({ role: "system", content: systemText });
     }
@@ -110,4 +113,3 @@ function convertGeminiToInternal(geminiBody, model) {
     top_p: geminiBody.generationConfig?.topP,
   };
 }
-

@@ -1,9 +1,9 @@
+const { promisify } = require("util");
 const https = require("https");
-const fs = require("fs");
 const path = require("path");
 const dns = require("dns");
-const { promisify } = require("util");
 const os = require("os");
+const fs = require("fs");
 
 // Configuration
 const INTERNAL_REQUEST_HEADER = { name: "x-request-source", value: "local" };
@@ -27,7 +27,7 @@ let sslOptions;
 try {
   sslOptions = {
     key: fs.readFileSync(path.join(certDir, "server.key")),
-    cert: fs.readFileSync(path.join(certDir, "server.crt"))
+    cert: fs.readFileSync(path.join(certDir, "server.crt")),
   };
 } catch (e) {
   console.error(`❌ SSL cert not found in ${certDir}: ${e.message}`);
@@ -39,7 +39,8 @@ const CHAT_URL_PATTERNS = [":generateContent", ":streamGenerateContent"];
 
 // Log directory for request/response dumps
 const LOG_DIR = path.join(__dirname, "../../logs/mitm");
-if (ENABLE_FILE_LOG && !fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
+if (ENABLE_FILE_LOG && !fs.existsSync(LOG_DIR))
+  fs.mkdirSync(LOG_DIR, { recursive: true });
 
 function saveRequestLog(url, bodyBuffer) {
   if (!ENABLE_FILE_LOG) return;
@@ -110,20 +111,23 @@ function getMappedModel(model) {
 async function passthrough(req, res, bodyBuffer) {
   const targetIP = await resolveTargetIP();
 
-  const forwardReq = https.request({
-    hostname: targetIP,
-    port: 443,
-    path: req.url,
-    method: req.method,
-    headers: { ...req.headers, host: TARGET_HOST },
-    servername: TARGET_HOST,
-    rejectUnauthorized: false
-  }, (forwardRes) => {
-    res.writeHead(forwardRes.statusCode, forwardRes.headers);
-    forwardRes.pipe(res);
-  });
+  const forwardReq = https.request(
+    {
+      hostname: targetIP,
+      port: 443,
+      path: req.url,
+      method: req.method,
+      headers: { ...req.headers, host: TARGET_HOST },
+      servername: TARGET_HOST,
+      rejectUnauthorized: false,
+    },
+    forwardRes => {
+      res.writeHead(forwardRes.statusCode, forwardRes.headers);
+      forwardRes.pipe(res);
+    },
+  );
 
-  forwardReq.on("error", (err) => {
+  forwardReq.on("error", err => {
     console.error(`❌ Passthrough error: ${err.message}`);
     if (!res.headersSent) res.writeHead(502);
     res.end("Bad Gateway");
@@ -142,9 +146,9 @@ async function intercept(req, res, bodyBuffer, mappedModel) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${API_KEY}`
+        Authorization: `Bearer ${API_KEY}`,
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
@@ -153,8 +157,13 @@ async function intercept(req, res, bodyBuffer, mappedModel) {
     }
 
     const ct = response.headers.get("content-type") || "application/json";
-    const resHeaders = { "Content-Type": ct, "Cache-Control": "no-cache", "Connection": "keep-alive" };
-    if (ct.includes("text/event-stream")) resHeaders["X-Accel-Buffering"] = "no";
+    const resHeaders = {
+      "Content-Type": ct,
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    };
+    if (ct.includes("text/event-stream"))
+      resHeaders["X-Accel-Buffering"] = "no";
     res.writeHead(200, resHeaders);
 
     const reader = response.body.getReader();
@@ -162,13 +171,19 @@ async function intercept(req, res, bodyBuffer, mappedModel) {
 
     while (true) {
       const { done, value } = await reader.read();
-      if (done) { res.end(); break; }
+      if (done) {
+        res.end();
+        break;
+      }
       res.write(decoder.decode(value, { stream: true }));
     }
   } catch (error) {
     console.error(`❌ ${error.message}`);
-    if (!res.headersSent) res.writeHead(500, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: { message: error.message, type: "mitm_error" } }));
+    if (!res.headersSent)
+      res.writeHead(500, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({ error: { message: error.message, type: "mitm_error" } }),
+    );
   }
 }
 
@@ -186,7 +201,9 @@ const server = https.createServer(sslOptions, async (req, res) => {
   if (bodyBuffer.length > 0) saveRequestLog(req.url, bodyBuffer);
 
   // Anti-loop: requests from 9Router bypass interception
-  if (req.headers[INTERNAL_REQUEST_HEADER.name] === INTERNAL_REQUEST_HEADER.value) {
+  if (
+    req.headers[INTERNAL_REQUEST_HEADER.name] === INTERNAL_REQUEST_HEADER.value
+  ) {
     return passthrough(req, res, bodyBuffer);
   }
 
@@ -212,7 +229,7 @@ server.listen(LOCAL_PORT, () => {
   console.log(`🚀 MITM ready on :${LOCAL_PORT} → ${ROUTER_URL}`);
 });
 
-server.on("error", (error) => {
+server.on("error", error => {
   if (error.code === "EADDRINUSE") {
     console.error(`❌ Port ${LOCAL_PORT} already in use`);
   } else if (error.code === "EACCES") {
@@ -224,7 +241,9 @@ server.on("error", (error) => {
 });
 
 // Graceful shutdown (SIGBREAK for Windows, SIGTERM/SIGINT for Unix)
-const shutdown = () => { server.close(() => process.exit(0)); };
+const shutdown = () => {
+  server.close(() => process.exit(0));
+};
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
 if (process.platform === "win32") {

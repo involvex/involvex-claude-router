@@ -1,7 +1,7 @@
-import { OAuthService } from "./oauth.js";
-import { CLAUDE_CONFIG } from "../constants/oauth.js";
 import { getServerCredentials } from "../config/index.js";
 import { spinner as createSpinner } from "../utils/ui.js";
+import { CLAUDE_CONFIG } from "../constants/oauth.js";
+import { OAuthService } from "./oauth.js";
 
 /**
  * Claude OAuth Service
@@ -110,15 +110,18 @@ export class ClaudeService extends OAuthService {
       spinner.text = "Starting local server...";
 
       // Authenticate and get authorization code
-      const { code, state, codeVerifier, redirectUri } = await this.authenticate(
-        "Claude",
-        this.buildClaudeAuthUrl.bind(this)
-      );
+      const { code, state, codeVerifier, redirectUri } =
+        await this.authenticate("Claude", this.buildClaudeAuthUrl.bind(this));
 
       spinner.start("Exchanging code for tokens...");
 
       // Exchange code for tokens
-      const tokens = await this.exchangeClaudeCode(code, redirectUri, codeVerifier, state);
+      const tokens = await this.exchangeClaudeCode(
+        code,
+        redirectUri,
+        codeVerifier,
+        state,
+      );
 
       spinner.text = "Saving tokens to server...";
 
@@ -133,4 +136,3 @@ export class ClaudeService extends OAuthService {
     }
   }
 }
-

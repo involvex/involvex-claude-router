@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { getTunnelStatus } from "@/lib/tunnel/tunnelManager";
+import { NextResponse } from "next/server";
 
 export async function GET() {
   try {

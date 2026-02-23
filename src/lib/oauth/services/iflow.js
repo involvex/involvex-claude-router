@@ -1,9 +1,9 @@
+import { getServerCredentials } from "../config/index.js";
+import { spinner as createSpinner } from "../utils/ui.js";
+import { startLocalServer } from "../utils/server.js";
+import { IFLOW_CONFIG } from "../constants/oauth.js";
 import crypto from "crypto";
 import open from "open";
-import { IFLOW_CONFIG } from "../constants/oauth.js";
-import { getServerCredentials } from "../config/index.js";
-import { startLocalServer } from "../utils/server.js";
-import { spinner as createSpinner } from "../utils/ui.js";
 
 /**
  * iFlow OAuth Service
@@ -35,7 +35,7 @@ export class IFlowService {
   async exchangeCode(code, redirectUri) {
     // Create Basic Auth header
     const basicAuth = Buffer.from(
-      `${this.config.clientId}:${this.config.clientSecret}`
+      `${this.config.clientId}:${this.config.clientSecret}`,
     ).toString("base64");
 
     const response = await fetch(this.config.tokenUrl, {
@@ -72,7 +72,7 @@ export class IFlowService {
         headers: {
           Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -130,7 +130,7 @@ export class IFlowService {
 
       // Start local server for callback
       let callbackParams = null;
-      const { port, close } = await startLocalServer((params) => {
+      const { port, close } = await startLocalServer(params => {
         callbackParams = params;
       });
 
@@ -169,7 +169,9 @@ export class IFlowService {
       close();
 
       if (callbackParams.error) {
-        throw new Error(callbackParams.error_description || callbackParams.error);
+        throw new Error(
+          callbackParams.error_description || callbackParams.error,
+        );
       }
 
       if (!callbackParams.code) {
@@ -191,7 +193,9 @@ export class IFlowService {
       // Save tokens to server
       await this.saveTokens(tokens, userInfo);
 
-      spinner.succeed(`iFlow connected successfully! (${userInfo.email || userInfo.phone})`);
+      spinner.succeed(
+        `iFlow connected successfully! (${userInfo.email || userInfo.phone})`,
+      );
       return true;
     } catch (error) {
       spinner.fail(`Failed: ${error.message}`);
@@ -199,4 +203,3 @@ export class IFlowService {
     }
   }
 }
-

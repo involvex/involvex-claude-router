@@ -1,12 +1,12 @@
 {
-  "name": "9router-cloud",
+  "name": "@involvex/claude-router-cloud",
   "version": "0.2.13",
   "private": true,
+  "description": "Involvex's Claude Router Cloud Worker - Self-hosted Cloudflare Worker proxy",
   "type": "module",
-  "description": "9Router Cloud Worker - Self-hosted Cloudflare Worker proxy",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
   },
   "dependencies": {
     "open-sse": "file:../open-sse"

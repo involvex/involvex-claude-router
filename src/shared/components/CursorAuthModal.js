@@ -1,8 +1,8 @@
 "use client";
 
+import { Modal, Button, Input } from "@/shared/components";
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Modal, Button, Input } from "@/shared/components";
 
 /**
  * Cursor Auth Modal
@@ -87,7 +87,11 @@ export default function CursorAuthModal({ isOpen, onSuccess, onClose }) {
   };
 
   return (
-    <Modal isOpen={isOpen} title="Connect Cursor IDE" onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      title="Connect Cursor IDE"
+      onClose={onClose}
+    >
       <div className="flex flex-col gap-4">
         {/* Auto-detecting state */}
         {autoDetecting && (
@@ -97,7 +101,9 @@ export default function CursorAuthModal({ isOpen, onSuccess, onClose }) {
                 progress_activity
               </span>
             </div>
-            <h3 className="text-lg font-semibold mb-2">Auto-detecting tokens...</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Auto-detecting tokens...
+            </h3>
             <p className="text-sm text-text-muted">
               Reading from Cursor IDE database
             </p>
@@ -111,7 +117,9 @@ export default function CursorAuthModal({ isOpen, onSuccess, onClose }) {
             {autoDetected && (
               <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
                 <div className="flex gap-2">
-                  <span className="material-symbols-outlined text-green-600 dark:text-green-400">check_circle</span>
+                  <span className="material-symbols-outlined text-green-600 dark:text-green-400">
+                    check_circle
+                  </span>
                   <p className="text-sm text-green-800 dark:text-green-200">
                     Tokens auto-detected from Cursor IDE successfully!
                   </p>
@@ -123,7 +131,9 @@ export default function CursorAuthModal({ isOpen, onSuccess, onClose }) {
             {!autoDetected && !error && (
               <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                 <div className="flex gap-2">
-                  <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
+                  <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">
+                    info
+                  </span>
                   <p className="text-sm text-blue-800 dark:text-blue-200">
                     Cursor IDE not detected. Please paste your tokens manually.
                   </p>
@@ -138,7 +148,7 @@ export default function CursorAuthModal({ isOpen, onSuccess, onClose }) {
               </label>
               <textarea
                 value={accessToken}
-                onChange={(e) => setAccessToken(e.target.value)}
+                onChange={e => setAccessToken(e.target.value)}
                 placeholder="Access token will be auto-filled..."
                 rows={3}
                 className="w-full px-3 py-2 text-sm font-mono border border-border rounded-lg bg-background focus:outline-none focus:border-primary resize-none"
@@ -152,7 +162,7 @@ export default function CursorAuthModal({ isOpen, onSuccess, onClose }) {
               </label>
               <Input
                 value={machineId}
-                onChange={(e) => setMachineId(e.target.value)}
+                onChange={e => setMachineId(e.target.value)}
                 placeholder="Machine ID will be auto-filled..."
                 className="font-mono text-sm"
               />
@@ -161,7 +171,9 @@ export default function CursorAuthModal({ isOpen, onSuccess, onClose }) {
             {/* Error Display */}
             {error && (
               <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
-                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {error}
+                </p>
               </div>
             )}
 
@@ -174,7 +186,11 @@ export default function CursorAuthModal({ isOpen, onSuccess, onClose }) {
               >
                 {importing ? "Importing..." : "Import Token"}
               </Button>
-              <Button onClick={onClose} variant="ghost" fullWidth>
+              <Button
+                onClick={onClose}
+                variant="ghost"
+                fullWidth
+              >
                 Cancel
               </Button>
             </div>

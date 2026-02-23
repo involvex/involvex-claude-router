@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { validateApiKey, getModelAliases } from "@/models";
+import { NextResponse } from "next/server";
 
 // Resolve model alias to provider/model
 export async function POST(request) {
@@ -35,14 +35,13 @@ export async function POST(request) {
         return NextResponse.json({
           alias,
           provider: resolved.slice(0, firstSlash),
-          model: resolved.slice(firstSlash + 1)
+          model: resolved.slice(firstSlash + 1),
         });
       }
     }
 
     // Not found
     return NextResponse.json({ error: "Alias not found" }, { status: 404 });
-
   } catch (error) {
     console.log("Model resolve error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

@@ -1,11 +1,17 @@
 const { exec, spawn } = require("child_process");
-const fs = require("fs");
 const path = require("path");
+const fs = require("fs");
 
 const TARGET_HOST = "daily-cloudcode-pa.googleapis.com";
 const IS_WIN = process.platform === "win32";
 const HOSTS_FILE = IS_WIN
-  ? path.join(process.env.SystemRoot || "C:\\Windows", "System32", "drivers", "etc", "hosts")
+  ? path.join(
+      process.env.SystemRoot || "C:\\Windows",
+      "System32",
+      "drivers",
+      "etc",
+      "hosts",
+    )
   : "/etc/hosts";
 
 /**
@@ -14,15 +20,19 @@ const HOSTS_FILE = IS_WIN
 function execWithPassword(command, password) {
   return new Promise((resolve, reject) => {
     const child = spawn("sudo", ["-S", "sh", "-c", command], {
-      stdio: ["pipe", "pipe", "pipe"]
+      stdio: ["pipe", "pipe", "pipe"],
     });
 
     let stdout = "";
     let stderr = "";
-    child.stdout.on("data", (d) => { stdout += d; });
-    child.stderr.on("data", (d) => { stderr += d; });
+    child.stdout.on("data", d => {
+      stdout += d;
+    });
+    child.stderr.on("data", d => {
+      stderr += d;
+    });
 
-    child.on("close", (code) => {
+    child.on("close", code => {
       if (code === 0) resolve(stdout);
       else reject(new Error(stderr || `Exit code ${code}`));
     });
@@ -40,7 +50,9 @@ function execElevatedWindows(command) {
     const psCommand = `Start-Process cmd -ArgumentList '/c','${command.replace(/'/g, "''")}' -Verb RunAs -Wait`;
     exec(`powershell -Command "${psCommand}"`, (error, stdout, stderr) => {
       if (error) {
-        reject(new Error(`Elevated command failed: ${error.message}\n${stderr}`));
+        reject(
+          new Error(`Elevated command failed: ${error.message}\n${stderr}`),
+        );
       } else {
         resolve(stdout);
       }
@@ -82,11 +94,16 @@ async function addDNSEntry(sudoPassword) {
     if (IS_WIN) {
       await execElevatedWindows("ipconfig /flushdns");
     } else {
-      await execWithPassword("dscacheutil -flushcache && killall -HUP mDNSResponder", sudoPassword);
+      await execWithPassword(
+        "dscacheutil -flushcache && killall -HUP mDNSResponder",
+        sudoPassword,
+      );
     }
     console.log(`✅ Added DNS entry: ${entry}`);
   } catch (error) {
-    const msg = error.message?.includes("incorrect password") ? "Wrong sudo password" : "Failed to add DNS entry";
+    const msg = error.message?.includes("incorrect password")
+      ? "Wrong sudo password"
+      : "Failed to add DNS entry";
     throw new Error(msg);
   }
 }
@@ -106,25 +123,39 @@ async function removeDNSEntry(sudoPassword) {
       const psScript = `(Get-Content '${HOSTS_FILE}') | Where-Object { $_ -notmatch '${TARGET_HOST}' } | Set-Content '${HOSTS_FILE}'`;
       const psCommand = `Start-Process powershell -ArgumentList '-Command','${psScript.replace(/'/g, "''")}' -Verb RunAs -Wait`;
       await new Promise((resolve, reject) => {
-        exec(`powershell -Command "${psCommand}"`, (error) => {
-          if (error) reject(new Error(`Failed to remove DNS entry: ${error.message}`));
+        exec(`powershell -Command "${psCommand}"`, error => {
+          if (error)
+            reject(new Error(`Failed to remove DNS entry: ${error.message}`));
           else resolve();
         });
       });
     } else {
-      await execWithPassword(`sed -i '' '/${TARGET_HOST}/d' ${HOSTS_FILE}`, sudoPassword);
+      await execWithPassword(
+        `sed -i '' '/${TARGET_HOST}/d' ${HOSTS_FILE}`,
+        sudoPassword,
+      );
     }
     // Flush DNS cache
     if (IS_WIN) {
       await execElevatedWindows("ipconfig /flushdns");
     } else {
-      await execWithPassword("dscacheutil -flushcache && killall -HUP mDNSResponder", sudoPassword);
+      await execWithPassword(
+        "dscacheutil -flushcache && killall -HUP mDNSResponder",
+        sudoPassword,
+      );
     }
     console.log(`✅ Removed DNS entry for ${TARGET_HOST}`);
   } catch (error) {
-    const msg = error.message?.includes("incorrect password") ? "Wrong sudo password" : "Failed to remove DNS entry";
+    const msg = error.message?.includes("incorrect password")
+      ? "Wrong sudo password"
+      : "Failed to remove DNS entry";
     throw new Error(msg);
   }
 }
 
-module.exports = { addDNSEntry, removeDNSEntry, execWithPassword, checkDNSEntry };
+module.exports = {
+  addDNSEntry,
+  removeDNSEntry,
+  execWithPassword,
+  checkDNSEntry,
+};

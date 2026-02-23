@@ -12,10 +12,13 @@ const GITHUB_CONFIG = {
 
 // Antigravity API config (from Quotio)
 const ANTIGRAVITY_CONFIG = {
-  quotaApiUrl: "https://cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels",
-  loadProjectApiUrl: "https://cloudcode-pa.googleapis.com/v1internal:loadCodeAssist",
+  quotaApiUrl:
+    "https://cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels",
+  loadProjectApiUrl:
+    "https://cloudcode-pa.googleapis.com/v1internal:loadCodeAssist",
   tokenUrl: "https://oauth2.googleapis.com/token",
-  clientId: "1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com",
+  clientId:
+    "1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com",
   clientSecret: "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",
   userAgent: getPlatformUserAgent(),
 };
@@ -75,12 +78,12 @@ function parseResetTime(resetValue) {
     }
 
     // If it's a number (Unix timestamp in milliseconds)
-    if (typeof resetValue === 'number') {
+    if (typeof resetValue === "number") {
       return new Date(resetValue).toISOString();
     }
 
     // If it's a string (ISO date or any parseable date string)
-    if (typeof resetValue === 'string') {
+    if (typeof resetValue === "string") {
       return new Date(resetValue).toISOString();
     }
 
@@ -98,20 +101,25 @@ function parseResetTime(resetValue) {
 async function getGitHubUsage(accessToken, providerSpecificData) {
   try {
     if (!accessToken) {
-      throw new Error("No GitHub access token available. Please re-authorize the connection.");
+      throw new Error(
+        "No GitHub access token available. Please re-authorize the connection.",
+      );
     }
 
     // copilot_internal/user API requires GitHub OAuth token, not copilotToken
-    const response = await fetch("https://api.github.com/copilot_internal/user", {
-      headers: {
-        "Authorization": `token ${accessToken}`,
-        "Accept": "application/json",
-        "X-GitHub-Api-Version": GITHUB_CONFIG.apiVersion,
-        "User-Agent": GITHUB_CONFIG.userAgent,
-        "Editor-Version": "vscode/1.100.0",
-        "Editor-Plugin-Version": "copilot-chat/0.26.7",
+    const response = await fetch(
+      "https://api.github.com/copilot_internal/user",
+      {
+        headers: {
+          Authorization: `token ${accessToken}`,
+          Accept: "application/json",
+          "X-GitHub-Api-Version": GITHUB_CONFIG.apiVersion,
+          "User-Agent": GITHUB_CONFIG.userAgent,
+          "Editor-Version": "vscode/1.100.0",
+          "Editor-Plugin-Version": "copilot-chat/0.26.7",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       const error = await response.text();
@@ -131,8 +139,14 @@ async function getGitHubUsage(accessToken, providerSpecificData) {
         resetDate: data.quota_reset_date,
         quotas: {
           chat: { ...formatGitHubQuotaSnapshot(snapshots.chat), resetAt },
-          completions: { ...formatGitHubQuotaSnapshot(snapshots.completions), resetAt },
-          premium_interactions: { ...formatGitHubQuotaSnapshot(snapshots.premium_interactions), resetAt },
+          completions: {
+            ...formatGitHubQuotaSnapshot(snapshots.completions),
+            resetAt,
+          },
+          premium_interactions: {
+            ...formatGitHubQuotaSnapshot(snapshots.premium_interactions),
+            resetAt,
+          },
         },
       };
     } else if (data.monthly_quotas || data.limited_user_quotas) {
@@ -192,17 +206,24 @@ async function getGeminiUsage(accessToken) {
           Authorization: `Bearer ${accessToken}`,
           Accept: "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
       // Quota API may not be accessible, return generic message
-      return { message: "Gemini CLI uses Google Cloud quotas. Check Google Cloud Console for details." };
+      return {
+        message:
+          "Gemini CLI uses Google Cloud quotas. Check Google Cloud Console for details.",
+      };
     }
 
-    return { message: "Gemini CLI connected. Usage tracked via Google Cloud Console." };
+    return {
+      message: "Gemini CLI connected. Usage tracked via Google Cloud Console.",
+    };
   } catch (error) {
-    return { message: "Unable to fetch Gemini usage. Check Google Cloud Console." };
+    return {
+      message: "Unable to fetch Gemini usage. Check Google Cloud Console.",
+    };
   }
 }
 
@@ -218,14 +239,14 @@ async function getAntigravityUsage(accessToken, providerSpecificData) {
     const response = await fetch(ANTIGRAVITY_CONFIG.quotaApiUrl, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
         "User-Agent": ANTIGRAVITY_CONFIG.userAgent,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         ...(projectId ? { project: projectId } : {}),
         metadata: CLIENT_METADATA,
-        mode: 1
+        mode: 1,
       }),
     });
 
@@ -244,12 +265,12 @@ async function getAntigravityUsage(accessToken, providerSpecificData) {
     if (data.models) {
       // Filter only recommended/important models (must match PROVIDER_MODELS ag ids)
       const importantModels = [
-        'claude-opus-4-6-thinking',
-        'claude-sonnet-4-6',
-        'gemini-3.1-pro-high',
-        'gemini-3.1-pro-low',
-        'gemini-3-flash',
-        'gpt-oss-120b-medium',
+        "claude-opus-4-6-thinking",
+        "claude-sonnet-4-6",
+        "gemini-3.1-pro-high",
+        "gemini-3.1-pro-low",
+        "gemini-3-flash",
+        "gpt-oss-120b-medium",
       ];
 
       for (const [modelKey, info] of Object.entries(data.models)) {
@@ -316,7 +337,7 @@ async function getAntigravitySubscriptionInfo(accessToken) {
     const response = await fetch(ANTIGRAVITY_CONFIG.loadProjectApiUrl, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
         "User-Agent": ANTIGRAVITY_CONFIG.userAgent,
         "Content-Type": "application/json",
       },
@@ -337,14 +358,17 @@ async function getAntigravitySubscriptionInfo(accessToken) {
 async function getClaudeUsage(accessToken) {
   try {
     // Try to get organization/account settings first
-    const settingsResponse = await fetch("https://api.anthropic.com/v1/settings", {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-        "anthropic-version": "2023-06-01",
+    const settingsResponse = await fetch(
+      "https://api.anthropic.com/v1/settings",
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          "anthropic-version": "2023-06-01",
+        },
       },
-    });
+    );
 
     if (settingsResponse.ok) {
       const settings = await settingsResponse.json();
@@ -356,11 +380,11 @@ async function getClaudeUsage(accessToken) {
           {
             method: "GET",
             headers: {
-              "Authorization": `Bearer ${accessToken}`,
+              Authorization: `Bearer ${accessToken}`,
               "Content-Type": "application/json",
               "anthropic-version": "2023-06-01",
             },
-          }
+          },
         );
 
         if (usageResponse.ok) {
@@ -381,9 +405,13 @@ async function getClaudeUsage(accessToken) {
     }
 
     // If settings API fails, OAuth token may not have required scope
-    return { message: "Claude connected. Usage API requires admin permissions." };
+    return {
+      message: "Claude connected. Usage API requires admin permissions.",
+    };
   } catch (error) {
-    return { message: `Claude connected. Unable to fetch usage: ${error.message}` };
+    return {
+      message: `Claude connected. Unable to fetch usage: ${error.message}`,
+    };
   }
 }
 
@@ -395,8 +423,8 @@ async function getCodexUsage(accessToken) {
     const response = await fetch(CODEX_CONFIG.usageUrl, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${accessToken}`,
-        "Accept": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
       },
     });
 
@@ -412,8 +440,12 @@ async function getCodexUsage(accessToken) {
     const secondaryWindow = rateLimit.secondary_window || {};
 
     // Parse reset dates (reset_at is Unix timestamp in seconds, multiply by 1000 for ms)
-    const sessionResetAt = parseResetTime(primaryWindow.reset_at ? primaryWindow.reset_at * 1000 : null);
-    const weeklyResetAt = parseResetTime(secondaryWindow.reset_at ? secondaryWindow.reset_at * 1000 : null);
+    const sessionResetAt = parseResetTime(
+      primaryWindow.reset_at ? primaryWindow.reset_at * 1000 : null,
+    );
+    const weeklyResetAt = parseResetTime(
+      secondaryWindow.reset_at ? secondaryWindow.reset_at * 1000 : null,
+    );
 
     return {
       plan: data.plan_type || "unknown",
@@ -447,7 +479,10 @@ async function getKiroUsage(accessToken, providerSpecificData) {
   try {
     const profileArn = providerSpecificData?.profileArn;
     if (!profileArn) {
-      return { message: "Kiro connected. Profile ARN not available for quota tracking." };
+      return {
+        message:
+          "Kiro connected. Profile ARN not available for quota tracking.",
+      };
     }
 
     // Kiro uses AWS CodeWhisperer GetUsageLimits API
@@ -457,16 +492,19 @@ async function getKiroUsage(accessToken, providerSpecificData) {
       resourceType: "AGENTIC_REQUEST",
     };
 
-    const response = await fetch("https://codewhisperer.us-east-1.amazonaws.com", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-        "Content-Type": "application/x-amz-json-1.0",
-        "x-amz-target": "AmazonCodeWhispererService.GetUsageLimits",
-        "Accept": "application/json",
+    const response = await fetch(
+      "https://codewhisperer.us-east-1.amazonaws.com",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/x-amz-json-1.0",
+          "x-amz-target": "AmazonCodeWhispererService.GetUsageLimits",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
       },
-      body: JSON.stringify(payload),
-    });
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -482,7 +520,7 @@ async function getKiroUsage(accessToken, providerSpecificData) {
     // Parse reset time - supports multiple formats (nextDateReset, resetDate, etc.)
     const resetAt = parseResetTime(data.nextDateReset || data.resetDate);
 
-    usageList.forEach((breakdown) => {
+    usageList.forEach(breakdown => {
       const resourceType = breakdown.resourceType?.toLowerCase() || "unknown";
       const used = breakdown.currentUsageWithPrecision || 0;
       const total = breakdown.usageLimitWithPrecision || 0;
@@ -547,4 +585,3 @@ async function getIflowUsage(accessToken) {
     return { message: "Unable to fetch iFlow usage." };
   }
 }
-

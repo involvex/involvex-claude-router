@@ -1,9 +1,23 @@
-import { cleanupProviderConnections, getSettings, updateSettings, getApiKeys } from "@/lib/localDb";
+import {
+  cleanupProviderConnections,
+  getSettings,
+  updateSettings,
+  getApiKeys,
+} from "@/lib/localDb";
+import {
+  killCloudflared,
+  isCloudflaredRunning,
+  ensureCloudflared,
+} from "@/lib/tunnel/cloudflared";
+import {
+  getMitmStatus,
+  startMitm,
+  loadEncryptedPassword,
+  initDbHooks,
+} from "@/mitm/manager";
 import { enableTunnel } from "@/lib/tunnel/tunnelManager";
-import { killCloudflared, isCloudflaredRunning, ensureCloudflared } from "@/lib/tunnel/cloudflared";
-import { getMitmStatus, startMitm, loadEncryptedPassword, initDbHooks } from "@/mitm/manager";
-import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 import { existsSync } from "fs";
 
 import os from "os";
@@ -20,14 +34,18 @@ import os from "os";
       if (existsSync(candidate)) {
         process.env.MITM_SERVER_PATH = candidate;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   // 2. Inject DB functions so manager.js (CJS) can save/load settings
   //    without dynamic import issues inside webpack bundles
   try {
     initDbHooks(getSettings, updateSettings);
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 })();
 
 // Multiple modules register SIGINT/SIGTERM handlers legitimately
@@ -102,7 +120,9 @@ async function autoStartMitm() {
 
     const password = await loadEncryptedPassword();
     if (!password && process.platform !== "win32") {
-      console.log("[InitApp] MITM was enabled but no saved password found, skipping auto-start");
+      console.log(
+        "[InitApp] MITM was enabled but no saved password found, skipping auto-start",
+      );
       return;
     }
 
@@ -180,8 +200,12 @@ function startNetworkMonitor() {
 
       if (!networkChanged && !wasSleep) return;
 
-      const reason = wasSleep && networkChanged ? "sleep/wake + network change"
-        : wasSleep ? "sleep/wake" : "network change";
+      const reason =
+        wasSleep && networkChanged
+          ? "sleep/wake + network change"
+          : wasSleep
+            ? "sleep/wake"
+            : "network change";
       console.log(`[NetworkMonitor] ${reason} detected, restarting tunnel...`);
 
       killCloudflared();

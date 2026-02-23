@@ -1,9 +1,16 @@
 "use client";
 
+import {
+  Card,
+  Button,
+  Input,
+  Modal,
+  CardSkeleton,
+  Toggle,
+} from "@/shared/components";
+import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Card, Button, Input, Modal, CardSkeleton, Toggle } from "@/shared/components";
-import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 
 /* ========== CLOUD CODE — COMMENTED OUT (replaced by Tunnel) ==========
 const DEFAULT_CLOUD_URL = process.env.NEXT_PUBLIC_CLOUD_URL || "";
@@ -11,9 +18,21 @@ const CLOUD_ACTION_TIMEOUT_MS = 15000;
 ========== END CLOUD CODE ========== */
 
 const TUNNEL_BENEFITS = [
-  { icon: "public", title: "Access Anywhere", desc: "Use your API from any network" },
-  { icon: "group", title: "Share Endpoint", desc: "Share URL with team members" },
-  { icon: "code", title: "Use in Cursor/Cline", desc: "Connect AI tools remotely" },
+  {
+    icon: "public",
+    title: "Access Anywhere",
+    desc: "Use your API from any network",
+  },
+  {
+    icon: "group",
+    title: "Share Endpoint",
+    desc: "Share URL with team members",
+  },
+  {
+    icon: "code",
+    title: "Use in Cursor/Cline",
+    desc: "Connect AI tools remotely",
+  },
   { icon: "lock", title: "Encrypted", desc: "End-to-end TLS via Cloudflare" },
 ];
 
@@ -214,7 +233,7 @@ export default function APIPageClient({ machineId }) {
     try {
       const [settingsRes, tunnelRes] = await Promise.all([
         fetch("/api/settings"),
-        fetch("/api/tunnel/status")
+        fetch("/api/tunnel/status"),
       ]);
       if (settingsRes.ok) {
         const data = await settingsRes.json();
@@ -231,7 +250,7 @@ export default function APIPageClient({ machineId }) {
     }
   };
 
-  const handleRequireApiKey = async (value) => {
+  const handleRequireApiKey = async value => {
     try {
       const res = await fetch("/api/settings", {
         method: "PATCH",
@@ -271,12 +290,15 @@ export default function APIPageClient({ machineId }) {
       { delay: 30000, msg: "Waiting for tunnel ready..." },
     ];
     const timers = progressSteps.map(({ delay, msg }) =>
-      setTimeout(() => setTunnelProgress(msg), delay)
+      setTimeout(() => setTunnelProgress(msg), delay),
     );
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), TUNNEL_ACTION_TIMEOUT_MS);
+      const timeoutId = setTimeout(
+        () => controller.abort(),
+        TUNNEL_ACTION_TIMEOUT_MS,
+      );
       const res = await fetch("/api/tunnel/enable", {
         method: "POST",
         signal: controller.signal,
@@ -290,11 +312,17 @@ export default function APIPageClient({ machineId }) {
         setTunnelShortId(data.shortId || "");
         setTunnelStatus({ type: "success", message: "Tunnel connected!" });
       } else {
-        setTunnelStatus({ type: "error", message: data.error || "Failed to enable tunnel" });
+        setTunnelStatus({
+          type: "error",
+          message: data.error || "Failed to enable tunnel",
+        });
       }
     } catch (error) {
       timers.forEach(clearTimeout);
-      const msg = error?.name === "AbortError" ? "Tunnel creation timed out" : error.message;
+      const msg =
+        error?.name === "AbortError"
+          ? "Tunnel creation timed out"
+          : error.message;
       setTunnelStatus({ type: "error", message: msg });
     } finally {
       setTunnelLoading(false);
@@ -314,7 +342,10 @@ export default function APIPageClient({ machineId }) {
         setTunnelStatus({ type: "success", message: "Tunnel disabled" });
         setShowDisableModal(false);
       } else {
-        setTunnelStatus({ type: "error", message: data.error || "Failed to disable tunnel" });
+        setTunnelStatus({
+          type: "error",
+          message: data.error || "Failed to disable tunnel",
+        });
       }
     } catch (error) {
       setTunnelStatus({ type: "error", message: error.message });
@@ -345,13 +376,13 @@ export default function APIPageClient({ machineId }) {
     }
   };
 
-  const handleDeleteKey = async (id) => {
+  const handleDeleteKey = async id => {
     if (!confirm("Delete this API key?")) return;
 
     try {
       const res = await fetch(`/api/keys/${id}`, { method: "DELETE" });
       if (res.ok) {
-        setKeys(keys.filter((k) => k.id !== id));
+        setKeys(keys.filter(k => k.id !== id));
       }
     } catch (error) {
       console.log("Error deleting key:", error);
@@ -366,7 +397,7 @@ export default function APIPageClient({ machineId }) {
         body: JSON.stringify({ isActive }),
       });
       if (res.ok) {
-        setKeys(prev => prev.map(k => k.id === id ? { ...k, isActive } : k));
+        setKeys(prev => prev.map(k => (k.id === id ? { ...k, isActive } : k)));
       }
     } catch (error) {
       console.log("Error toggling key:", error);
@@ -391,7 +422,8 @@ export default function APIPageClient({ machineId }) {
     );
   }
 
-  const currentEndpoint = tunnelEnabled && tunnelUrl ? `${tunnelUrl}/v1` : baseUrl;
+  const currentEndpoint =
+    tunnelEnabled && tunnelUrl ? `${tunnelUrl}/v1` : baseUrl;
 
   return (
     <div className="flex flex-col gap-8">
@@ -426,10 +458,14 @@ export default function APIPageClient({ machineId }) {
               >
                 {tunnelLoading ? (
                   <span className="flex items-center gap-2">
-                    <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                    <span className="material-symbols-outlined animate-spin text-sm">
+                      progress_activity
+                    </span>
                     {tunnelProgress || "Creating tunnel..."}
                   </span>
-                ) : "Enable Tunnel"}
+                ) : (
+                  "Enable Tunnel"
+                )}
               </Button>
             )}
           </div>
@@ -437,9 +473,9 @@ export default function APIPageClient({ machineId }) {
 
         {/* Endpoint URL */}
         <div className="flex gap-2">
-          <Input 
-            value={currentEndpoint} 
-            readOnly 
+          <Input
+            value={currentEndpoint}
+            readOnly
             className={`flex-1 font-mono text-sm ${tunnelEnabled ? "animate-border-glow" : ""}`}
           />
           <Button
@@ -453,11 +489,15 @@ export default function APIPageClient({ machineId }) {
 
         {/* Tunnel Status */}
         {tunnelStatus && (
-          <div className={`mt-3 p-2 rounded text-sm ${
-            tunnelStatus.type === "success" ? "bg-green-500/10 text-green-600 dark:text-green-400" :
-            tunnelStatus.type === "warning" ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400" :
-            "bg-red-500/10 text-red-600 dark:text-red-400"
-          }`}>
+          <div
+            className={`mt-3 p-2 rounded text-sm ${
+              tunnelStatus.type === "success"
+                ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                : tunnelStatus.type === "warning"
+                  ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
+                  : "bg-red-500/10 text-red-600 dark:text-red-400"
+            }`}
+          >
             {tunnelStatus.message}
           </div>
         )}
@@ -467,7 +507,10 @@ export default function APIPageClient({ machineId }) {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">API Keys</h2>
-          <Button icon="add" onClick={() => setShowAddModal(true)}>
+          <Button
+            icon="add"
+            onClick={() => setShowAddModal(true)}
+          >
             Create Key
           </Button>
         </div>
@@ -488,17 +531,24 @@ export default function APIPageClient({ machineId }) {
         {keys.length === 0 ? (
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
-              <span className="material-symbols-outlined text-[32px]">vpn_key</span>
+              <span className="material-symbols-outlined text-[32px]">
+                vpn_key
+              </span>
             </div>
             <p className="text-text-main font-medium mb-1">No API keys yet</p>
-            <p className="text-sm text-text-muted mb-4">Create your first API key to get started</p>
-            <Button icon="add" onClick={() => setShowAddModal(true)}>
+            <p className="text-sm text-text-muted mb-4">
+              Create your first API key to get started
+            </p>
+            <Button
+              icon="add"
+              onClick={() => setShowAddModal(true)}
+            >
               Create Key
             </Button>
           </div>
         ) : (
           <div className="flex flex-col">
-            {keys.map((key) => (
+            {keys.map(key => (
               <div
                 key={key.id}
                 className={`group flex items-center justify-between py-3 border-b border-black/[0.03] dark:border-white/[0.03] last:border-b-0 ${key.isActive === false ? "opacity-60" : ""}`}
@@ -506,7 +556,9 @@ export default function APIPageClient({ machineId }) {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{key.name}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <code className="text-xs text-text-muted font-mono">{key.key}</code>
+                    <code className="text-xs text-text-muted font-mono">
+                      {key.key}
+                    </code>
                     <button
                       onClick={() => copy(key.key, key.id)}
                       className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded text-text-muted hover:text-primary opacity-0 group-hover:opacity-100 transition-all"
@@ -527,9 +579,13 @@ export default function APIPageClient({ machineId }) {
                   <Toggle
                     size="sm"
                     checked={key.isActive ?? true}
-                    onChange={(checked) => {
+                    onChange={checked => {
                       if (key.isActive && !checked) {
-                        if (confirm(`Pause API key "${key.name}"?\n\nThis key will stop working immediately but can be resumed later.`)) {
+                        if (
+                          confirm(
+                            `Pause API key "${key.name}"?\n\nThis key will stop working immediately but can be resumed later.`,
+                          )
+                        ) {
                           handleToggleKey(key.id, checked);
                         }
                       } else {
@@ -542,7 +598,9 @@ export default function APIPageClient({ machineId }) {
                     onClick={() => handleDeleteKey(key.id)}
                     className="p-2 hover:bg-red-500/10 rounded text-red-500 opacity-0 group-hover:opacity-100 transition-all"
                   >
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                    <span className="material-symbols-outlined text-[18px]">
+                      delete
+                    </span>
                   </button>
                 </div>
               </div>
@@ -568,11 +626,15 @@ export default function APIPageClient({ machineId }) {
           <Input
             label="Key Name"
             value={newKeyName}
-            onChange={(e) => setNewKeyName(e.target.value)}
+            onChange={e => setNewKeyName(e.target.value)}
             placeholder="Production Key"
           />
           <div className="flex gap-2">
-            <Button onClick={handleCreateKey} fullWidth disabled={!newKeyName.trim()}>
+            <Button
+              onClick={handleCreateKey}
+              fullWidth
+              disabled={!newKeyName.trim()}
+            >
               Create
             </Button>
             <Button
@@ -618,7 +680,10 @@ export default function APIPageClient({ machineId }) {
               {copied === "created_key" ? "Copied!" : "Copy"}
             </Button>
           </div>
-          <Button onClick={() => setCreatedKey(null)} fullWidth>
+          <Button
+            onClick={() => setCreatedKey(null)}
+            fullWidth
+          >
             Done
           </Button>
         </div>
@@ -633,22 +698,31 @@ export default function APIPageClient({ machineId }) {
         <div className="flex flex-col gap-4">
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">cloud_upload</span>
+              <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">
+                cloud_upload
+              </span>
               <div>
                 <p className="text-sm text-blue-800 dark:text-blue-200 font-medium mb-1">
                   Cloudflare Tunnel
                 </p>
                 <p className="text-sm text-blue-700 dark:text-blue-300">
-                  Expose your local 9Router to the internet. No port forwarding, no static IP needed. Share endpoint URL with your team or use it in Cursor, Cline, and other AI tools from anywhere.
+                  Expose your local 9Router to the internet. No port forwarding,
+                  no static IP needed. Share endpoint URL with your team or use
+                  it in Cursor, Cline, and other AI tools from anywhere.
                 </p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {TUNNEL_BENEFITS.map((benefit) => (
-              <div key={benefit.title} className="flex flex-col items-center text-center p-3 rounded-lg bg-sidebar/50">
-                <span className="material-symbols-outlined text-xl text-primary mb-1">{benefit.icon}</span>
+            {TUNNEL_BENEFITS.map(benefit => (
+              <div
+                key={benefit.title}
+                className="flex flex-col items-center text-center p-3 rounded-lg bg-sidebar/50"
+              >
+                <span className="material-symbols-outlined text-xl text-primary mb-1">
+                  {benefit.icon}
+                </span>
                 <p className="text-xs font-semibold">{benefit.title}</p>
                 <p className="text-xs text-text-muted">{benefit.desc}</p>
               </div>
@@ -687,19 +761,24 @@ export default function APIPageClient({ machineId }) {
         <div className="flex flex-col gap-4">
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-red-600 dark:text-red-400">warning</span>
+              <span className="material-symbols-outlined text-red-600 dark:text-red-400">
+                warning
+              </span>
               <div>
                 <p className="text-sm text-red-800 dark:text-red-200 font-medium mb-1">
                   Warning
                 </p>
                 <p className="text-sm text-red-700 dark:text-red-300">
-                  The tunnel will be disconnected. Remote access will stop working.
+                  The tunnel will be disconnected. Remote access will stop
+                  working.
                 </p>
               </div>
             </div>
           </div>
 
-          <p className="text-sm text-text-muted">Are you sure you want to disable the tunnel?</p>
+          <p className="text-sm text-text-muted">
+            Are you sure you want to disable the tunnel?
+          </p>
 
           <div className="flex gap-2">
             <Button
@@ -710,10 +789,14 @@ export default function APIPageClient({ machineId }) {
             >
               {tunnelLoading ? (
                 <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                  <span className="material-symbols-outlined animate-spin text-sm">
+                    progress_activity
+                  </span>
                   Disabling...
                 </span>
-              ) : "Disable Tunnel"}
+              ) : (
+                "Disable Tunnel"
+              )}
             </Button>
             <Button
               onClick={() => setShowDisableModal(false)}

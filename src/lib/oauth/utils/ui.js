@@ -41,8 +41,7 @@ export function printKeyValue(key, value, isSuccess = false) {
 export function printList(items, isSuccess = false) {
   const symbol = isSuccess ? "✓" : "✗";
   const color = isSuccess ? chalk.green : chalk.gray;
-  items.forEach((item) => {
+  items.forEach(item => {
     console.log(color(`  ${symbol} ${item}`));
   });
 }
-

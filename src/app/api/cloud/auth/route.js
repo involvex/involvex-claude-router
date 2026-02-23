@@ -1,5 +1,9 @@
+import {
+  validateApiKey,
+  getProviderConnections,
+  getModelAliases,
+} from "@/models";
 import { NextResponse } from "next/server";
-import { validateApiKey, getProviderConnections, getModelAliases } from "@/models";
 
 // Verify API key and return provider credentials
 export async function POST(request) {
@@ -32,7 +36,7 @@ export async function POST(request) {
       priority: conn.priority,
       globalPriority: conn.globalPriority,
       defaultModel: conn.defaultModel,
-      isActive: conn.isActive
+      isActive: conn.isActive,
     }));
 
     // Get model aliases
@@ -40,9 +44,8 @@ export async function POST(request) {
 
     return NextResponse.json({
       connections: mappedConnections,
-      modelAliases
+      modelAliases,
     });
-
   } catch (error) {
     console.log("Cloud auth error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

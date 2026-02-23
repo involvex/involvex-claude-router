@@ -1,4 +1,7 @@
-import { PROVIDER_MODELS, PROVIDER_ID_TO_ALIAS } from "@/shared/constants/models";
+import {
+  PROVIDER_MODELS,
+  PROVIDER_ID_TO_ALIAS,
+} from "@/shared/constants/models";
 import { getProviderConnections, getCombos } from "@/lib/localDb";
 
 /**
@@ -83,19 +86,22 @@ export async function GET() {
       }
     }
 
-    return Response.json({
-      object: "list",
-      data: models,
-    }, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
+    return Response.json(
+      {
+        object: "list",
+        data: models,
       },
-    });
+      {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
+      },
+    );
   } catch (error) {
     console.log("Error fetching models:", error);
     return Response.json(
       { error: { message: error.message, type: "server_error" } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

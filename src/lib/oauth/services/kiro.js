@@ -18,7 +18,7 @@ export class KiroService {
    */
   async registerClient(region = "us-east-1") {
     const endpoint = `https://oidc.${region}.amazonaws.com/client/register`;
-    
+
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -49,9 +49,14 @@ export class KiroService {
   /**
    * Start device authorization for AWS Builder ID or IDC
    */
-  async startDeviceAuthorization(clientId, clientSecret, startUrl, region = "us-east-1") {
+  async startDeviceAuthorization(
+    clientId,
+    clientSecret,
+    startUrl,
+    region = "us-east-1",
+  ) {
     const endpoint = `https://oidc.${region}.amazonaws.com/device_authorization`;
-    
+
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -83,9 +88,14 @@ export class KiroService {
   /**
    * Poll for token using device code (AWS Builder ID/IDC)
    */
-  async pollDeviceToken(clientId, clientSecret, deviceCode, region = "us-east-1") {
+  async pollDeviceToken(
+    clientId,
+    clientSecret,
+    deviceCode,
+    region = "us-east-1",
+  ) {
     const endpoint = `https://oidc.${region}.amazonaws.com/token`;
-    
+
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -107,7 +117,8 @@ export class KiroService {
         success: false,
         error: data.error,
         errorDescription: data.error_description,
-        pending: data.error === "authorization_pending" || data.error === "slow_down",
+        pending:
+          data.error === "authorization_pending" || data.error === "slow_down",
       };
     }
 
@@ -141,7 +152,7 @@ export class KiroService {
   async exchangeSocialCode(code, codeVerifier) {
     // Must match the redirect_uri used in buildSocialLoginUrl
     const redirectUri = "kiro://kiro.kiroAgent/authenticate-success";
-    
+
     const response = await fetch(`${KIRO_AUTH_SERVICE}/oauth/token`, {
       method: "POST",
       headers: {
@@ -177,7 +188,7 @@ export class KiroService {
     // AWS SSO OIDC refresh (Builder ID or IDC)
     if (clientId && clientSecret) {
       const endpoint = `https://oidc.${region || "us-east-1"}.amazonaws.com/token`;
-      
+
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -235,7 +246,9 @@ export class KiroService {
   async validateImportToken(refreshToken) {
     // Validate token format
     if (!refreshToken.startsWith("aorAAAAAG")) {
-      throw new Error("Invalid token format. Token should start with aorAAAAAG...");
+      throw new Error(
+        "Invalid token format. Token should start with aorAAAAAG...",
+      );
     }
 
     // Try to refresh to validate
@@ -267,7 +280,9 @@ export class KiroService {
         payload += "=";
       }
 
-      const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+      const decoded = JSON.parse(
+        atob(payload.replace(/-/g, "+").replace(/_/g, "/")),
+      );
       return decoded.email || decoded.preferred_username || decoded.sub;
     } catch {
       return null;

@@ -1,11 +1,15 @@
-import { NextResponse } from "next/server";
 import { access, constants } from "fs/promises";
+import { NextResponse } from "next/server";
+import Database from "better-sqlite3";
 import { homedir } from "os";
 import { join } from "path";
-import Database from "better-sqlite3";
 
 const ACCESS_TOKEN_KEYS = ["cursorAuth/accessToken", "cursorAuth/token"];
-const MACHINE_ID_KEYS = ["storage.serviceMachineId", "storage.machineId", "telemetry.machineId"];
+const MACHINE_ID_KEYS = [
+  "storage.serviceMachineId",
+  "storage.machineId",
+  "telemetry.machineId",
+];
 
 /** Get candidate db paths by platform */
 function getCandidatePaths(platform) {
@@ -13,19 +17,39 @@ function getCandidatePaths(platform) {
 
   if (platform === "darwin") {
     return [
-      join(home, "Library/Application Support/Cursor/User/globalStorage/state.vscdb"),
-      join(home, "Library/Application Support/Cursor - Insiders/User/globalStorage/state.vscdb"),
+      join(
+        home,
+        "Library/Application Support/Cursor/User/globalStorage/state.vscdb",
+      ),
+      join(
+        home,
+        "Library/Application Support/Cursor - Insiders/User/globalStorage/state.vscdb",
+      ),
     ];
   }
 
   if (platform === "win32") {
     const appData = process.env.APPDATA || join(home, "AppData", "Roaming");
-    const localAppData = process.env.LOCALAPPDATA || join(home, "AppData", "Local");
+    const localAppData =
+      process.env.LOCALAPPDATA || join(home, "AppData", "Local");
     return [
       join(appData, "Cursor", "User", "globalStorage", "state.vscdb"),
-      join(appData, "Cursor - Insiders", "User", "globalStorage", "state.vscdb"),
+      join(
+        appData,
+        "Cursor - Insiders",
+        "User",
+        "globalStorage",
+        "state.vscdb",
+      ),
       join(localAppData, "Cursor", "User", "globalStorage", "state.vscdb"),
-      join(localAppData, "Programs", "Cursor", "User", "globalStorage", "state.vscdb"),
+      join(
+        localAppData,
+        "Programs",
+        "Cursor",
+        "User",
+        "globalStorage",
+        "state.vscdb",
+      ),
     ];
   }
 
@@ -39,11 +63,13 @@ function getCandidatePaths(platform) {
 /** Extract tokens from open db, with fuzzy fallback */
 function extractTokens(db, platform) {
   const desiredKeys = [...ACCESS_TOKEN_KEYS, ...MACHINE_ID_KEYS];
-  const rows = db.prepare(
-    `SELECT key, value FROM itemTable WHERE key IN (${desiredKeys.map(() => "?").join(",")})`
-  ).all(...desiredKeys);
+  const rows = db
+    .prepare(
+      `SELECT key, value FROM itemTable WHERE key IN (${desiredKeys.map(() => "?").join(",")})`,
+    )
+    .all(...desiredKeys);
 
-  const normalize = (value) => {
+  const normalize = value => {
     if (typeof value !== "string") return value;
     try {
       const parsed = JSON.parse(value);
@@ -64,9 +90,11 @@ function extractTokens(db, platform) {
 
   // Fuzzy fallback for all platforms when exact keys miss
   if (!tokens.accessToken || !tokens.machineId) {
-    const fallbackRows = db.prepare(
-      "SELECT key, value FROM itemTable WHERE key LIKE '%cursorAuth/%' OR key LIKE '%machineId%' OR key LIKE '%serviceMachineId%'"
-    ).all();
+    const fallbackRows = db
+      .prepare(
+        "SELECT key, value FROM itemTable WHERE key LIKE '%cursorAuth/%' OR key LIKE '%machineId%' OR key LIKE '%serviceMachineId%'",
+      )
+      .all();
 
     for (const row of fallbackRows) {
       const key = row.key || "";
@@ -128,7 +156,8 @@ export async function GET() {
       if (!tokens.accessToken || !tokens.machineId) {
         return NextResponse.json({
           found: false,
-          error: "Tokens not found in database. Please login to Cursor IDE first.",
+          error:
+            "Tokens not found in database. Please login to Cursor IDE first.",
         });
       }
 
@@ -148,7 +177,7 @@ export async function GET() {
     console.log("Cursor auto-import error:", error);
     return NextResponse.json(
       { found: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

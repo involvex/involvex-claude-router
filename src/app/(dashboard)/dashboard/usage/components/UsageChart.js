@@ -1,7 +1,5 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import PropTypes from "prop-types";
 import {
   AreaChart,
   Area,
@@ -12,7 +10,9 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import { useState, useEffect, useCallback } from "react";
 import Card from "@/shared/components/Card";
+import PropTypes from "prop-types";
 
 const PERIODS = [
   { value: "24h", label: "24h" },
@@ -21,13 +21,13 @@ const PERIODS = [
   { value: "60d", label: "60D" },
 ];
 
-const fmtTokens = (n) => {
+const fmtTokens = n => {
   if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
   if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
   return String(n || 0);
 };
 
-const fmtCost = (n) => `$${(n || 0).toFixed(4)}`;
+const fmtCost = n => `$${(n || 0).toFixed(4)}`;
 
 export default function UsageChart() {
   const [period, setPeriod] = useState("7d");
@@ -54,7 +54,7 @@ export default function UsageChart() {
     fetchData();
   }, [fetchData]);
 
-  const hasData = data.some((d) => d.tokens > 0 || d.cost > 0);
+  const hasData = data.some(d => d.tokens > 0 || d.cost > 0);
 
   return (
     <Card className="p-4 flex flex-col gap-3">
@@ -74,7 +74,7 @@ export default function UsageChart() {
           </button>
         </div>
         <div className="flex items-center gap-1 bg-bg-subtle rounded-lg p-1 border border-border">
-          {PERIODS.map((p) => (
+          {PERIODS.map(p => (
             <button
               key={p.value}
               onClick={() => setPeriod(p.value)}
@@ -87,23 +87,64 @@ export default function UsageChart() {
       </div>
 
       {loading ? (
-        <div className="h-48 flex items-center justify-center text-text-muted text-sm">Loading...</div>
+        <div className="h-48 flex items-center justify-center text-text-muted text-sm">
+          Loading...
+        </div>
       ) : !hasData ? (
-        <div className="h-48 flex items-center justify-center text-text-muted text-sm">No data for this period</div>
+        <div className="h-48 flex items-center justify-center text-text-muted text-sm">
+          No data for this period
+        </div>
       ) : (
-        <ResponsiveContainer width="100%" height={200}>
-          <AreaChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+        <ResponsiveContainer
+          width="100%"
+          height={200}
+        >
+          <AreaChart
+            data={data}
+            margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+          >
             <defs>
-              <linearGradient id="gradTokens" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+              <linearGradient
+                id="gradTokens"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop
+                  offset="5%"
+                  stopColor="#6366f1"
+                  stopOpacity={0.25}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="#6366f1"
+                  stopOpacity={0}
+                />
               </linearGradient>
-              <linearGradient id="gradCost" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+              <linearGradient
+                id="gradCost"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop
+                  offset="5%"
+                  stopColor="#f59e0b"
+                  stopOpacity={0.25}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="#f59e0b"
+                  stopOpacity={0}
+                />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              strokeOpacity={0.1}
+            />
             <XAxis
               dataKey="label"
               tick={{ fontSize: 10, fill: "currentColor", fillOpacity: 0.5 }}
@@ -126,7 +167,9 @@ export default function UsageChart() {
                 fontSize: "12px",
               }}
               formatter={(value, name) =>
-                name === "tokens" ? [fmtTokens(value), "Tokens"] : [fmtCost(value), "Cost"]
+                name === "tokens"
+                  ? [fmtTokens(value), "Tokens"]
+                  : [fmtCost(value), "Cost"]
               }
             />
             {viewMode === "tokens" ? (

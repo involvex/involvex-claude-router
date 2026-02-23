@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, Suspense, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { UsageStats, RequestLogger, CardSkeleton, SegmentedControl } from "@/shared/components";
-import ProviderLimits from "./components/ProviderLimits";
+import {
+  UsageStats,
+  RequestLogger,
+  CardSkeleton,
+  SegmentedControl,
+} from "@/shared/components";
 import RequestDetailsTab from "./components/RequestDetailsTab";
+import { useSearchParams, useRouter } from "next/navigation";
+import ProviderLimits from "./components/ProviderLimits";
+import { useState, Suspense, useEffect } from "react";
 
 export default function UsagePage() {
   return (
@@ -17,17 +22,22 @@ export default function UsagePage() {
 function UsagePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get("tab") || "overview",
+  );
   const [tabLoading, setTabLoading] = useState(false);
 
   useEffect(() => {
     const tabFromUrl = searchParams.get("tab");
-    if (tabFromUrl && ["overview", "logs", "limits", "details"].includes(tabFromUrl)) {
+    if (
+      tabFromUrl &&
+      ["overview", "logs", "limits", "details"].includes(tabFromUrl)
+    ) {
       setActiveTab(tabFromUrl);
     }
   }, [searchParams]);
 
-  const handleTabChange = (value) => {
+  const handleTabChange = value => {
     if (value === activeTab) return;
     setTabLoading(true);
     setActiveTab(value);

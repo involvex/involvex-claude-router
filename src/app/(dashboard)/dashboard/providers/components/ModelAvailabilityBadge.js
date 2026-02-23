@@ -7,9 +7,9 @@
  * issues, with a hover popover for details and cooldown clearing.
  */
 
+import { useNotificationStore } from "@/store/notificationStore";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/shared/components";
-import { useNotificationStore } from "@/store/notificationStore";
 
 const STATUS_CONFIG = {
   available: { icon: "check_circle", color: "#22c55e", label: "Available" },
@@ -48,7 +48,7 @@ export default function ModelAvailabilityBadge() {
 
   // Close popover on outside click
   useEffect(() => {
-    const handleClick = (e) => {
+    const handleClick = e => {
       if (ref.current && !ref.current.contains(e.target)) setExpanded(false);
     };
     if (expanded) document.addEventListener("mousedown", handleClick);
@@ -79,12 +79,14 @@ export default function ModelAvailabilityBadge() {
   if (loading) return null;
 
   const models = data?.models || [];
-  const unavailableCount = data?.unavailableCount || models.filter((m) => m.status !== "available").length;
+  const unavailableCount =
+    data?.unavailableCount ||
+    models.filter(m => m.status !== "available").length;
   const isHealthy = unavailableCount === 0;
 
   // Group unhealthy models by provider
   const byProvider = {};
-  models.forEach((m) => {
+  models.forEach(m => {
     if (m.status === "available") return;
     const key = m.provider || "unknown";
     if (!byProvider[key]) byProvider[key] = [];
@@ -92,7 +94,10 @@ export default function ModelAvailabilityBadge() {
   });
 
   return (
-    <div className="relative" ref={ref}>
+    <div
+      className="relative"
+      ref={ref}
+    >
       {/* <button
         onClick={() => setExpanded(!expanded)}
         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
@@ -119,14 +124,18 @@ export default function ModelAvailabilityBadge() {
               >
                 {isHealthy ? "verified" : "warning"}
               </span>
-              <span className="text-sm font-semibold text-text-main">Model Status</span>
+              <span className="text-sm font-semibold text-text-main">
+                Model Status
+              </span>
             </div>
             <button
               onClick={fetchStatus}
               className="p-1 rounded-lg hover:bg-surface text-text-muted hover:text-text-main transition-colors"
               title="Refresh"
             >
-              <span className="material-symbols-outlined text-[14px]">refresh</span>
+              <span className="material-symbols-outlined text-[14px]">
+                refresh
+              </span>
             </button>
           </div>
 
@@ -139,11 +148,15 @@ export default function ModelAvailabilityBadge() {
               <div className="flex flex-col gap-2.5">
                 {Object.entries(byProvider).map(([provider, provModels]) => (
                   <div key={provider}>
-                    <p className="text-xs font-semibold text-text-main mb-1.5 capitalize">{provider}</p>
+                    <p className="text-xs font-semibold text-text-main mb-1.5 capitalize">
+                      {provider}
+                    </p>
                     <div className="flex flex-col gap-1">
-                      {provModels.map((m) => {
-                        const status = STATUS_CONFIG[m.status] || STATUS_CONFIG.unknown;
-                        const isClearing = clearing === `${m.provider}:${m.model}`;
+                      {provModels.map(m => {
+                        const status =
+                          STATUS_CONFIG[m.status] || STATUS_CONFIG.unknown;
+                        const isClearing =
+                          clearing === `${m.provider}:${m.model}`;
                         return (
                           <div
                             key={`${m.provider}-${m.model}`}
@@ -156,13 +169,17 @@ export default function ModelAvailabilityBadge() {
                               >
                                 {status.icon}
                               </span>
-                              <span className="font-mono text-xs text-text-main truncate">{m.model}</span>
+                              <span className="font-mono text-xs text-text-main truncate">
+                                {m.model}
+                              </span>
                             </div>
                             {m.status === "cooldown" && (
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => handleClearCooldown(m.provider, m.model)}
+                                onClick={() =>
+                                  handleClearCooldown(m.provider, m.model)
+                                }
                                 disabled={isClearing}
                                 className="text-[10px] px-1.5! py-0.5! ml-2"
                               >

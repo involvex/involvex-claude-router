@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { deleteApiKey, getApiKeyById, updateApiKey } from "@/lib/localDb";
+import { NextResponse } from "next/server";
 
 // GET /api/keys/[id] - Get single key
 export async function GET(request, { params }) {
@@ -36,7 +36,10 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ key: updated });
   } catch (error) {
     console.log("Error updating key:", error);
-    return NextResponse.json({ error: "Failed to update key" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update key" },
+      { status: 500 },
+    );
   }
 }
 
@@ -53,6 +56,9 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ message: "Key deleted successfully" });
   } catch (error) {
     console.log("Error deleting key:", error);
-    return NextResponse.json({ error: "Failed to delete key" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete key" },
+      { status: 500 },
+    );
   }
 }

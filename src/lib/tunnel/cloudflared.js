@@ -1,9 +1,9 @@
-import fs from "fs";
-import path from "path";
-import https from "https";
-import os from "os";
-import { execSync, spawn } from "child_process";
 import { savePid, loadPid, clearPid } from "./state.js";
+import { execSync, spawn } from "child_process";
+import https from "https";
+import path from "path";
+import os from "os";
+import fs from "fs";
 
 const BIN_DIR = path.join(os.homedir(), ".9router", "bin");
 const BINARY_NAME = "cloudflared";
@@ -11,20 +11,21 @@ const IS_WINDOWS = os.platform() === "win32";
 const BIN_NAME = IS_WINDOWS ? `${BINARY_NAME}.exe` : BINARY_NAME;
 const BIN_PATH = path.join(BIN_DIR, BIN_NAME);
 
-const GITHUB_BASE_URL = "https://github.com/cloudflare/cloudflared/releases/latest/download";
+const GITHUB_BASE_URL =
+  "https://github.com/cloudflare/cloudflared/releases/latest/download";
 
 const PLATFORM_MAPPINGS = {
   darwin: {
     x64: "cloudflared-darwin-amd64.tgz",
-    arm64: "cloudflared-darwin-amd64.tgz"
+    arm64: "cloudflared-darwin-amd64.tgz",
   },
   win32: {
-    x64: "cloudflared-windows-amd64.exe"
+    x64: "cloudflared-windows-amd64.exe",
   },
   linux: {
     x64: "cloudflared-linux-amd64",
-    arm64: "cloudflared-linux-arm64"
-  }
+    arm64: "cloudflared-linux-arm64",
+  },
 };
 
 function getDownloadUrl() {
@@ -38,7 +39,9 @@ function getDownloadUrl() {
 
   const binaryName = platformMapping[arch];
   if (!binaryName) {
-    throw new Error(`Unsupported architecture: ${arch} for platform ${platform}`);
+    throw new Error(
+      `Unsupported architecture: ${arch} for platform ${platform}`,
+    );
   }
 
   return `${GITHUB_BASE_URL}/${binaryName}`;
@@ -48,37 +51,43 @@ function downloadFile(url, dest) {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(dest);
 
-    https.get(url, (response) => {
-      if ([301, 302].includes(response.statusCode)) {
+    https
+      .get(url, response => {
+        if ([301, 302].includes(response.statusCode)) {
+          file.close();
+          fs.unlinkSync(dest);
+          downloadFile(response.headers.location, dest)
+            .then(resolve)
+            .catch(reject);
+          return;
+        }
+
+        if (response.statusCode !== 200) {
+          file.close();
+          fs.unlinkSync(dest);
+          reject(
+            new Error(`Download failed with status ${response.statusCode}`),
+          );
+          return;
+        }
+
+        response.pipe(file);
+
+        file.on("finish", () => {
+          file.close(() => resolve(dest));
+        });
+
+        file.on("error", err => {
+          file.close();
+          fs.unlinkSync(dest);
+          reject(err);
+        });
+      })
+      .on("error", err => {
         file.close();
-        fs.unlinkSync(dest);
-        downloadFile(response.headers.location, dest).then(resolve).catch(reject);
-        return;
-      }
-
-      if (response.statusCode !== 200) {
-        file.close();
-        fs.unlinkSync(dest);
-        reject(new Error(`Download failed with status ${response.statusCode}`));
-        return;
-      }
-
-      response.pipe(file);
-
-      file.on("finish", () => {
-        file.close(() => resolve(dest));
-      });
-
-      file.on("error", (err) => {
-        file.close();
-        fs.unlinkSync(dest);
+        if (fs.existsSync(dest)) fs.unlinkSync(dest);
         reject(err);
       });
-    }).on("error", (err) => {
-      file.close();
-      if (fs.existsSync(dest)) fs.unlinkSync(dest);
-      reject(err);
-    });
   });
 }
 
@@ -96,7 +105,9 @@ export async function ensureCloudflared() {
 
   const url = getDownloadUrl();
   const isArchive = url.endsWith(".tgz");
-  const downloadDest = isArchive ? path.join(BIN_DIR, "cloudflared.tgz") : BIN_PATH;
+  const downloadDest = isArchive
+    ? path.join(BIN_DIR, "cloudflared.tgz")
+    : BIN_PATH;
 
   await downloadFile(url, downloadDest);
 
@@ -123,10 +134,21 @@ export function setUnexpectedExitHandler(handler) {
 export async function spawnCloudflared(tunnelToken) {
   const binaryPath = await ensureCloudflared();
 
-  const child = spawn(binaryPath, ["tunnel", "run", "--dns-resolver-addrs", "1.1.1.1:53", "--token", tunnelToken], {
-    detached: false,
-    stdio: ["ignore", "pipe", "pipe"]
-  });
+  const child = spawn(
+    binaryPath,
+    [
+      "tunnel",
+      "run",
+      "--dns-resolver-addrs",
+      "1.1.1.1:53",
+      "--token",
+      tunnelToken,
+    ],
+    {
+      detached: false,
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
 
   cloudflaredProcess = child;
   savePid(child.pid);
@@ -139,7 +161,7 @@ export async function spawnCloudflared(tunnelToken) {
       resolve(child);
     }, 90000);
 
-    const handleLog = (data) => {
+    const handleLog = data => {
       const msg = data.toString();
       if (msg.includes("Registered tunnel connection")) {
         connectionCount++;
@@ -154,7 +176,7 @@ export async function spawnCloudflared(tunnelToken) {
     child.stdout.on("data", handleLog);
     child.stderr.on("data", handleLog);
 
-    child.on("error", (err) => {
+    child.on("error", err => {
       if (!resolved) {
         resolved = true;
         clearTimeout(timeout);
@@ -162,7 +184,7 @@ export async function spawnCloudflared(tunnelToken) {
       }
     });
 
-    child.on("exit", (code) => {
+    child.on("exit", code => {
       cloudflaredProcess = null;
       clearPid();
       if (!resolved) {
@@ -185,7 +207,9 @@ export function killCloudflared() {
   if (cloudflaredProcess) {
     try {
       cloudflaredProcess.kill();
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      /* ignore */
+    }
     cloudflaredProcess = null;
   }
 
@@ -193,14 +217,18 @@ export function killCloudflared() {
   if (pid) {
     try {
       process.kill(pid);
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      /* ignore */
+    }
     clearPid();
   }
 
   // Kill any remaining cloudflared processes
   try {
     execSync("pkill -f cloudflared 2>/dev/null || true", { stdio: "ignore" });
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    /* ignore */
+  }
 }
 
 export function isCloudflaredRunning() {

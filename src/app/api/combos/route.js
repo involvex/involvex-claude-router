@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { getCombos, createCombo, getComboByName } from "@/lib/localDb";
+import { NextResponse } from "next/server";
 
 // Validate combo name: only a-z, A-Z, 0-9, -, _
 const VALID_NAME_REGEX = /^[a-zA-Z0-9_-]+$/;
@@ -11,7 +11,10 @@ export async function GET() {
     return NextResponse.json({ combos });
   } catch (error) {
     console.log("Error fetching combos:", error);
-    return NextResponse.json({ error: "Failed to fetch combos" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch combos" },
+      { status: 500 },
+    );
   }
 }
 
@@ -27,13 +30,19 @@ export async function POST(request) {
 
     // Validate name format
     if (!VALID_NAME_REGEX.test(name)) {
-      return NextResponse.json({ error: "Name can only contain letters, numbers, - and _" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Name can only contain letters, numbers, - and _" },
+        { status: 400 },
+      );
     }
 
     // Check if name already exists
     const existing = await getComboByName(name);
     if (existing) {
-      return NextResponse.json({ error: "Combo name already exists" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Combo name already exists" },
+        { status: 400 },
+      );
     }
 
     const combo = await createCombo({ name, models: models || [] });
@@ -41,6 +50,9 @@ export async function POST(request) {
     return NextResponse.json(combo, { status: 201 });
   } catch (error) {
     console.log("Error creating combo:", error);
-    return NextResponse.json({ error: "Failed to create combo" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create combo" },
+      { status: 500 },
+    );
   }
 }

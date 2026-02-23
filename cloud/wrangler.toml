@@ -1,4 +1,4 @@
-name = "9router"
+name = "involvex-claude-router-cloud"
 main = "src/index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
@@ -9,9 +9,9 @@ compatibility_flags = ["nodejs_compat"]
 # Step 3: Paste your KV & D1 IDs here
 [[kv_namespaces]]
 binding = "KV"
-id = "YOUR_KV_NAMESPACE_ID"
+id = "6c35877893164e48b849f001d129cabd"
 
 [[d1_databases]]
-binding = "DB"
+binding = "proxy_db"
 database_name = "proxy-db"
-database_id = "YOUR_D1_DATABASE_ID"
+database_id = "04d00543-2f72-4834-9c69-3f8e3fe184c3"

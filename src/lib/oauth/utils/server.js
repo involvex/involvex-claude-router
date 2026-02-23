@@ -1,5 +1,5 @@
-import http from "http";
 import { URL } from "url";
+import http from "http";
 
 /**
  * Start a local HTTP server to receive OAuth callback
@@ -75,9 +75,13 @@ export function startLocalServer(onCallback, fixedPort = null) {
       });
     });
 
-    server.on("error", (err) => {
+    server.on("error", err => {
       if (err.code === "EADDRINUSE" && fixedPort) {
-        reject(new Error(`Port ${fixedPort} is already in use. Please close other applications using this port.`));
+        reject(
+          new Error(
+            `Port ${fixedPort} is already in use. Please close other applications using this port.`,
+          ),
+        );
       } else {
         reject(err);
       }
@@ -101,7 +105,7 @@ export function waitForCallback(timeoutMs = 300000) {
       }
     }, timeoutMs);
 
-    const onCallback = (params) => {
+    const onCallback = params => {
       if (!resolved) {
         resolved = true;
         clearTimeout(timeout);
@@ -113,4 +117,3 @@ export function waitForCallback(timeoutMs = 300000) {
     resolve.__onCallback = onCallback;
   });
 }
-

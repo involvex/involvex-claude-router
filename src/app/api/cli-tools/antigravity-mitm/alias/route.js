@@ -1,7 +1,7 @@
 "use server";
 
-import { NextResponse } from "next/server";
 import { getMitmAlias, setMitmAliasAll } from "@/models";
+import { NextResponse } from "next/server";
 
 // GET - Get MITM aliases for a tool
 export async function GET(request) {
@@ -12,7 +12,10 @@ export async function GET(request) {
     return NextResponse.json({ aliases });
   } catch (error) {
     console.log("Error fetching MITM aliases:", error.message);
-    return NextResponse.json({ error: "Failed to fetch aliases" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch aliases" },
+      { status: 500 },
+    );
   }
 }
 
@@ -22,7 +25,10 @@ export async function PUT(request) {
     const { tool, mappings } = await request.json();
 
     if (!tool || !mappings || typeof mappings !== "object") {
-      return NextResponse.json({ error: "tool and mappings required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "tool and mappings required" },
+        { status: 400 },
+      );
     }
 
     const filtered = {};
@@ -36,6 +42,9 @@ export async function PUT(request) {
     return NextResponse.json({ success: true, aliases: filtered });
   } catch (error) {
     console.log("Error saving MITM aliases:", error.message);
-    return NextResponse.json({ error: "Failed to save aliases" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to save aliases" },
+      { status: 500 },
+    );
   }
 }

@@ -1,9 +1,13 @@
-import { BaseExecutor } from "./base.js";
-import { PROVIDERS, OAUTH_ENDPOINTS, HTTP_STATUS } from "../config/constants.js";
-import { openaiToOpenAIResponsesRequest } from "../translator/request/openai-responses.js";
 import { openaiResponsesToOpenAIResponse } from "../translator/response/openai-responses.js";
-import { initState } from "../translator/index.js";
+import { openaiToOpenAIResponsesRequest } from "../translator/request/openai-responses.js";
+import {
+  PROVIDERS,
+  OAUTH_ENDPOINTS,
+  HTTP_STATUS,
+} from "../config/constants.js";
 import { parseSSELine, formatSSE } from "../utils/streamHelpers.js";
+import { initState } from "../translator/index.js";
+import { BaseExecutor } from "./base.js";
 import crypto from "crypto";
 
 export class GithubExecutor extends BaseExecutor {
@@ -19,7 +23,7 @@ export class GithubExecutor extends BaseExecutor {
   buildHeaders(credentials, stream = true) {
     const token = credentials.copilotToken || credentials.accessToken;
     return {
-      "Authorization": `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
       "copilot-integration-id": "vscode-chat",
       "editor-version": "vscode/1.107.1",
@@ -27,10 +31,12 @@ export class GithubExecutor extends BaseExecutor {
       "user-agent": "GitHubCopilotChat/0.26.7",
       "openai-intent": "conversation-panel",
       "x-github-api-version": "2025-04-01",
-      "x-request-id": crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      "x-request-id":
+        crypto.randomUUID?.() ||
+        `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       "x-vscode-user-agent-library-version": "electron-fetch",
       "X-Initiator": "user",
-      "Accept": stream ? "text/event-stream" : "application/json"
+      Accept: stream ? "text/event-stream" : "application/json",
     };
   }
 
@@ -46,8 +52,10 @@ export class GithubExecutor extends BaseExecutor {
 
     if (result.response.status === HTTP_STATUS.BAD_REQUEST) {
       const errorBody = await result.response.clone().text();
-      
-      if (errorBody.includes("not accessible via the /chat/completions endpoint")) {
+
+      if (
+        errorBody.includes("not accessible via the /chat/completions endpoint")
+      ) {
         log?.warn("GITHUB", `Model ${model} requires /responses. Switching...`);
         this.knownCodexModels.add(model);
         return this.executeWithResponsesEndpoint(options);
@@ -57,11 +65,23 @@ export class GithubExecutor extends BaseExecutor {
     return result;
   }
 
-  async executeWithResponsesEndpoint({ model, body, stream, credentials, signal, log }) {
+  async executeWithResponsesEndpoint({
+    model,
+    body,
+    stream,
+    credentials,
+    signal,
+    log,
+  }) {
     const url = this.config.responsesUrl;
     const headers = this.buildHeaders(credentials, stream);
-    
-    const transformedBody = openaiToOpenAIResponsesRequest(model, body, stream, credentials);
+
+    const transformedBody = openaiToOpenAIResponsesRequest(
+      model,
+      body,
+      stream,
+      credentials,
+    );
 
     log?.debug("GITHUB", "Sending translated request to /responses");
 
@@ -69,7 +89,7 @@ export class GithubExecutor extends BaseExecutor {
       method: "POST",
       headers,
       body: JSON.stringify(transformedBody),
-      signal
+      signal,
     });
 
     if (!response.ok) {
@@ -86,7 +106,7 @@ export class GithubExecutor extends BaseExecutor {
       async transform(chunk, controller) {
         buffer += decoder.decode(chunk, { stream: true });
         const lines = buffer.split("\n");
-        
+
         buffer = lines.pop() || "";
 
         for (const line of lines) {
@@ -110,15 +130,17 @@ export class GithubExecutor extends BaseExecutor {
       },
       flush(controller) {
         if (buffer.trim()) {
-           const parsed = parseSSELine(buffer.trim());
-           if (parsed && !parsed.done) {
-             const converted = openaiResponsesToOpenAIResponse(parsed, state);
-             if (converted) {
-               controller.enqueue(new TextEncoder().encode(formatSSE(converted, "openai")));
-             }
-           }
+          const parsed = parseSSELine(buffer.trim());
+          if (parsed && !parsed.done) {
+            const converted = openaiResponsesToOpenAIResponse(parsed, state);
+            if (converted) {
+              controller.enqueue(
+                new TextEncoder().encode(formatSSE(converted, "openai")),
+              );
+            }
+          }
         }
-      }
+      },
     });
 
     const convertedStream = response.body.pipeThrough(transformStream);
@@ -127,25 +149,28 @@ export class GithubExecutor extends BaseExecutor {
       response: new Response(convertedStream, {
         status: response.status,
         statusText: response.statusText,
-        headers: response.headers
+        headers: response.headers,
       }),
       url,
       headers,
-      transformedBody
+      transformedBody,
     };
   }
 
   async refreshCopilotToken(githubAccessToken, log) {
     try {
-      const response = await fetch("https://api.github.com/copilot_internal/v2/token", {
-        headers: {
-          "Authorization": `token ${githubAccessToken}`,
-          "User-Agent": "GithubCopilot/1.0",
-          "Editor-Version": "vscode/1.100.0",
-          "Editor-Plugin-Version": "copilot/1.300.0",
-          "Accept": "application/json"
-        }
-      });
+      const response = await fetch(
+        "https://api.github.com/copilot_internal/v2/token",
+        {
+          headers: {
+            Authorization: `token ${githubAccessToken}`,
+            "User-Agent": "GithubCopilot/1.0",
+            "Editor-Version": "vscode/1.100.0",
+            "Editor-Plugin-Version": "copilot/1.300.0",
+            Accept: "application/json",
+          },
+        },
+      );
       if (!response.ok) return null;
       const data = await response.json();
       log?.info?.("TOKEN", "Copilot token refreshed");
@@ -160,18 +185,25 @@ export class GithubExecutor extends BaseExecutor {
     try {
       const response = await fetch(OAUTH_ENDPOINTS.github.token, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
+        },
         body: new URLSearchParams({
           grant_type: "refresh_token",
           refresh_token: refreshToken,
           client_id: this.config.clientId,
-          client_secret: this.config.clientSecret
-        })
+          client_secret: this.config.clientSecret,
+        }),
       });
       if (!response.ok) return null;
       const tokens = await response.json();
       log?.info?.("TOKEN", "GitHub token refreshed");
-      return { accessToken: tokens.access_token, refreshToken: tokens.refresh_token || refreshToken, expiresIn: tokens.expires_in };
+      return {
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token || refreshToken,
+        expiresIn: tokens.expires_in,
+      };
     } catch (error) {
       log?.error?.("TOKEN", `GitHub refresh error: ${error.message}`);
       return null;
@@ -179,30 +211,48 @@ export class GithubExecutor extends BaseExecutor {
   }
 
   async refreshCredentials(credentials, log) {
-    let copilotResult = await this.refreshCopilotToken(credentials.accessToken, log);
-    
+    let copilotResult = await this.refreshCopilotToken(
+      credentials.accessToken,
+      log,
+    );
+
     if (!copilotResult && credentials.refreshToken) {
-      const githubTokens = await this.refreshGitHubToken(credentials.refreshToken, log);
+      const githubTokens = await this.refreshGitHubToken(
+        credentials.refreshToken,
+        log,
+      );
       if (githubTokens?.accessToken) {
-        copilotResult = await this.refreshCopilotToken(githubTokens.accessToken, log);
+        copilotResult = await this.refreshCopilotToken(
+          githubTokens.accessToken,
+          log,
+        );
         if (copilotResult) {
-          return { ...githubTokens, copilotToken: copilotResult.token, copilotTokenExpiresAt: copilotResult.expiresAt };
+          return {
+            ...githubTokens,
+            copilotToken: copilotResult.token,
+            copilotTokenExpiresAt: copilotResult.expiresAt,
+          };
         }
         return githubTokens;
       }
     }
-    
+
     if (copilotResult) {
-      return { accessToken: credentials.accessToken, refreshToken: credentials.refreshToken, copilotToken: copilotResult.token, copilotTokenExpiresAt: copilotResult.expiresAt };
+      return {
+        accessToken: credentials.accessToken,
+        refreshToken: credentials.refreshToken,
+        copilotToken: copilotResult.token,
+        copilotTokenExpiresAt: copilotResult.expiresAt,
+      };
     }
-    
+
     return null;
   }
 
   needsRefresh(credentials) {
     // Always refresh if no copilotToken
     if (!credentials.copilotToken) return true;
-    
+
     if (credentials.copilotTokenExpiresAt) {
       // Handle both Unix timestamp (seconds) and ISO string
       let expiresAtMs = credentials.copilotTokenExpiresAt;

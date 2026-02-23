@@ -1,10 +1,10 @@
-import open from "open";
-import { OAuthService } from "./oauth.js";
-import { CODEX_CONFIG } from "../constants/oauth.js";
 import { getServerCredentials } from "../config/index.js";
-import { startLocalServer } from "../utils/server.js";
-import { generatePKCE } from "../utils/pkce.js";
 import { spinner as createSpinner } from "../utils/ui.js";
+import { startLocalServer } from "../utils/server.js";
+import { CODEX_CONFIG } from "../constants/oauth.js";
+import { generatePKCE } from "../utils/pkce.js";
+import { OAuthService } from "./oauth.js";
+import open from "open";
 
 /**
  * Codex (OpenAI) OAuth Service
@@ -78,7 +78,7 @@ export class CodexService extends OAuthService {
       // Start local server for callback (use fixed port 1455 like real Codex CLI)
       const fixedPort = 1455;
       let callbackParams = null;
-      const { port, close } = await startLocalServer((params) => {
+      const { port, close } = await startLocalServer(params => {
         callbackParams = params;
       }, fixedPort);
 
@@ -117,7 +117,9 @@ export class CodexService extends OAuthService {
       close();
 
       if (callbackParams.error) {
-        throw new Error(callbackParams.error_description || callbackParams.error);
+        throw new Error(
+          callbackParams.error_description || callbackParams.error,
+        );
       }
 
       if (!callbackParams.code) {
@@ -127,7 +129,12 @@ export class CodexService extends OAuthService {
       spinner.start("Exchanging code for tokens...");
 
       // Exchange code for tokens (Codex uses form-urlencoded)
-      const tokens = await this.exchangeCode(callbackParams.code, redirectUri, codeVerifier, "application/x-www-form-urlencoded");
+      const tokens = await this.exchangeCode(
+        callbackParams.code,
+        redirectUri,
+        codeVerifier,
+        "application/x-www-form-urlencoded",
+      );
 
       spinner.text = "Saving tokens to server...";
 
@@ -142,4 +149,3 @@ export class CodexService extends OAuthService {
     }
   }
 }
-

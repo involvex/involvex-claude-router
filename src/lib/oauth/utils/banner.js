@@ -1,6 +1,6 @@
-import figlet from "figlet";
-import gradient from "gradient-string";
 import chalkAnimation from "chalk-animation";
+import gradient from "gradient-string";
+import figlet from "figlet";
 
 /**
  * Display banner
@@ -32,7 +32,7 @@ export function showSimpleBanner() {
  * Display success animation
  */
 export async function showSuccess(message) {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const animation = chalkAnimation.rainbow(`\n✨ ${message}\n`);
     setTimeout(() => {
       animation.stop();
@@ -47,7 +47,7 @@ export async function showSuccess(message) {
 export function showLoading(text) {
   const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
   let i = 0;
-  
+
   const interval = setInterval(() => {
     process.stdout.write(`\r${frames[i]} ${text}`);
     i = (i + 1) % frames.length;
@@ -60,4 +60,3 @@ export function showLoading(text) {
     },
   };
 }
-

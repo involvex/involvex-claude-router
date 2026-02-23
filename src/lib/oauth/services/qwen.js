@@ -1,8 +1,8 @@
-import open from "open";
-import { QWEN_CONFIG } from "../constants/oauth.js";
 import { getServerCredentials } from "../config/index.js";
-import { generatePKCE } from "../utils/pkce.js";
 import { spinner as createSpinner } from "../utils/ui.js";
+import { QWEN_CONFIG } from "../constants/oauth.js";
+import { generatePKCE } from "../utils/pkce.js";
+import open from "open";
 
 /**
  * Qwen OAuth Service
@@ -47,7 +47,7 @@ export class QwenService {
     const pollInterval = interval * 1000;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      await new Promise((r) => setTimeout(r, pollInterval));
+      await new Promise(r => setTimeout(r, pollInterval));
 
       const response = await fetch(this.config.tokenUrl, {
         method: "POST",
@@ -72,7 +72,7 @@ export class QwenService {
       if (error.error === "authorization_pending") {
         continue;
       } else if (error.error === "slow_down") {
-        await new Promise((r) => setTimeout(r, 5000));
+        await new Promise(r => setTimeout(r, 5000));
         continue;
       } else if (error.error === "expired_token") {
         throw new Error("Device code expired");
@@ -151,7 +151,7 @@ export class QwenService {
       const tokens = await this.pollForToken(
         deviceData.device_code,
         codeVerifier,
-        deviceData.interval || 5
+        deviceData.interval || 5,
       );
 
       spinner.text = "Saving tokens to server...";
@@ -167,4 +167,3 @@ export class QwenService {
     }
   }
 }
-

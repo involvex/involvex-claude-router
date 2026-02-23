@@ -1,6 +1,6 @@
 const path = require("path");
-const fs = require("fs");
 const os = require("os");
+const fs = require("fs");
 
 const TARGET_HOST = "daily-cloudcode-pa.googleapis.com";
 
@@ -30,8 +30,8 @@ async function generateCert() {
     algorithm: "sha256",
     notAfterDate: notAfter,
     extensions: [
-      { name: "subjectAltName", altNames: [{ type: 2, value: TARGET_HOST }] }
-    ]
+      { name: "subjectAltName", altNames: [{ type: 2, value: TARGET_HOST }] },
+    ],
   });
 
   fs.writeFileSync(keyPath, pems.private);

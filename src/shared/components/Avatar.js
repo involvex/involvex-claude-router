@@ -18,7 +18,7 @@ export default function Avatar({
   };
 
   // Get initials from name
-  const getInitials = (name) => {
+  const getInitials = name => {
     if (!name) return "?";
     const parts = name.split(" ");
     if (parts.length >= 2) {
@@ -28,7 +28,7 @@ export default function Avatar({
   };
 
   // Generate color from name
-  const getColorFromName = (name) => {
+  const getColorFromName = name => {
     if (!name) return "bg-primary";
     const colors = [
       "bg-red-500",
@@ -60,7 +60,7 @@ export default function Avatar({
           "rounded-full bg-cover bg-center bg-no-repeat",
           "ring-2 ring-white dark:ring-surface-dark shadow-sm",
           sizes[size],
-          className
+          className,
         )}
         style={{ backgroundImage: `url(${src})` }}
         role="img"
@@ -76,7 +76,7 @@ export default function Avatar({
         "ring-2 ring-white dark:ring-surface-dark shadow-sm",
         sizes[size],
         getColorFromName(name),
-        className
+        className,
       )}
       role="img"
       aria-label={alt}
@@ -85,4 +85,3 @@ export default function Avatar({
     </div>
   );
 }
-

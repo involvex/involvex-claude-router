@@ -1,0 +1,7 @@
+dist
+docs/_layouts
+docs/assets
+.next
+out
+build
+node_modules

@@ -1,4 +1,8 @@
-import { COOLDOWN_MS, BACKOFF_CONFIG, HTTP_STATUS } from "../config/constants.js";
+import {
+  COOLDOWN_MS,
+  BACKOFF_CONFIG,
+  HTTP_STATUS,
+} from "../config/constants.js";
 
 /**
  * Calculate exponential backoff cooldown for rate limits (429)
@@ -21,7 +25,8 @@ export function getQuotaCooldown(backoffLevel = 0) {
 export function checkFallbackError(status, errorText, backoffLevel = 0) {
   // Check error message FIRST - specific patterns take priority over status codes
   if (errorText) {
-    const errorStr = typeof errorText === "string" ? errorText : JSON.stringify(errorText);
+    const errorStr =
+      typeof errorText === "string" ? errorText : JSON.stringify(errorText);
     const lowerError = errorStr.toLowerCase();
 
     if (lowerError.includes("no credentials")) {
@@ -29,7 +34,10 @@ export function checkFallbackError(status, errorText, backoffLevel = 0) {
     }
 
     if (lowerError.includes("request not allowed")) {
-      return { shouldFallback: true, cooldownMs: COOLDOWN_MS.requestNotAllowed };
+      return {
+        shouldFallback: true,
+        cooldownMs: COOLDOWN_MS.requestNotAllowed,
+      };
     }
 
     // Rate limit keywords - exponential backoff
@@ -44,7 +52,7 @@ export function checkFallbackError(status, errorText, backoffLevel = 0) {
       return {
         shouldFallback: true,
         cooldownMs: getQuotaCooldown(backoffLevel),
-        newBackoffLevel: newLevel
+        newBackoffLevel: newLevel,
       };
     }
   }
@@ -53,7 +61,10 @@ export function checkFallbackError(status, errorText, backoffLevel = 0) {
     return { shouldFallback: true, cooldownMs: COOLDOWN_MS.unauthorized };
   }
 
-  if (status === HTTP_STATUS.PAYMENT_REQUIRED || status === HTTP_STATUS.FORBIDDEN) {
+  if (
+    status === HTTP_STATUS.PAYMENT_REQUIRED ||
+    status === HTTP_STATUS.FORBIDDEN
+  ) {
     return { shouldFallback: true, cooldownMs: COOLDOWN_MS.paymentRequired };
   }
 
@@ -67,15 +78,18 @@ export function checkFallbackError(status, errorText, backoffLevel = 0) {
     return {
       shouldFallback: true,
       cooldownMs: getQuotaCooldown(backoffLevel),
-      newBackoffLevel: newLevel
+      newBackoffLevel: newLevel,
     };
   }
 
   // Transient errors
   const transientStatuses = [
-    HTTP_STATUS.NOT_ACCEPTABLE, HTTP_STATUS.REQUEST_TIMEOUT,
-    HTTP_STATUS.SERVER_ERROR, HTTP_STATUS.BAD_GATEWAY,
-    HTTP_STATUS.SERVICE_UNAVAILABLE, HTTP_STATUS.GATEWAY_TIMEOUT
+    HTTP_STATUS.NOT_ACCEPTABLE,
+    HTTP_STATUS.REQUEST_TIMEOUT,
+    HTTP_STATUS.SERVER_ERROR,
+    HTTP_STATUS.BAD_GATEWAY,
+    HTTP_STATUS.SERVICE_UNAVAILABLE,
+    HTTP_STATUS.GATEWAY_TIMEOUT,
   ];
   if (transientStatuses.includes(status)) {
     return { shouldFallback: true, cooldownMs: COOLDOWN_MS.transient };
@@ -166,7 +180,7 @@ export function resetAccountState(account) {
     rateLimitedUntil: null,
     backoffLevel: 0,
     lastError: null,
-    status: "active"
+    status: "active",
   };
 }
 
@@ -181,13 +195,21 @@ export function applyErrorState(account, status, errorText) {
   if (!account) return account;
 
   const backoffLevel = account.backoffLevel || 0;
-  const { cooldownMs, newBackoffLevel } = checkFallbackError(status, errorText, backoffLevel);
+  const { cooldownMs, newBackoffLevel } = checkFallbackError(
+    status,
+    errorText,
+    backoffLevel,
+  );
 
   return {
     ...account,
     rateLimitedUntil: cooldownMs > 0 ? getUnavailableUntil(cooldownMs) : null,
     backoffLevel: newBackoffLevel ?? backoffLevel,
-    lastError: { status, message: errorText, timestamp: new Date().toISOString() },
-    status: "error"
+    lastError: {
+      status,
+      message: errorText,
+      timestamp: new Date().toISOString(),
+    },
+    status: "error",
   };
 }

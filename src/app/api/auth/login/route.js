@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
 import { getSettings } from "@/lib/localDb";
-import bcrypt from "bcryptjs";
-import { SignJWT } from "jose";
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { SignJWT } from "jose";
+import bcrypt from "bcryptjs";
 
 const SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "9router-default-secret-change-me"
+  process.env.JWT_SECRET || "9router-default-secret-change-me",
 );
 
 export async function POST(request) {
