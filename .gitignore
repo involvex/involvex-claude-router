@@ -67,3 +67,4 @@ package-lock.json
 README1.md
 cloud/wrangler.toml
 cloud/wrangler.toml
+.mira/mira.log

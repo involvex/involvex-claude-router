@@ -6,6 +6,10 @@
   "funding": "https://github.com/sponsors/involvex",
   "license": "MIT",
   "author": "involvex",
+  "bin": {
+    "ccr": ".\\scripts\\start-router.ps1",
+    "claude-router": ".\\scripts\\start-router.ps1"
+  },
   "scripts": {
     "prebuild": "bun run format && bun run lint:fix",
     "build": "next build --turbo",
