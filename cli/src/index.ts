@@ -3,9 +3,9 @@ import { runCli } from "./cli/index.js";
 
 const args = process.argv.slice(2);
 
-runCli(args).catch((err) => {
+runCli(args).catch(err => {
   // Simple error handling for CLI
-  // eslint-disable-next-line no-console
+
   console.error("Error:", err);
   process.exit(1);
 });

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(bun run:*)",
+      "Bash(bun build:*)",
+      "Bash(bun run *)",
+      "Bash(bun*)"
+    ]
+  }
+}
