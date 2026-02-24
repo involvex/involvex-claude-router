@@ -11,9 +11,14 @@
   "license": "MIT",
   "author": "involvex",
   "bin": {
-    "ccr": ".\\scripts\\start-router.ps1",
-    "claude-router": ".\\scripts\\start-router.ps1"
+    "ccr": "cli/dist/index.js",
+    "claude-router": "cli/dist/index.js"
   },
+  "workspaces": [
+    "cli",
+    "cloud",
+    "tests"
+  ],
   "scripts": {
     "prebuild": "bun run format && bun run lint:fix",
     "build": "next build --turbo",
