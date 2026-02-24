@@ -3,6 +3,10 @@
   "version": "0.2.95",
   "private": true,
   "description": "Involvex's Claude Router Web dashboard",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/involvex/involvex-claude-router.git"
+  },
   "funding": "https://github.com/sponsors/involvex",
   "license": "MIT",
   "author": "involvex",
