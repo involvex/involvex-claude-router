@@ -40,15 +40,98 @@ export class GithubExecutor extends BaseExecutor {
     };
   }
 
+  /**
+   * Sanitize tools array to comply with GitHub Copilot API limits:
+   *   - Max 128 tools
+   *   - Function names: start with letter/underscore, max 64 chars, only a-z A-Z 0-9 _ . : -
+   *   - Deduplicate by function name (keep first occurrence)
+   */
+  sanitizeTools(tools) {
+    if (!Array.isArray(tools) || tools.length === 0) return tools;
+
+    const MAX_TOOLS = 128;
+    const MAX_NAME_LENGTH = 64;
+    // GitHub name rules: start with letter/underscore, then a-z A-Z 0-9 _ . : -
+    const nameRegex = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
+
+    const seen = new Set();
+    const out = [];
+
+    for (const tool of tools) {
+      if (out.length >= MAX_TOOLS) break;
+
+      if (tool.type === "function" && tool.function) {
+        let name = String(tool.function.name || "").trim();
+
+        // Truncate overly long names to 64 chars
+        if (name.length > MAX_NAME_LENGTH) {
+          console.warn(
+            `[GithubExecutor] Truncating tool name "${name}" (${name.length} chars) to ${MAX_NAME_LENGTH}`,
+          );
+          name = name.slice(0, MAX_NAME_LENGTH);
+        }
+
+        // Drop tools with invalid names
+        if (!nameRegex.test(name)) {
+          console.warn(
+            `[GithubExecutor] Dropping tool with invalid name: "${name}"`,
+          );
+          continue;
+        }
+
+        // Deduplicate by name
+        if (seen.has(name)) {
+          continue;
+        }
+        seen.add(name);
+
+        out.push(
+          name !== tool.function.name
+            ? { ...tool, function: { ...tool.function, name } }
+            : tool,
+        );
+      } else {
+        // Non-function tools forwarded as-is
+        out.push(tool);
+      }
+    }
+
+    if (tools.length !== out.length) {
+      console.warn(
+        `[GithubExecutor] sanitizeTools: ${tools.length} -> ${out.length} tools`,
+      );
+    }
+
+    return out;
+  }
+
+  transformRequest(model, body, stream, credentials) {
+    if (!body?.tools?.length) return body;
+    return { ...body, tools: this.sanitizeTools(body.tools) };
+  }
+
   async execute(options) {
     const { model, log } = options;
 
+    // Sanitize tools early so both /chat/completions and /responses paths receive clean data
+    const sanitizedOptions = options.body?.tools?.length
+      ? {
+          ...options,
+          body: this.transformRequest(
+            model,
+            options.body,
+            options.stream,
+            options.credentials,
+          ),
+        }
+      : options;
+
     if (this.knownCodexModels.has(model)) {
       log?.debug("GITHUB", `Using cached /responses route for ${model}`);
-      return this.executeWithResponsesEndpoint(options);
+      return this.executeWithResponsesEndpoint(sanitizedOptions);
     }
 
-    const result = await super.execute(options);
+    const result = await super.execute(sanitizedOptions);
 
     if (result.response.status === HTTP_STATUS.BAD_REQUEST) {
       const errorBody = await result.response.clone().text();
@@ -58,7 +141,7 @@ export class GithubExecutor extends BaseExecutor {
       ) {
         log?.warn("GITHUB", `Model ${model} requires /responses. Switching...`);
         this.knownCodexModels.add(model);
-        return this.executeWithResponsesEndpoint(options);
+        return this.executeWithResponsesEndpoint(sanitizedOptions);
       }
     }
 

@@ -20,6 +20,41 @@ import {
 } from "../helpers/geminiHelper.js";
 import { deriveSessionId } from "../../utils/sessionManager.js";
 
+// Sanitize Gemini functionDeclarations: validate names, deduplicate, enforce 128-item limit.
+// Gemini name rules: must start with letter/underscore; a-z A-Z 0-9 _ . : - allowed; max 64 chars.
+function sanitizeGeminiFunctionDeclarations(fns) {
+  const MAX_TOOLS = 128;
+  const nameRegex = /^[A-Za-z_][A-Za-z0-9_.:-]{0,63}$/;
+  const seen = new Set();
+  const out = [];
+
+  for (const fn of fns) {
+    // Truncate names that are too long (keeping first 64 chars may still violate start-char rules, so re-validate)
+    let name = String(fn.name || "").trim();
+    if (name.length > 64) name = name.slice(0, 64);
+
+    if (!nameRegex.test(name)) {
+      console.warn(
+        "sanitizeGeminiFunctionDeclarations: dropping tool with invalid name:",
+        fn.name,
+      );
+      continue;
+    }
+    if (seen.has(name)) continue;
+    seen.add(name);
+    out.push(name === fn.name ? fn : { ...fn, name });
+    if (out.length >= MAX_TOOLS) break;
+  }
+
+  if (fns.length > out.length) {
+    console.warn(
+      `sanitizeGeminiFunctionDeclarations: reduced ${fns.length} -> ${out.length} tools (max ${MAX_TOOLS})`,
+    );
+  }
+
+  return out;
+}
+
 // Core: Convert OpenAI request to Gemini format (base for all variants)
 function openaiToGeminiBase(model, body, stream) {
   const result = {
@@ -209,7 +244,12 @@ function openaiToGeminiBase(model, body, stream) {
     }
 
     if (functionDeclarations.length > 0) {
-      result.tools = [{ functionDeclarations }];
+      result.tools = [
+        {
+          functionDeclarations:
+            sanitizeGeminiFunctionDeclarations(functionDeclarations),
+        },
+      ];
     }
   }
 
@@ -393,7 +433,7 @@ function wrapInCloudCodeEnvelopeForClaude(
     }
   }
 
-  // Convert Claude tools to Gemini functionDeclarations
+  // Convert Claude tools to Gemini functionDeclarations with sanitization, deduplication, and limit enforcement
   if (claudeRequest.tools && Array.isArray(claudeRequest.tools)) {
     const functionDeclarations = [];
     for (const tool of claudeRequest.tools) {
@@ -406,8 +446,11 @@ function wrapInCloudCodeEnvelopeForClaude(
         });
       }
     }
+
     if (functionDeclarations.length > 0) {
-      envelope.request.tools = [{ functionDeclarations }];
+      const sanitized =
+        sanitizeGeminiFunctionDeclarations(functionDeclarations);
+      envelope.request.tools = [{ functionDeclarations: sanitized }];
       envelope.request.toolConfig = {
         functionCallingConfig: { mode: "VALIDATED" },
       };
