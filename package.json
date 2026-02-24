@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "prebuild": "bun run format && bun run lint:fix",
-    "build": "next build --turbo",
+    "build": "next build --turbo && bun run build:cli",
     "build:cli": "bun run --cwd cli build",
     "dev": "next dev --turbo --port 20128",
     "format": "prettier --write .",

@@ -18,7 +18,9 @@
     "noPropertyAccessFromIndexSignature": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["bun", "node"]
+    "types": ["bun", "node"],
+    "moduleResolution": "node",
+    "resolveJsonModule": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

@@ -3,6 +3,7 @@ import { execSync } from 'node:child_process';
 // import { createRequire } from 'node:module';
 import { status } from './commands/status';
 import { models } from './commands/models';
+import pkg from '../../../package.json';
 import { start } from './commands/start';
 import { greet } from './commands/greet';
 import { stop } from './commands/stop';
@@ -10,6 +11,7 @@ import process from 'node:process';
 import console from 'node:console';
 import { parseArgs } from 'util';
 import path from 'node:path';
+
 // const _require = createRequire(import.meta.url);
 
 export async function runCli(args?: string[]) {
@@ -50,7 +52,7 @@ Commands:
     }
 
     if (values.version) {
-      console.log('v0.0.1');
+      console.log(`v${pkg.version}`);
       return;
     }
 
