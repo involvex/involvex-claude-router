@@ -1,6 +1,6 @@
 {
   "name": "@involvex/claude-router",
-  "version": "0.2.95",
+  "version": "0.2.96",
   "private": true,
   "description": "Involvex's Claude Router Web dashboard",
   "repository": {
