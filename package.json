@@ -17,12 +17,16 @@
   "scripts": {
     "prebuild": "bun run format && bun run lint:fix",
     "build": "next build --turbo",
+    "build:cli": "bun run  --cwd  cli build",
     "dev": "next dev --turbo --port 20128",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "format:cli": "bun run --cwd cli format",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern node_modules --ignore-pattern .next",
+    "lint:cli": "bun run --cwd cli lint",
     "lint:fix": "eslint . --ignore-pattern dist --ignore-pattern node_modules --ignore-pattern .next --fix",
-    "start": "next start"
+    "start": "next start",
+    "typecheck:cli": "bun run --cwd cli typecheck"
   },
   "config": {
     "appName": "involvex-claude-router"
@@ -66,6 +70,8 @@
     "url": "https://github.com/sponsors/involvex"
   },
   "trustedDependencies": [
+    "better-sqlite3",
+    "sharp",
     "unrs-resolver"
   ]
 }
