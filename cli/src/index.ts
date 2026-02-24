@@ -1,5 +1,11 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
+import { runCli } from './cli/index.js';
 
-import { cli } from './cli/index';
+const args = process.argv.slice(2);
 
-cli();
+runCli(args).catch((err) => {
+  // Simple error handling for CLI
+
+  console.error('Error:', err);
+  process.exit(1);
+});

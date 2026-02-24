@@ -4,13 +4,13 @@ export interface GreetOptions {
   upperCase?: boolean;
 }
 
-export function greet(options: GreetOptions = {}) {
-  const { name = 'World', upperCase = false } = options;
-  let message = `Hello, ${name}!`;
+export function greet(args: string[] = []) {
+  // Simple argument parsing for greet command
+  const name = args[0] ?? 'World';
+  const upperCase = args.includes('--upper');
 
-  if (upperCase) {
-    message = message.toUpperCase();
-  }
+  let message = `Hello, ${name}!`;
+  if (upperCase) message = message.toUpperCase();
 
   console.log(message);
   return message;

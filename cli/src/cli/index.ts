@@ -1,13 +1,23 @@
+import { execSync } from 'node:child_process';
+// import { require } from 'module';
+// import { createRequire } from 'node:module';
+import { status } from './commands/status';
+import { models } from './commands/models';
+import { start } from './commands/start';
+import { greet } from './commands/greet';
+import { stop } from './commands/stop';
 import process from 'node:process';
 import console from 'node:console';
 import { parseArgs } from 'util';
+import path from 'node:path';
+// const _require = createRequire(import.meta.url);
 
-export async function cli() {
-  const args = process.argv.slice(2);
+export async function runCli(args?: string[]) {
+  const argv = args ?? process.argv.slice(2);
 
   try {
     const { values, positionals } = parseArgs({
-      args,
+      args: argv,
       options: {
         help: {
           type: 'boolean',
@@ -31,6 +41,10 @@ Options:
 
 Commands:
   greet          Greet someone
+  start          Start the router dev server
+  stop           Stop the router dev server
+  status         Show router status
+  models         Manage models (list|add|remove)
   `);
       return;
     }
@@ -44,12 +58,26 @@ Commands:
 
     switch (command) {
       case 'greet':
-        console.log('Hello, World!');
+        await greet(positionals.slice(1));
+        break;
+      case 'start':
+        await start(positionals.slice(1));
+        break;
+      case 'stop':
+        stop();
+        break;
+      case 'status':
+        await status(positionals.slice(1));
+        break;
+      case 'models':
+        await models(positionals.slice(1));
         break;
       default:
-        console.log(`Unknown command: ${command}`);
-        console.log('Run with --help for usage information');
-        process.exit(1);
+        console.log('Starting router dev server by default');
+        execSync(
+          `powershell -F "${path.resolve(__dirname, '../../../scripts/start-router.ps1')}"`,
+          { stdio: 'inherit' }
+        );
     }
   } catch (error) {
     console.error('Error:', error);

@@ -1,8 +1,10 @@
+import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
 import eslint from '@eslint/js';
 
-export default [
+export default defineConfig([
+  globalIgnores(['dist/**', 'node_modules/**']),
   eslint.configs.recommended,
   {
     files: ['**/*.ts'],
@@ -13,7 +15,16 @@ export default [
         sourceType: 'module'
       },
       globals: {
-        bun: 'readonly'
+        bun: 'readonly',
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly'
       }
     },
     plugins: {
@@ -21,7 +32,9 @@ export default [
     },
     rules: {
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      'no-console': 'off'
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-console': 'off',
+      'no-empty': ['error', { allowEmptyCatch: true }]
     }
   }
-];
+]);

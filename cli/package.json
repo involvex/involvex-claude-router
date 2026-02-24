@@ -9,16 +9,19 @@
     "involvexclaude-router-cli": "dist/index.js"
   },
   "scripts": {
-    "prebuild": "bun run format && bun run lint:fix && bun run typecheck",
-    "build": "bun build src/index.ts --outdir dist --target bun",
+    "prebuild": " bun run lint:fix && bun run typecheck",
+    "build": "bun build src/index.ts --outdir dist --target node",
     "dev": "bun run src/index.ts",
     "format": "prettier --write .",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "start": "bun run dist/index.js",
+    "start": "node dist/index.js",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@types/kill-port": "^2.0.3",
+    "kill-port": "^2.0.1"
+  },
   "devDependencies": {
     "@types/bun": "^1.1.0",
     "@types/node": "^25.2.3",

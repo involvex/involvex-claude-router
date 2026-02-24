@@ -15,21 +15,19 @@
     "claude-router": "cli/dist/index.js"
   },
   "workspaces": [
-    "cli",
-    "cloud",
-    "tests"
+    "cli"
   ],
   "scripts": {
     "prebuild": "bun run format && bun run lint:fix",
     "build": "next build --turbo",
-    "build:cli": "bun run  --cwd  cli build",
+    "build:cli": "bun run --cwd cli build",
     "dev": "next dev --turbo --port 20128",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "format:cli": "bun run --cwd cli format",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern node_modules --ignore-pattern .next",
+    "lint": "eslint .",
     "lint:cli": "bun run --cwd cli lint",
-    "lint:fix": "eslint . --ignore-pattern dist --ignore-pattern node_modules --ignore-pattern .next --fix",
+    "lint:fix": "eslint --fix .",
     "start": "next start",
     "typecheck:cli": "bun run --cwd cli typecheck"
   },
@@ -51,7 +49,9 @@
     "next": "^16.1.6",
     "node-machine-id": "^1.1.12",
     "open": "^11.0.0",
+    "open-sse": "file:./open-sse/",
     "ora": "^9.1.0",
+    "prop-types": "^15.8.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.7.0",
