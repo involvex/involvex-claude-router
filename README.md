@@ -29,7 +29,7 @@
 - ❌ Expensive APIs ($20-50/month per provider)
 - ❌ Manual switching between providers
 
-**9Router solves this:**
+**CCR solves this:**
 
 - ✅ **Maximize subscriptions** - Track quota, use every bit before reset
 - ✅ **Auto fallback** - Subscription → Cheap → Free, zero downtime
@@ -48,7 +48,7 @@
        │ http://localhost:20128/v1
        ↓
 ┌─────────────────────────────────────────┐
-│           9Router (Smart Router)        │
+│ involvex-claude-router (Smart Router)   │
 │  • Format translation (OpenAI ↔ Claude) │
 │  • Quota tracking                       │
 │  • Auto token refresh                   │
@@ -71,7 +71,7 @@ Result: Never stop coding, minimal cost
 
 ```bash
 npm install -g @involvex/claude-router
-9router
+ccr
 ```
 
 🎉 Dashboard opens at `http://localhost:20128`
@@ -212,13 +212,13 @@ Seamless translation between formats:
 > **💡 IMPORTANT - Understanding Dashboard Costs:**
 >
 > The "cost" displayed in Usage Analytics is **for tracking and comparison purposes only**.
-> 9Router itself **never charges** you anything. You only pay providers directly (if using paid services).
+> CCR itself **never charges** you anything. You only pay providers directly (if using paid services).
 >
 > **Example:** If your dashboard shows "$290 total cost" while using iFlow models, this represents
 > what you would have paid using paid APIs directly. Your actual cost = **$0** (iFlow is free unlimited).
 >
 > Think of it as a "savings tracker" showing how much you're saving by using free models or
-> routing through 9Router!
+> routing through CCR!
 
 ### 🌐 Deploy Anywhere
 
@@ -250,15 +250,15 @@ Seamless translation between formats:
 
 ---
 
-### 📊 Understanding 9Router Costs & Billing
+### 📊 Understanding CCR Costs & Billing
 
-**9Router Billing Reality:**
+**CCR Billing Reality:**
 
-✅ **9Router software = FREE forever** (open source, never charges)  
+✅ **CCR software = FREE forever** (open source, never charges)  
 ✅ **Dashboard "costs" = Display/tracking only** (not actual bills)  
 ✅ **You pay providers directly** (subscriptions or API fees)  
 ✅ **FREE providers stay FREE** (iFlow, Kiro, Qwen = $0 unlimited)  
-❌ **9Router never sends invoices** or charges your card
+❌ **CCR never sends invoices** or charges your card
 
 **How Cost Display Works:**
 
@@ -281,9 +281,9 @@ Reality Check:
 **Payment Rules:**
 
 - **Subscription providers** (Claude Code, Codex): Pay them directly via their websites
-- **Cheap providers** (GLM, MiniMax): Pay them directly, 9Router just routes
+- **Cheap providers** (GLM, MiniMax): Pay them directly, CCR just routes
 - **FREE providers** (iFlow, Kiro, Qwen): Genuinely free forever, no hidden charges
-- **9Router**: Never charges anything, ever
+- **CCR**: Never charges anything, ever
 
 ---
 
@@ -362,7 +362,7 @@ Access via: WhatsApp, Telegram, Slack, Discord, iMessage, Signal...
 <details>
 <summary><b>📊 Why does my dashboard show high costs?</b></summary>
 
-The dashboard tracks your token usage and displays **estimated costs** as if you were using paid APIs directly. This is **not actual billing** - it's a reference to show how much you're saving by using free models or existing subscriptions through 9Router.
+The dashboard tracks your token usage and displays **estimated costs** as if you were using paid APIs directly. This is **not actual billing** - it's a reference to show how much you're saving by using free models or existing subscriptions through CCR.
 
 **Example:**
 
@@ -376,17 +376,17 @@ The cost display is a "savings tracker" to help you understand your usage patter
 </details>
 
 <details>
-<summary><b>💳 Will I be charged by 9Router?</b></summary>
+<summary><b>💳 Will I be charged by CCR?</b></summary>
 
-**No.** 9Router is free, open-source software that runs on your own computer. It never charges you anything.
+**No.** CCR is free, open-source software that runs on your own computer. It never charges you anything.
 
 **You only pay:**
 
 - ✅ **Subscription providers** (Claude Code $20/mo, Codex $20-200/mo) → Pay them directly on their websites
-- ✅ **Cheap providers** (GLM, MiniMax) → Pay them directly, 9Router just routes your requests
-- ❌ **9Router itself** → **Never charges anything, ever**
+- ✅ **Cheap providers** (GLM, MiniMax) → Pay them directly, CCR just routes your requests
+- ❌ **CCR itself** → **Never charges anything, ever**
 
-9Router is a local proxy/router. It doesn't have your credit card, can't send invoices, and has no billing system. It's completely free software.
+CCR is a local proxy/router. It doesn't have your credit card, can't send invoices, and has no billing system. It's completely free software.
 
 </details>
 
@@ -401,9 +401,9 @@ These are free services offered by those respective companies:
 - **Kiro**: Free unlimited Claude models via AWS Builder ID
 - **Qwen**: Free unlimited access to Qwen models via device auth
 
-9Router just routes your requests to them - there's no "catch" or future billing. They're truly free services, and 9Router makes them easy to use with fallback support.
+CCR just routes your requests to them - there's no "catch" or future billing. They're truly free services, and CCR makes them easy to use with fallback support.
 
-**Note:** Some subscription providers (Antigravity, GitHub Copilot) may have free preview periods that could become paid later, but this would be clearly announced by those providers, not 9Router.
+**Note:** Some subscription providers (Antigravity, GitHub Copilot) may have free preview periods that could become paid later, but this would be clearly announced by those providers, not CCR.
 
 </details>
 
@@ -432,7 +432,7 @@ These are free services offered by those respective companies:
 
 3. **Use subscription providers last:**
    - Only if you already have them
-   - 9Router helps maximize their value through quota tracking
+   - CCR helps maximize their value through quota tracking
 
 **Result:** Most users can operate at $0/month using only free tiers!
 
@@ -441,22 +441,22 @@ These are free services offered by those respective companies:
 <details>
 <summary><b>📈 What if my usage suddenly spikes?</b></summary>
 
-9Router's smart fallback prevents surprise charges:
+CCR's smart fallback prevents surprise charges:
 
 **Scenario:** You're on a coding sprint and blow through your quotas
 
-**Without 9Router:**
+**Without CCR:**
 
 - ❌ Hit rate limit → Work stops → Frustration
 - ❌ Or: Accidentally rack up huge API bills
 
-**With 9Router:**
+**With CCR:**
 
 - ✅ Subscription hits limit → Auto-fallback to cheap tier
 - ✅ Cheap tier gets expensive → Auto-fallback to free tier
 - ✅ Never stop coding → Predictable costs
 
-**You're in control:** Set spending limits per provider in dashboard, and 9Router respects them.
+**You're in control:** Set spending limits per provider in dashboard, and CCR respects them.
 
 </details>
 
@@ -480,7 +480,7 @@ Models:
   cc/claude-haiku-4-5-20251001
 ```
 
-**Pro Tip:** Use Opus for complex tasks, Sonnet for speed. 9Router tracks quota per model!
+**Pro Tip:** Use Opus for complex tasks, Sonnet for speed. CCR tracks quota per model!
 
 ### OpenAI Codex (Plus/Pro)
 
@@ -649,7 +649,7 @@ Cost: $0 forever!
 ```
 Settings → Models → Advanced:
   OpenAI API Base URL: http://localhost:20128/v1
-  OpenAI API Key: [from 9router dashboard]
+  OpenAI API Key: [from CCR dashboard]
   Model: cc/claude-opus-4-6
 ```
 
@@ -662,7 +662,7 @@ Edit `~/.claude/config.json`:
 ```json
 {
   "anthropic_api_base": "http://localhost:20128/v1",
-  "anthropic_api_key": "your-9router-api-key"
+  "anthropic_api_key": "your-CCR-api-key"
 }
 ```
 
@@ -670,7 +670,7 @@ Edit `~/.claude/config.json`:
 
 ```bash
 export OPENAI_BASE_URL="http://localhost:20128"
-export OPENAI_API_KEY="your-9router-api-key"
+export OPENAI_API_KEY="your-CCR-api-key"
 
 codex "your prompt"
 ```

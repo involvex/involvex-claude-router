@@ -1,6 +1,6 @@
 # Copilot instructions for this repository
 
-This file helps future Copilot sessions understand how to build, run, and navigate the 9Router codebase.
+This file helps future Copilot sessions understand how to build, run, and navigate the CCR codebase.
 
 ## Build, test, and lint commands
 
@@ -35,7 +35,7 @@ Note: some developer tooling uses Bun (prebuild uses `bun run format`), so `bun`
   - These layers implement the 3-tier fallback: Subscription → Cheap → Free and format translation between OpenAI, Claude, and Gemini formats.
 
 - Persistence & local files:
-  - Configuration persisted with LowDB and stored in `db.json` (default under the app data dir, e.g., `~/.9router` or `%APPDATA%/involvex-claude-router`).
+  - Configuration persisted with LowDB and stored in `db.json` (default under the app data dir, e.g., `~/.involvex-claude-router` or `%APPDATA%/involvex-claude-router`).
   - Usage stored in `usage.json` and logs in `log.txt` (same app-data location).
   - Some modules use Better-SQLite3 for other storage needs.
 

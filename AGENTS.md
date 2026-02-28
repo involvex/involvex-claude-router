@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file provides comprehensive guidance for AI agents working on the 9Router codebase. It consolidates essential information from CLAUDE.md, GEMINI.md, and copilot-instructions.md into a single reference for agent workflows.
+This file provides comprehensive guidance for AI agents working on the Involvex's Claude Router codebase. It consolidates essential information from CLAUDE.md, GEMINI.md, and copilot-instructions.md into a single reference for agent workflows.
 
 ---
 
@@ -137,7 +137,7 @@ This file provides comprehensive guidance for AI agents working on the 9Router c
 ### Common Patterns
 
 - **Provider adapters**: Located in `open-sse/translator/` for routing between LLM APIs
-- **Configuration persistence**: LowDB stores `db.json` under user app data (`~/.9router` or `%APPDATA%/involvex-claude-router`)
+- **Configuration persistence**: LowDB stores `db.json` under user app data (`~/.involvex-claude-router` or `%APPDATA%/involvex-claude-router`)
 - **Usage tracking**: Stored in `usage.json` and logs in `log.txt`
 
 ---
@@ -153,7 +153,7 @@ REQUIRE_API_KEY=your-api-key
 
 ### Runtime Paths
 
-- Configuration: `~/.9router/db.json` (Linux/macOS) or `%APPDATA%/involvex-claude-router/db.json` (Windows)
+- Configuration: `~/.involvex-claude-router/db.json` (Linux/macOS) or `%APPDATA%/involvex-claude-router/db.json` (Windows)
 - Usage: Same directory as above, `usage.json`
 - Logs: Same directory as above, `log.txt`
 

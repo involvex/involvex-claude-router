@@ -20,7 +20,7 @@ involvex-claude-router is a local AI routing gateway and dashboard built on Next
 - **Frontend:** Next.js dashboard for management (Providers, Combos, Aliases, Usage).
 - **API Surface:** OpenAI-compatible compatibility endpoints (`/v1/*`) and management APIs (`/api/*`).
 - **Core Routing:** Shared logic in `src/sse/*` and `open-sse/*` for provider execution, translation, and fallback.
-- **Persistence:** Configuration stored in `db.json`, usage in `usage.json`, and request logs in `log.txt` (typically under `~/.9router` or `APPDATA/involvex-claude-router`).
+- **Persistence:** Configuration stored in `db.json`, usage in `usage.json`, and request logs in `log.txt` (typically under `~/.involvex-claude-router` or `APPDATA/involvex-claude-router`).
 
 ## Building and Running
 
