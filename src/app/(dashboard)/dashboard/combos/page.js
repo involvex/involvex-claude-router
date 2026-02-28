@@ -41,10 +41,11 @@ export default function CombosPage() {
 
       if (combosRes.ok) setCombos(combosData.combos || []);
       if (providersRes.ok) {
-        const active = (providersData.connections || []).filter(
-          c => c.testStatus === "active" || c.testStatus === "success",
+        // Include all providers with connections (not just active ones)
+        const connected = (providersData.connections || []).filter(
+          c => c.testStatus,
         );
-        setActiveProviders(active);
+        setActiveProviders(connected);
       }
     } catch (error) {
       console.log("Error fetching data:", error);

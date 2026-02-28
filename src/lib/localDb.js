@@ -21,11 +21,26 @@ function getAppName() {
   }
 }
 
+// Expand ~ to home directory
+function expandTilde(dir) {
+  if (!dir) return dir;
+  if (dir.startsWith("~/") || dir === "~") {
+    return dir.replace(/^~/, os.homedir());
+  }
+  return dir;
+}
+
 // Get user data directory based on platform
 function getUserDataDir() {
   if (isCloud) return "/tmp"; // Fallback for Workers
 
-  if (process.env.DATA_DIR) return process.env.DATA_DIR;
+  if (process.env.DATA_DIR) return expandTilde(process.env.DATA_DIR);
+
+  // During Next.js build phase, we don't want to access the real data dir
+  // which might trigger EPERM on restricted Windows folders if Webpack scans them.
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return null;
+  }
 
   const platform = process.platform;
   const homeDir = os.homedir();
@@ -44,10 +59,10 @@ function getUserDataDir() {
 
 // Data file path - stored in user home directory
 const DATA_DIR = getUserDataDir();
-const DB_FILE = isCloud ? null : path.join(DATA_DIR, "db.json");
+const DB_FILE = isCloud || !DATA_DIR ? null : path.join(DATA_DIR, "db.json");
 
 // Ensure data directory exists
-if (!isCloud && !fs.existsSync(DATA_DIR)) {
+if (!isCloud && DATA_DIR && !fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 

@@ -4,6 +4,10 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 account_id = "d4e0f1c1c830642168db2f4ea3aece58"
 
+[assets]
+directory = "../out"
+binding = "ASSETS"
+
 [alias]
 "@/lib/usageDb.js" = "./src/stubs/usageDb.js"
 
@@ -16,3 +20,8 @@ id = "6c35877893164e48b849f001d129cabd"
 binding = "proxy_db"
 database_name = "proxy-db"
 database_id = "04d00543-2f72-4834-9c69-3f8e3fe184c3"
+
+# Secrets (set via wrangler secret put)
+# JWT_SECRET - for dashboard authentication
+# REQUIRE_API_KEY - set to "true" to require API key auth
+# API_KEY_SECRET - the actual API key for Bearer auth

@@ -12,6 +12,6 @@
     "open-sse": "file:../open-sse"
   },
   "devDependencies": {
-    "wrangler": "^4.68.0"
+    "wrangler": "^4.69.0"
   }
 }

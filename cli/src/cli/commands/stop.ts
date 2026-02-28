@@ -1,7 +1,7 @@
 // import { execSync } from 'node:child_process';
 // import path from 'node:path';
 // import fs from 'node:fs';
-import killport from 'kill-port';
+import killport from "kill-port";
 
 // const PID_FILE = path.join(process.cwd(), '.claude', 'router.pid');
 
@@ -42,14 +42,14 @@ import killport from 'kill-port';
 // }
 
 export async function stop() {
-  console.log('Stopping router...');
-  console.log('Killing process on port 20128...');
+  console.log("Stopping router...");
+  console.log("Killing process on port 20128...");
   try {
     await killport(20128);
-    console.log('Router stopped');
+    console.log("Router stopped");
   } catch (err) {
-    console.error('Failed to stop router:', err);
+    console.error("Failed to stop router:", err);
   }
-  console.log('Done!');
+  console.log("Done!");
   return;
 }

@@ -28,6 +28,8 @@
     "prebuild": "bun run format && bun run lint:fix",
     "build": "next build --turbo && bun run build:cli",
     "build:cli": "bun run --cwd cli build",
+    "build:cloud": "node scripts/build-cloud.mjs",
+    "deploy:cloud": "bun run --cwd cloud deploy",
     "dev": "next dev --turbo --port 20128",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -70,12 +72,17 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
+    "d3-drag": "^3.0.0",
+    "d3-interpolate": "^3.0.1",
+    "d3-selection": "^3.0.0",
+    "d3-zoom": "^3.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "prettier": "^3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-packagejson": "^3.0.0",
     "prettier-plugin-sort-imports": "^1.8.11",
+    "state-local": "^1.0.7",
     "tailwindcss": "^4"
   },
   "sponsor": {

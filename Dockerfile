@@ -20,7 +20,7 @@ ENV PORT=20128
 ENV HOSTNAME=0.0.0.0
 
 # Runtime writable location for localDb when DATA_DIR is configured to /app/data
-RUN mkdir -p /involvex-claude-router-data
+RUN mkdir -p /.involvex-claude-router
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/static ./.next/static

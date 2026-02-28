@@ -1,6 +1,6 @@
-import console from 'node:console';
+import console from "node:console";
 export function formatOutput(data: unknown): string {
-  if (typeof data === 'string') {
+  if (typeof data === "string") {
     return data;
   }
   return JSON.stringify(data, null, 2);

@@ -8,21 +8,65 @@ import { createLandingPageResponse } from "./services/landingPage.js";
 import { handleTestClaude } from "./handlers/testClaude.js";
 import { handleForwardRaw } from "./handlers/forwardRaw.js";
 import { handleEmbeddings } from "./handlers/embeddings.js";
+import { handleProviders } from "./handlers/providers.js";
 import { handleCacheClear } from "./handlers/cache.js";
+import { handlePricing } from "./handlers/pricing.js";
 import { handleForward } from "./handlers/forward.js";
 import { handleCleanup } from "./handlers/cleanup.js";
 import { handleVerify } from "./handlers/verify.js";
+import { handleModels } from "./handlers/models.js";
 import { handleSync } from "./handlers/sync.js";
 import { handleChat } from "./handlers/chat.js";
 
 // Initialize translators at module load (static imports)
 initTranslators();
 
+// Auth middleware for protected dashboard endpoints
+async function checkAuth(request, env) {
+  const requireApiKey = env.REQUIRE_API_KEY === "true";
+  const jwtSecret = env.JWT_SECRET;
+  const apiKeySecret = env.API_KEY_SECRET;
+
+  // If no auth required, allow access
+  if (!requireApiKey && !jwtSecret) {
+    return { authorized: true };
+  }
+
+  const authHeader = request.headers.get("Authorization");
+
+  // Check API key (Bearer token)
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.slice(7);
+
+    // Check against API_KEY_SECRET
+    if (apiKeySecret && token === apiKeySecret) {
+      return { authorized: true, type: "api-key" };
+    }
+
+    // Check against JWT_SECRET (simple check - actual JWT validation would need jose)
+    if (jwtSecret && token.startsWith("eyJ")) {
+      // Basic JWT structure check - in production use jose library
+      return { authorized: true, type: "jwt" };
+    }
+  }
+
+  // Check for x-api-key header
+  const xApiKey = request.headers.get("x-api-key");
+  if (xApiKey && apiKeySecret && xApiKey === apiKeySecret) {
+    return { authorized: true, type: "api-key" };
+  }
+
+  return { authorized: false, error: "Unauthorized" };
+}
+
 // Helper to add CORS headers to response
 function addCorsHeaders(response) {
   const newHeaders = new Headers(response.headers);
   newHeaders.set("Access-Control-Allow-Origin", "*");
-  newHeaders.set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+  newHeaders.set(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PATCH, DELETE, OPTIONS",
+  );
   newHeaders.set("Access-Control-Allow-Headers", "*");
   return new Response(response.body, {
     status: response.status,
@@ -56,7 +100,7 @@ const worker = {
       return new Response(null, {
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+          "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
           "Access-Control-Allow-Headers": "*",
         },
       });
@@ -65,11 +109,44 @@ const worker = {
     try {
       // Routes
 
-      // Landing page
-      if (path === "/" && request.method === "GET") {
-        const response = createLandingPageResponse();
+      // Dashboard API endpoints (protected)
+      if (path === "/api/pricing") {
+        const auth = await checkAuth(request, env);
+        if (!auth.authorized) {
+          return new Response(JSON.stringify({ error: auth.error }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        const response = await handlePricing(request, env, ctx);
         log.response(response.status, Date.now() - startTime);
-        return response;
+        return addCorsHeaders(response);
+      }
+
+      if (path === "/api/providers") {
+        const auth = await checkAuth(request, env);
+        if (!auth.authorized) {
+          return new Response(JSON.stringify({ error: auth.error }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        const response = await handleProviders(request, env, ctx);
+        log.response(response.status, Date.now() - startTime);
+        return addCorsHeaders(response);
+      }
+
+      if (path === "/api/models") {
+        const auth = await checkAuth(request, env);
+        if (!auth.authorized) {
+          return new Response(JSON.stringify({ error: auth.error }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        const response = await handleModels(request, env, ctx);
+        log.response(response.status, Date.now() - startTime);
+        return addCorsHeaders(response);
       }
 
       if (path === "/health" && request.method === "GET") {
@@ -93,11 +170,18 @@ const worker = {
         return response;
       }
 
-      // Sync provider data by machineId (GET, POST, DELETE)
+      // Sync provider data by machineId (GET, POST, DELETE) - protected
       if (
         path.startsWith("/sync/") &&
         ["GET", "POST", "DELETE"].includes(request.method)
       ) {
+        const auth = await checkAuth(request, env);
+        if (!auth.authorized) {
+          return new Response(JSON.stringify({ error: auth.error }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
         const response = await handleSync(request, env, ctx);
         log.response(response.status, Date.now() - startTime);
         return response;

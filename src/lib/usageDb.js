@@ -23,11 +23,25 @@ function getAppName() {
   }
 }
 
+// Expand ~ to home directory
+function expandTilde(dir) {
+  if (!dir) return dir;
+  if (dir.startsWith("~/") || dir === "~") {
+    return dir.replace(/^~/, os.homedir());
+  }
+  return dir;
+}
+
 // Get user data directory based on platform
 function getUserDataDir() {
   if (isCloud) return "/tmp"; // Fallback for Workers
 
-  if (process.env.DATA_DIR) return process.env.DATA_DIR;
+  if (process.env.DATA_DIR) return expandTilde(process.env.DATA_DIR);
+
+  // During Next.js build phase, we don't want to access the real data dir
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return null;
+  }
 
   try {
     const platform = process.platform;
@@ -55,11 +69,11 @@ function getUserDataDir() {
 
 // Data file path - stored in user home directory
 const DATA_DIR = getUserDataDir();
-const DB_FILE = isCloud ? null : path.join(DATA_DIR, "usage.json");
-const LOG_FILE = isCloud ? null : path.join(DATA_DIR, "log.txt");
+const DB_FILE = isCloud || !DATA_DIR ? null : path.join(DATA_DIR, "usage.json");
+const LOG_FILE = isCloud || !DATA_DIR ? null : path.join(DATA_DIR, "log.txt");
 
 // Ensure data directory exists
-if (!isCloud && fs && typeof fs.existsSync === "function") {
+if (!isCloud && DATA_DIR && fs && typeof fs.existsSync === "function") {
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });

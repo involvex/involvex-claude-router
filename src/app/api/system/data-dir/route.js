@@ -17,8 +17,16 @@ function getAppName() {
   }
 }
 
+function expandTilde(dir) {
+  if (!dir) return dir;
+  if (dir.startsWith("~/") || dir === "~") {
+    return dir.replace(/^~/, os.homedir());
+  }
+  return dir;
+}
+
 function getDataDir() {
-  if (process.env.DATA_DIR) return process.env.DATA_DIR;
+  if (process.env.DATA_DIR) return expandTilde(process.env.DATA_DIR);
 
   const platform = process.platform;
   const homeDir = os.homedir();

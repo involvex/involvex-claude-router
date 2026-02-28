@@ -86,16 +86,6 @@ export class DefaultExecutor extends BaseExecutor {
   }
 
   transformRequest(model, body, stream, credentials) {
-    if (
-      this.provider === "opencode" &&
-      model &&
-      !model.startsWith("opencode/")
-    ) {
-      return {
-        ...body,
-        model: `opencode/${model}`,
-      };
-    }
     return body;
   }
 

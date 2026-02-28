@@ -3,6 +3,7 @@
 import {
   OAUTH_PROVIDERS,
   APIKEY_PROVIDERS,
+  FREE_PROVIDERS,
   isOpenAICompatibleProvider,
   isAnthropicCompatibleProvider,
 } from "@/shared/constants/providers";
@@ -14,9 +15,10 @@ import { useState, useMemo, useEffect } from "react";
 import PropTypes from "prop-types";
 import Modal from "./Modal";
 
-// Provider order: OAuth first, then API Key (matches dashboard/providers)
+// Provider order: OAuth, Free, then API Key (matches dashboard/providers)
 const PROVIDER_ORDER = [
   ...Object.keys(OAUTH_PROVIDERS),
+  ...Object.keys(FREE_PROVIDERS),
   ...Object.keys(APIKEY_PROVIDERS),
 ];
 
@@ -67,7 +69,7 @@ export default function ModelSelectModal({
   }, [isOpen]);
 
   const allProviders = useMemo(
-    () => ({ ...OAUTH_PROVIDERS, ...APIKEY_PROVIDERS }),
+    () => ({ ...OAUTH_PROVIDERS, ...FREE_PROVIDERS, ...APIKEY_PROVIDERS }),
     [],
   );
 
