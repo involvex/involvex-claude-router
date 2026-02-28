@@ -14,6 +14,13 @@
     "ccr": "cli/dist/index.js",
     "claude-router": "cli/dist/index.js"
   },
+  "files": [
+    "Readme.md",
+    "cli/dist/index.js",
+    "src",
+    "open-sse",
+    "package.json"
+  ],
   "workspaces": [
     "cli"
   ],

@@ -85,6 +85,20 @@ export class DefaultExecutor extends BaseExecutor {
     return headers;
   }
 
+  transformRequest(model, body, stream, credentials) {
+    if (
+      this.provider === "opencode" &&
+      model &&
+      !model.startsWith("opencode/")
+    ) {
+      return {
+        ...body,
+        model: `opencode/${model}`,
+      };
+    }
+    return body;
+  }
+
   async refreshCredentials(credentials, log) {
     if (!credentials.refreshToken) return null;
 
