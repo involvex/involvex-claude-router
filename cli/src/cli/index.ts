@@ -4,7 +4,6 @@ import { execSync } from 'node:child_process';
 import { status } from './commands/status';
 import { models } from './commands/models';
 import { start } from './commands/start';
-import { greet } from './commands/greet';
 import pkg from '../../../package.json';
 import { stop } from './commands/stop';
 import process from 'node:process';
@@ -42,7 +41,6 @@ Options:
   -v, --version  Show version
 
 Commands:
-  greet          Greet someone
   start          Start the router dev server
   stop           Stop the router dev server
   status         Show router status
@@ -59,9 +57,6 @@ Commands:
     const command = positionals[0];
 
     switch (command) {
-      case 'greet':
-        await greet(positionals.slice(1));
-        break;
       case 'start':
         await start(positionals.slice(1));
         break;
