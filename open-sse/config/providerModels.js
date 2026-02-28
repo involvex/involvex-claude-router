@@ -305,10 +305,12 @@ export const PROVIDER_MODELS = {
     { id: "NousResearch/Hermes-3-Llama-3.1-70B", name: "Hermes 3 70B" },
   ],
   opencode: [
-    { id: "MiniMax-M2.5", name: "MiniMax M2.5" },
-    { id: "MiniMax-M2.1", name: "MiniMax M2.1" },
-    { id: "gpt-4o", name: "GPT-4o" },
-    { id: "gpt-4o-mini", name: "GPT-4o Mini" },
+    { id: "opencode/minimax-m2.5", name: "MiniMax M2.5" },
+    { id: "opencode/minimax-m2.1", name: "MiniMax M2.1" },
+    { id: "opencode/gpt-4o", name: "GPT-4o" },
+    { id: "opencode/gpt-4o-mini", name: "GPT-4o Mini" },
+    { id: "opencode/glm-5", name: "GLM 5" },
+    { id: "opencode/deepseek-r1", name: "DeepSeek R1" },
   ],
 };
 

@@ -416,6 +416,12 @@ async function testApiKeyConnection(connection) {
         });
         return { valid: res.ok, error: res.ok ? null : "Invalid API key" };
       }
+      case "opencode": {
+        const res = await fetch("https://opencode.ai/zen/v1/models", {
+          headers: { Authorization: `Bearer ${connection.apiKey}` },
+        });
+        return { valid: res.ok, error: res.ok ? null : "Invalid API key" };
+      }
       default:
         return { valid: false, error: "Provider test not supported" };
     }

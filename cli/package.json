@@ -1,12 +1,12 @@
 {
-  "name": "involvexclaude-router-cli",
+  "name": "@involvex/claude-router-cli",
   "version": "0.0.1",
   "description": "claude-router-cli",
   "license": "MIT",
   "author": "involvex",
   "type": "module",
   "bin": {
-    "involvexclaude-router-cli": "dist/index.js"
+    "claude-router-cli": "dist/index.js"
   },
   "scripts": {
     "prebuild": " bun run lint:fix && bun run typecheck",

@@ -299,7 +299,7 @@ export const PROVIDERS = {
     refreshUrl: "https://api.cline.bot/api/v1/auth/refresh",
   },
   opencode: {
-    baseUrl: "https://api.opencode.ai/v1/chat/completions",
+    baseUrl: "https://opencode.ai/zen/v1/chat/completions",
     format: "openai",
   },
 };
