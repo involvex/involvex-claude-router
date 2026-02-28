@@ -1,8 +1,8 @@
 # GEMINI.md
 
-# 9Router (involvex-claude-router)
+# involvex-claude-router
 
-9Router is a local AI routing gateway and dashboard built on Next.js. It provides a single OpenAI-compatible endpoint (`/v1/*`) and routes traffic across multiple upstream providers with translation, fallback, token refresh, and usage tracking.
+involvex-claude-router is a local AI routing gateway and dashboard built on Next.js. It provides a single OpenAI-compatible endpoint (`/v1/*`) and routes traffic across multiple upstream providers with translation, fallback, token refresh, and usage tracking.
 
 ## Project Overview
 
