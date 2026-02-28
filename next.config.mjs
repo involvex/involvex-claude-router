@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  allowedDevOrigins: [
+    "http://localhost:3000",
+    "100.114.178.4",
+    "127.0.0.1",
+    "https://involvex-claude-router-cloud.involvex.workers.dev",
+    "http://localhost:20128",
+  ],
   images: {
     unoptimized: true,
   },
