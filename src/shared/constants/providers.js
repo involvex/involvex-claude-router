@@ -292,6 +292,15 @@ export const APIKEY_PROVIDERS = {
     textIcon: "NB",
     website: "https://nanobananaapi.ai",
   },
+  opencode: {
+    id: "opencode",
+    alias: "opencode",
+    name: "OpenCode",
+    icon: "code",
+    color: "#000000",
+    textIcon: "OC",
+    website: "https://api.opencode.ai",
+  },
 };
 
 export const OPENAI_COMPATIBLE_PREFIX = "openai-compatible-";

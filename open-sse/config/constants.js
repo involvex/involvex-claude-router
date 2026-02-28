@@ -298,6 +298,10 @@ export const PROVIDERS = {
     tokenUrl: "https://api.cline.bot/api/v1/auth/token",
     refreshUrl: "https://api.cline.bot/api/v1/auth/refresh",
   },
+  opencode: {
+    baseUrl: "https://api.opencode.ai/v1/chat/completions",
+    format: "openai",
+  },
 };
 
 // Claude system prompt

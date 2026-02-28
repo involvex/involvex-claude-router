@@ -304,6 +304,12 @@ export const PROVIDER_MODELS = {
     { id: "Qwen/Qwen2.5-Coder-32B-Instruct", name: "Qwen 2.5 Coder 32B" },
     { id: "NousResearch/Hermes-3-Llama-3.1-70B", name: "Hermes 3 70B" },
   ],
+  opencode: [
+    { id: "MiniMax-M2.5", name: "MiniMax M2.5" },
+    { id: "MiniMax-M2.1", name: "MiniMax M2.1" },
+    { id: "gpt-4o", name: "GPT-4o" },
+    { id: "gpt-4o-mini", name: "GPT-4o Mini" },
+  ],
 };
 
 // Helper functions
@@ -377,6 +383,7 @@ export const PROVIDER_ID_TO_ALIAS = {
   nebius: "nebius",
   siliconflow: "siliconflow",
   hyperbolic: "hyperbolic",
+  opencode: "opencode",
 };
 
 export function getModelsByProviderId(providerId) {

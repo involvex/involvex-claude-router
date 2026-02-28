@@ -9,11 +9,11 @@
  */
 export function createLandingPageResponse() {
   const html = `<!DOCTYPE html>
-<html><head><title>9Router Worker</title></head>
+<html><head><title>Involvex's Claude Router Worker</title></head>
 <body style="font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#0a0a0a;color:#fff">
 <div style="text-align:center">
-<h1>9Router Worker</h1>
-<p style="color:#888">Worker is running. Configure this URL in your 9Router dashboard.</p>
+<h1>Involvex's Claude Router Worker</h1>
+<p style="color:#888">Worker is running. Configure this URL in your Involvex's Claude Router dashboard.</p>
 </div>
 </body></html>`;
 

@@ -30,7 +30,7 @@ export async function models(argv: string[] = []) {
         console.error('Usage: ccr models remove <model-name>');
         return;
       }
-      models = models.filter(m => m !== rest[0]);
+      models = models.filter((m) => m !== rest[0]);
       fs.writeFileSync(MODELS_FILE, JSON.stringify(models, null, 2));
       console.log('Removed', rest[0]);
       break;

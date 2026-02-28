@@ -293,6 +293,7 @@ export function buildProviderHeaders(
       case "qwen":
       case "openai":
       case "openrouter":
+      case "opencode":
         headers["Authorization"] =
           `Bearer ${credentials.apiKey || credentials.accessToken}`;
         break;
