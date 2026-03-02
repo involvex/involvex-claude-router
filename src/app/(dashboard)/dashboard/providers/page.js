@@ -110,6 +110,7 @@ export default function ProvidersPage() {
     useState(false);
   const [testingMode, setTestingMode] = useState(null);
   const [testResults, setTestResults] = useState(null);
+  const [syncingModels, setSyncingModels] = useState(false);
   const notify = useNotificationStore();
 
   useEffect(() => {
@@ -223,6 +224,26 @@ export default function ProvidersPage() {
     }
   };
 
+  const handleSyncModels = async () => {
+    if (syncingModels) return;
+    setSyncingModels(true);
+    try {
+      const res = await fetch("/api/models/sync", { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        notify.success(
+          `Synced ${data.total} models across ${data.updated} providers`,
+        );
+      } else {
+        notify.error(data.error || "Model sync failed");
+      }
+    } catch (err) {
+      notify.error("Model sync request failed");
+    } finally {
+      setSyncingModels(false);
+    }
+  };
+
   const compatibleProviders = providerNodes
     .filter(node => node.type === "openai-compatible")
     .map(node => ({
@@ -253,6 +274,24 @@ export default function ProvidersPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Page actions */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleSyncModels}
+          disabled={syncingModels}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+            syncingModels
+              ? "bg-primary/20 border-primary/40 text-primary animate-pulse"
+              : "bg-bg border-border text-text-muted hover:text-text-main hover:border-primary/40"
+          }`}
+          title="Fetch latest model lists from models.dev"
+        >
+          <span className="material-symbols-outlined text-[14px]">
+            {syncingModels ? "sync" : "cloud_download"}
+          </span>
+          {syncingModels ? "Syncing..." : "Sync Models"}
+        </button>
+      </div>
       {/* OAuth Providers */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">

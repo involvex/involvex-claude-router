@@ -41,6 +41,9 @@ export const PROVIDER_ENDPOINTS = {
   anthropic: "https://api.anthropic.com/v1/messages",
   gemini: "https://generativelanguage.googleapis.com/v1beta/models",
   opencode: "https://opencode.ai/zen/v1/chat/completions",
+  "kilo-ai": "https://api.kilo.ai/api/gateway/chat/completions",
+  cloudflare:
+    "https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/ai/v1/chat/completions",
 };
 
 // Re-export from providers.js for backward compatibility

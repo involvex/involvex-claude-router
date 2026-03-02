@@ -46,6 +46,7 @@ export async function POST(request) {
       globalPriority,
       defaultModel,
       testStatus,
+      accountId,
     } = body;
 
     // Validation
@@ -69,7 +70,9 @@ export async function POST(request) {
 
     let providerSpecificData = null;
 
-    if (isOpenAICompatibleProvider(provider)) {
+    if (provider === "cloudflare" && accountId) {
+      providerSpecificData = { accountId };
+    } else if (isOpenAICompatibleProvider(provider)) {
       const node = await getProviderNodeById(provider);
       if (!node) {
         return NextResponse.json(

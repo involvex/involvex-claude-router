@@ -43,7 +43,7 @@ export default function CombosPage() {
       if (providersRes.ok) {
         // Include all providers with connections (not just active ones)
         const connected = (providersData.connections || []).filter(
-          c => c.testStatus,
+          c => c.isActive !== false,
         );
         setActiveProviders(connected);
       }

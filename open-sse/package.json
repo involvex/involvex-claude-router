@@ -2,5 +2,8 @@
   "name": "open-sse",
   "version": "1.0.0",
   "type": "module",
-  "main": "index.js"
+  "main": "index.js",
+  "dependencies": {
+    "fs": "^0.0.1-security"
+  }
 }

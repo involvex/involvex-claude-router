@@ -38,6 +38,11 @@ const TUNNEL_BENEFITS = [
 
 const TUNNEL_ACTION_TIMEOUT_MS = 90000;
 
+const CLOUD_PROXY_URLS = [
+  "https://involvex-claude-router-cloud.involvex.workers.dev",
+  "https://rbvr2tp.9router.com",
+];
+
 export default function APIPageClient({ machineId }) {
   const [keys, setKeys] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +74,9 @@ export default function APIPageClient({ machineId }) {
   const [tunnelStatus, setTunnelStatus] = useState(null);
   const [showDisableModal, setShowDisableModal] = useState(false);
   const [showEnableModal, setShowEnableModal] = useState(false);
+
+  // Cloud proxy URL selector
+  const [cloudProxyUrl, setCloudProxyUrl] = useState(CLOUD_PROXY_URLS[0]);
 
   const { copied, copy } = useCopyToClipboard();
 
@@ -238,6 +246,7 @@ export default function APIPageClient({ machineId }) {
       if (settingsRes.ok) {
         const data = await settingsRes.json();
         setRequireApiKey(data.requireApiKey || false);
+        if (data.cloudProxyUrl) setCloudProxyUrl(data.cloudProxyUrl);
       }
       if (tunnelRes.ok) {
         const data = await tunnelRes.json();
@@ -247,6 +256,19 @@ export default function APIPageClient({ machineId }) {
       }
     } catch (error) {
       console.log("Error loading settings:", error);
+    }
+  };
+
+  const handleCloudProxyUrlChange = async url => {
+    setCloudProxyUrl(url);
+    try {
+      await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cloudProxyUrl: url }),
+      });
+    } catch (error) {
+      console.log("Error saving cloudProxyUrl:", error);
     }
   };
 
@@ -423,7 +445,11 @@ export default function APIPageClient({ machineId }) {
   }
 
   const currentEndpoint =
-    tunnelEnabled && tunnelUrl ? `${tunnelUrl}/v1` : baseUrl;
+    tunnelEnabled && cloudProxyUrl
+      ? `${cloudProxyUrl}/v1`
+      : tunnelEnabled && tunnelUrl
+        ? `${tunnelUrl}/v1`
+        : baseUrl;
 
   return (
     <div className="flex flex-col gap-8">
@@ -433,7 +459,11 @@ export default function APIPageClient({ machineId }) {
           <div>
             <h2 className="text-lg font-semibold">API Endpoint</h2>
             <p className="text-sm text-text-muted">
-              {tunnelEnabled ? "Using Tunnel" : "Using Local Server"}
+              {tunnelEnabled && cloudProxyUrl
+                ? "Using Cloud Proxy"
+                : tunnelEnabled
+                  ? "Using Tunnel"
+                  : "Using Local Server"}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -501,6 +531,51 @@ export default function APIPageClient({ machineId }) {
             {tunnelStatus.message}
           </div>
         )}
+      </Card>
+
+      {/* Cloud Proxy URL Selector */}
+      <Card>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-semibold">Cloud Proxy URL</h2>
+            <p className="text-sm text-text-muted">
+              Select which cloud proxy to use for remote access
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-3">
+          {CLOUD_PROXY_URLS.map(url => (
+            <label
+              key={url}
+              className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                cloudProxyUrl === url
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/40"
+              }`}
+            >
+              <input
+                type="radio"
+                name="cloudProxyUrl"
+                value={url}
+                checked={cloudProxyUrl === url}
+                onChange={() => handleCloudProxyUrlChange(url)}
+                className="accent-primary"
+              />
+              <span className="font-mono text-sm flex-1 break-all">{url}</span>
+              <Button
+                size="sm"
+                variant="ghost"
+                icon={copied === url ? "check" : "content_copy"}
+                onClick={e => {
+                  e.preventDefault();
+                  copy(url, url);
+                }}
+              >
+                {copied === url ? "Copied!" : "Copy"}
+              </Button>
+            </label>
+          ))}
+        </div>
       </Card>
 
       {/* API Keys */}

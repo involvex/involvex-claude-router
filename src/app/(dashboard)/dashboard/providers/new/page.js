@@ -2,8 +2,8 @@
 
 import { Card, Button, Input, Select, Toggle } from "@/shared/components";
 import { AI_PROVIDERS, AUTH_METHODS } from "@/shared/constants/config";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 
 const providerOptions = Object.values(AI_PROVIDERS).map(p => ({
@@ -16,14 +16,16 @@ const authMethodOptions = Object.values(AUTH_METHODS).map(m => ({
   label: m.name,
 }));
 
-export default function NewProviderPage() {
+function NewProviderPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    provider: "",
-    authMethod: "api_key",
+    provider: searchParams.get("provider") ?? "",
+    authMethod: "apikey",
     apiKey: "",
-    displayName: "",
+    accountId: "",
+    name: "",
     isActive: true,
   });
   const [errors, setErrors] = useState({});
@@ -38,8 +40,16 @@ export default function NewProviderPage() {
   const validate = () => {
     const newErrors = {};
     if (!formData.provider) newErrors.provider = "Please select a provider";
-    if (formData.authMethod === "api_key" && !formData.apiKey) {
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (formData.authMethod === "apikey" && !formData.apiKey) {
       newErrors.apiKey = "API Key is required";
+    }
+    if (
+      formData.authMethod === "apikey" &&
+      formData.provider === "cloudflare" &&
+      !formData.accountId.trim()
+    ) {
+      newErrors.accountId = "Account ID is required for Cloudflare Workers AI";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -144,7 +154,7 @@ export default function NewProviderPage() {
                   }`}
                 >
                   <span className="material-symbols-outlined">
-                    {method.value === "api_key" ? "key" : "lock"}
+                    {method.value === "apikey" ? "key" : "lock"}
                   </span>
                   <span className="font-medium">{method.label}</span>
                 </button>
@@ -153,7 +163,7 @@ export default function NewProviderPage() {
           </div>
 
           {/* API Key Input */}
-          {formData.authMethod === "api_key" && (
+          {formData.authMethod === "apikey" && (
             <Input
               label="API Key"
               type="password"
@@ -166,29 +176,45 @@ export default function NewProviderPage() {
             />
           )}
 
-          {/* OAuth2 Button */}
-          {formData.authMethod === "oauth2" && (
+          {/* Cloudflare Account ID */}
+          {formData.authMethod === "apikey" &&
+            formData.provider === "cloudflare" && (
+              <Input
+                label="Account ID"
+                placeholder="Enter your Cloudflare Account ID"
+                value={formData.accountId}
+                onChange={e => handleChange("accountId", e.target.value)}
+                error={errors.accountId}
+                hint="Found in the Cloudflare dashboard under Workers & Pages."
+                required
+              />
+            )}
+
+          {/* OAuth Button */}
+          {formData.authMethod === "oauth" && (
             <Card.Section>
               <p className="text-sm text-text-muted mb-4">
-                Connect your account using OAuth2 authentication.
+                Connect your account using OAuth authentication.
               </p>
               <Button
                 type="button"
                 variant="secondary"
                 icon="link"
               >
-                Connect with OAuth2
+                Connect with OAuth
               </Button>
             </Card.Section>
           )}
 
-          {/* Display Name */}
+          {/* Name */}
           <Input
-            label="Display Name"
+            label="Name"
             placeholder="e.g., Production API, Dev Environment"
-            value={formData.displayName}
-            onChange={e => handleChange("displayName", e.target.value)}
-            hint="Optional. A friendly name to identify this configuration."
+            value={formData.name}
+            onChange={e => handleChange("name", e.target.value)}
+            error={errors.name}
+            hint="A friendly name to identify this configuration."
+            required
           />
 
           {/* Active Toggle */}
@@ -232,5 +258,13 @@ export default function NewProviderPage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+export default function NewProviderPage() {
+  return (
+    <Suspense>
+      <NewProviderPageInner />
+    </Suspense>
   );
 }

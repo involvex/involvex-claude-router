@@ -87,6 +87,7 @@ const defaultData = {
     observabilityMaxJsonSize: 1024,
   },
   pricing: {}, // NEW: pricing configuration
+  syncedModels: {}, // Synced model lists from models.dev
 };
 
 function cloneDefaultData() {
@@ -110,6 +111,7 @@ function cloneDefaultData() {
       observabilityMaxJsonSize: 1024,
     },
     pricing: {},
+    syncedModels: {},
   };
 }
 
@@ -1031,4 +1033,56 @@ export async function resetAllPricing() {
   db.data.pricing = {};
   await db.write();
   return db.data.pricing;
+}
+
+// ============ Synced Models ============
+
+/**
+ * Get all synced models (keyed by provider ID)
+ * @returns {Promise<Record<string, Array<{id: string, name: string, free?: boolean}>>>}
+ */
+export async function getSyncedModels() {
+  const db = await getDb();
+  return db.data.syncedModels || {};
+}
+
+/**
+ * Get synced models for a specific provider
+ * @param {string} providerId - App provider ID (e.g. "openrouter", "openai")
+ * @returns {Promise<Array<{id: string, name: string, free?: boolean}> | null>}
+ */
+export async function getSyncedModelsForProvider(providerId) {
+  const all = await getSyncedModels();
+  return all[providerId] || null;
+}
+
+/**
+ * Set synced models for a provider
+ * @param {string} providerId - App provider ID
+ * @param {Array<{id: string, name: string, free?: boolean}>} models
+ */
+export async function setSyncedModels(providerId, models) {
+  const db = await getDb();
+  if (!db.data.syncedModels) db.data.syncedModels = {};
+  db.data.syncedModels[providerId] = models;
+  await db.write();
+}
+
+/**
+ * Set all synced models at once (replaces all existing synced data)
+ * @param {Record<string, Array<{id: string, name: string}>>} allModels
+ */
+export async function setAllSyncedModels(allModels) {
+  const db = await getDb();
+  db.data.syncedModels = allModels;
+  await db.write();
+}
+
+/**
+ * Clear synced models (forces fall back to hardcoded lists)
+ */
+export async function clearSyncedModels() {
+  const db = await getDb();
+  db.data.syncedModels = {};
+  await db.write();
 }

@@ -302,6 +302,19 @@ export const PROVIDERS = {
     baseUrl: "https://opencode.ai/zen/v1/chat/completions",
     format: "openai",
   },
+  "kilo-ai": {
+    baseUrl: "https://api.kilo.ai/api/gateway/chat/completions",
+    format: "openai",
+  },
+  cloudflare: {
+    baseUrl:
+      "https://api.cloudflare.com/client/v4/accounts/ACCOUNT_ID/ai/v1/chat/completions",
+    format: "openai",
+  },
+  mulerouter: {
+    baseUrl: "https://api.mulerouter.ai/vendors/openai/v1/chat/completions",
+    format: "openai",
+  },
 };
 
 // Claude system prompt

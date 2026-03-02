@@ -25,6 +25,11 @@ export class DefaultExecutor extends BaseExecutor {
       return `${normalized}/messages`;
     }
     switch (this.provider) {
+      case "cloudflare": {
+        const accountId =
+          credentials?.providerSpecificData?.accountId || "ACCOUNT_ID";
+        return `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/chat/completions`;
+      }
       case "claude":
       case "glm":
       case "kimi":

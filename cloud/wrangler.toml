@@ -14,7 +14,7 @@ binding = "ASSETS"
 # Step 3: Paste your KV & D1 IDs here
 [[kv_namespaces]]
 binding = "KV"
-id = "6c35877893164e48b849f001d129cabd"
+id = "50d096403a564f148e5b9850ec57bdb6"
 
 [[d1_databases]]
 binding = "proxy_db"

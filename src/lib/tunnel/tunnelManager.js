@@ -12,6 +12,8 @@ const TUNNEL_WORKER_URL =
   process.env.TUNNEL_WORKER_URL || "https://tunnel.9router.com";
 const MACHINE_ID_SALT = "9router-tunnel-salt";
 const API_KEY_SECRET = "9router-tunnel-api-key-secret";
+// Cloud routing worker uses a different HMAC secret for its API keys
+const CLOUD_API_KEY_SECRET = "endpoint-proxy-api-key-secret";
 const SHORT_ID_LENGTH = 6;
 const SHORT_ID_CHARS = "abcdefghijklmnpqrstuvwxyz23456789";
 const RECONNECT_DELAYS_MS = [5000, 15000, 30000];
@@ -42,18 +44,23 @@ function getMachineId() {
   }
 }
 
-function generateApiKey(machineId) {
+function generateApiKey(machineId, secret = API_KEY_SECRET) {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   let keyId = "";
   for (let i = 0; i < 6; i++) {
     keyId += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   const crc = crypto
-    .createHmac("sha256", API_KEY_SECRET)
+    .createHmac("sha256", secret)
     .update(machineId + keyId)
     .digest("hex")
     .slice(0, 8);
   return `sk-${machineId}-${keyId}-${crc}`;
+}
+
+/** Generate a cloud-routing-compatible API key (HMAC with cloud secret). */
+function generateCloudApiKey(machineId) {
+  return generateApiKey(machineId, CLOUD_API_KEY_SECRET);
 }
 
 async function workerFetch(reqPath, options = {}) {
@@ -100,9 +107,37 @@ export async function enableTunnel() {
 
   await spawnCloudflared(token);
 
-  saveState({ shortId, apiKey, tunnelUrl: hostname, machineId });
+  const cloudApiKey = existing?.cloudApiKey || generateCloudApiKey(machineId);
+  saveState({ shortId, apiKey, cloudApiKey, tunnelUrl: hostname, machineId });
 
   await updateSettings({ tunnelEnabled: true, tunnelUrl: hostname });
+
+  // Register tunnel URL with cloud routing worker so it can proxy requests
+  try {
+    const { getCloudUrl } = await import("@/lib/localDb");
+    const cloudUrl = await getCloudUrl();
+    const regRes = await fetch(`${cloudUrl}/api/tunnel/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${cloudApiKey}`,
+      },
+      body: JSON.stringify({ tunnelUrl: `https://${hostname}` }),
+    });
+    if (!regRes.ok) {
+      const errBody = await regRes.text().catch(() => "");
+      console.warn(
+        `[Tunnel] Cloud registration returned ${regRes.status}:`,
+        errBody,
+      );
+    }
+  } catch (err) {
+    // Non-fatal — tunnel still works for direct access
+    console.warn(
+      "[Tunnel] Failed to register tunnel URL with cloud worker:",
+      err.message,
+    );
+  }
 
   // Register exit handler for auto-reconnect on unexpected crash/sleep-wake
   setUnexpectedExitHandler(() => scheduleReconnect(0));
@@ -163,10 +198,25 @@ export async function disableTunnel() {
     }
   }
 
+  // Also unregister tunnel URL from cloud routing worker
+  if (state?.cloudApiKey) {
+    try {
+      const { getCloudUrl } = await import("@/lib/localDb");
+      const cloudUrl = await getCloudUrl();
+      await fetch(`${cloudUrl}/api/tunnel/register`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${state.cloudApiKey}` },
+      });
+    } catch {
+      /* ignore */
+    }
+  }
+
   if (state) {
     saveState({
       shortId: state.shortId,
       apiKey: state.apiKey,
+      cloudApiKey: state.cloudApiKey,
       machineId: state.machineId,
       tunnelUrl: null,
     });

@@ -301,6 +301,33 @@ export const APIKEY_PROVIDERS = {
     textIcon: "OC",
     website: "https://api.opencode.ai",
   },
+  "kilo-ai": {
+    id: "kilo-ai",
+    alias: "kilo-ai",
+    name: "Kilo AI Gateway",
+    icon: "hub",
+    color: "#6366F1",
+    textIcon: "KA",
+    website: "https://kilo.ai",
+  },
+  cloudflare: {
+    id: "cloudflare",
+    alias: "cf",
+    name: "Cloudflare Workers AI",
+    icon: "cloud",
+    color: "#F6821F",
+    textIcon: "CF",
+    website: "https://developers.cloudflare.com/workers-ai",
+  },
+  mulerouter: {
+    id: "mulerouter",
+    alias: "mulerouter",
+    name: "MuleRouter",
+    icon: "route",
+    color: "#8B5CF6",
+    textIcon: "MR",
+    website: "https://api.mulerouter.ai",
+  },
 };
 
 export const OPENAI_COMPATIBLE_PREFIX = "openai-compatible-";

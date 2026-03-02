@@ -8,6 +8,7 @@ import { createLandingPageResponse } from "./services/landingPage.js";
 import { handleTestClaude } from "./handlers/testClaude.js";
 import { handleForwardRaw } from "./handlers/forwardRaw.js";
 import { handleEmbeddings } from "./handlers/embeddings.js";
+import { handleTunnelRegister } from "./handlers/tunnel.js";
 import { handleProviders } from "./handlers/providers.js";
 import { handleCacheClear } from "./handlers/cache.js";
 import { handlePricing } from "./handlers/pricing.js";
@@ -17,6 +18,7 @@ import { handleVerify } from "./handlers/verify.js";
 import { handleModels } from "./handlers/models.js";
 import { handleSync } from "./handlers/sync.js";
 import { handleChat } from "./handlers/chat.js";
+import { parseApiKey } from "./utils/apiKey.js";
 
 // Initialize translators at module load (static imports)
 initTranslators();
@@ -187,7 +189,30 @@ const worker = {
         return response;
       }
 
+      // Tunnel URL registration (unauthenticated route; auth done inside handler)
+      if (path === "/api/tunnel/register") {
+        const response = await handleTunnelRegister(request, env);
+        log.response(response.status, Date.now() - startTime);
+        return addCorsHeaders(response);
+      }
+
       // ========== NEW FORMAT: /v1/... (machineId in API key) ==========
+
+      // OpenAI-compatible model list — returns models from ollamaModels
+      if (path === "/v1/models" && request.method === "GET") {
+        const modelList = ollamaModels.models.map(m => ({
+          id: m.name,
+          object: "model",
+          created: Math.floor(Date.now() / 1000),
+          owned_by: m.name.includes("/") ? m.name.split("/")[0] : "openai",
+        }));
+        log.response(200, Date.now() - startTime);
+        return addCorsHeaders(
+          new Response(JSON.stringify({ object: "list", data: modelList }), {
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      }
 
       // New format: /v1/chat/completions
       if (path === "/v1/chat/completions" && request.method === "POST") {
@@ -313,6 +338,47 @@ const worker = {
         const response = await handleForwardRaw(request);
         log.response(response.status, Date.now() - startTime);
         return response;
+      }
+
+      // Proxy dashboard/UI requests to local tunnel URL
+      {
+        let proxyTarget = env.LOCAL_URL || null;
+
+        if (!proxyTarget) {
+          // Try to resolve tunnel URL from KV using machineId in API key
+          const authHeader = request.headers.get("Authorization") || "";
+          if (authHeader.startsWith("Bearer sk-")) {
+            const token = authHeader.slice(7);
+            const parsed = await parseApiKey(token);
+            if (parsed?.machineId) {
+              proxyTarget = await env.KV.get(`tunnel:${parsed.machineId}`);
+            }
+          }
+          // Fallback: use the last-registered default tunnel
+          if (!proxyTarget) {
+            proxyTarget = await env.KV.get("tunnel:default");
+          }
+        }
+
+        if (proxyTarget) {
+          const targetUrl =
+            proxyTarget.replace(/\/$/, "") + url.pathname + url.search;
+          const proxyReq = new Request(targetUrl, {
+            method: request.method,
+            headers: request.headers,
+            body: ["GET", "HEAD"].includes(request.method)
+              ? undefined
+              : request.body,
+            redirect: "follow",
+          });
+          const proxyRes = await fetch(proxyReq);
+          log.info("PROXY", "Proxied to tunnel", {
+            path,
+            target: proxyTarget,
+            status: proxyRes.status,
+          });
+          return proxyRes;
+        }
       }
 
       log.warn("ROUTER", "Not found", { path });

@@ -34,6 +34,7 @@ export default function ModelSelectModal({
   const [searchQuery, setSearchQuery] = useState("");
   const [combos, setCombos] = useState([]);
   const [providerNodes, setProviderNodes] = useState([]);
+  const [syncedModels, setSyncedModels] = useState({});
 
   const fetchCombos = async () => {
     try {
@@ -64,8 +65,22 @@ export default function ModelSelectModal({
     }
   };
 
+  const fetchSyncedModels = async () => {
+    try {
+      const res = await fetch("/api/models/sync");
+      if (!res.ok) return;
+      const data = await res.json();
+      setSyncedModels(data.models || {});
+    } catch {
+      // ignore — fall back to hardcoded models
+    }
+  };
+
   useEffect(() => {
-    if (isOpen) fetchProviderNodes();
+    if (isOpen) {
+      fetchProviderNodes();
+      fetchSyncedModels();
+    }
   }, [isOpen]);
 
   const allProviders = useMemo(
@@ -152,7 +167,12 @@ export default function ModelSelectModal({
           };
         }
       } else {
-        const models = getModelsByProviderId(providerId);
+        // Use synced models if available, fall back to hardcoded
+        const synced = syncedModels[providerId];
+        const models =
+          synced && synced.length > 0
+            ? synced
+            : getModelsByProviderId(providerId);
         if (models.length > 0) {
           groups[providerId] = {
             name: providerInfo.name,
@@ -169,7 +189,13 @@ export default function ModelSelectModal({
     });
 
     return groups;
-  }, [activeProviders, modelAliases, allProviders, providerNodes]);
+  }, [
+    activeProviders,
+    modelAliases,
+    allProviders,
+    providerNodes,
+    syncedModels,
+  ]);
 
   // Filter combos by search query
   const filteredCombos = useMemo(() => {

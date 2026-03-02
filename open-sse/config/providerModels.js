@@ -306,11 +306,72 @@ export const PROVIDER_MODELS = {
   ],
   opencode: [
     { id: "minimax-m2.5", name: "MiniMax M2.5" },
+    { id: "minimax-m2.5-free", name: "MiniMax M2.5 Free", free: true },
     { id: "minimax-m2.1", name: "MiniMax M2.1" },
     { id: "gpt-4o", name: "GPT-4o" },
     { id: "gpt-4o-mini", name: "GPT-4o Mini" },
     { id: "glm-5", name: "GLM 5" },
     { id: "deepseek-r1", name: "DeepSeek R1" },
+    { id: "big-pickle", name: "Big Pickle" },
+  ],
+  "kilo-ai": [
+    { id: "anthropic/claude-opus-4-5", name: "Claude Opus 4.5" },
+    { id: "anthropic/claude-sonnet-4-5", name: "Claude Sonnet 4.5" },
+    { id: "anthropic/claude-haiku-4-5", name: "Claude Haiku 4.5" },
+    { id: "anthropic/claude-opus-4", name: "Claude Opus 4" },
+    { id: "anthropic/claude-sonnet-4", name: "Claude Sonnet 4" },
+    { id: "openai/gpt-4.1", name: "GPT-4.1" },
+    { id: "openai/gpt-4o", name: "GPT-4o" },
+    { id: "openai/o3", name: "o3" },
+    { id: "openai/o4-mini", name: "o4-mini" },
+    { id: "google/gemini-2.5-pro", name: "Gemini 2.5 Pro" },
+    { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash" },
+    { id: "deepseek/deepseek-r1", name: "DeepSeek R1" },
+    { id: "deepseek/deepseek-v3", name: "DeepSeek V3" },
+    { id: "meta-llama/llama-4-maverick", name: "Llama 4 Maverick" },
+    { id: "meta-llama/llama-4-scout", name: "Llama 4 Scout" },
+    { id: "meta-llama/llama-3.3-70b-instruct", name: "Llama 3.3 70B" },
+    { id: "qwen/qwen3-235b-a22b", name: "Qwen3 235B" },
+    { id: "moonshotai/kimi-k2", name: "Kimi K2" },
+  ],
+  cloudflare: [
+    {
+      id: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+      name: "Llama 3.3 70B Fast",
+    },
+    { id: "@cf/meta/llama-3.1-8b-instruct", name: "Llama 3.1 8B" },
+    { id: "@cf/meta/llama-3.1-70b-instruct", name: "Llama 3.1 70B" },
+    {
+      id: "@cf/meta/llama-3.2-11b-vision-instruct",
+      name: "Llama 3.2 11B Vision",
+    },
+    { id: "@cf/meta/llama-3.2-3b-instruct", name: "Llama 3.2 3B" },
+    { id: "@cf/google/gemma-3-12b-it", name: "Gemma 3 12B" },
+    { id: "@cf/google/gemma-2-9b-it", name: "Gemma 2 9B" },
+    {
+      id: "@cf/qwen/qwen2.5-coder-32b-instruct",
+      name: "Qwen 2.5 Coder 32B",
+    },
+    { id: "@cf/qwen/qwen2.5-72b-instruct", name: "Qwen 2.5 72B" },
+    {
+      id: "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
+      name: "DeepSeek R1 Distill 32B",
+    },
+    { id: "@cf/mistral/mistral-7b-instruct-v0.2", name: "Mistral 7B" },
+    {
+      id: "@cf/microsoft/phi-4-multimodal-instruct",
+      name: "Phi-4 Multimodal",
+    },
+  ],
+  mulerouter: [
+    { id: "qwen3-max", name: "Qwen3 Max" },
+    { id: "qwen3-max-thinking", name: "Qwen3 Max Thinking" },
+    { id: "qwen-plus", name: "Qwen3 Plus" },
+    { id: "qwen-flash", name: "Qwen3 Flash" },
+    { id: "grok-4", name: "Grok 4" },
+    { id: "grok-4-fast-non-reasoning", name: "Grok 4 Fast Non-Reasoning" },
+    { id: "grok-4-fast-reasoning", name: "Grok 4 Fast Reasoning" },
+    { id: "grok-code-fast-1", name: "Grok Code Fast 1" },
   ],
 };
 
@@ -331,12 +392,12 @@ export function isValidModel(
 ) {
   if (passthroughProviders.has(aliasOrId)) return true;
   const models = PROVIDER_MODELS[aliasOrId];
-  if (!models) return false;
+  if (!models || models.length === 0) return false;
   return models.some(m => m.id === modelId);
 }
 
 export function findModelName(aliasOrId, modelId) {
-  const models = PROVIDER_MODELS[aliasOrId];
+  const models = getProviderModels(aliasOrId);
   if (!models) return modelId;
   const found = models.find(m => m.id === modelId);
   return found?.name || modelId;
@@ -386,6 +447,9 @@ export const PROVIDER_ID_TO_ALIAS = {
   siliconflow: "siliconflow",
   hyperbolic: "hyperbolic",
   opencode: "opencode",
+  "kilo-ai": "kilo-ai",
+  cloudflare: "cloudflare",
+  mulerouter: "mulerouter",
 };
 
 export function getModelsByProviderId(providerId) {
