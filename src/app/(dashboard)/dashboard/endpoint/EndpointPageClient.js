@@ -40,7 +40,6 @@ const TUNNEL_ACTION_TIMEOUT_MS = 90000;
 
 const CLOUD_PROXY_URLS = [
   "https://involvex-claude-router-cloud.involvex.workers.dev",
-  "https://rbvr2tp.9router.com",
 ];
 
 export default function APIPageClient({ machineId }) {

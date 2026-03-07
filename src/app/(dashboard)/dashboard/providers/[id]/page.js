@@ -3,9 +3,9 @@
 import { APIKEY_PROVIDERS, OAUTH_PROVIDERS } from "@/shared/constants/config";
 import { Card, Badge, Button, Modal, Toggle } from "@/shared/components";
 import { useNotificationStore } from "@/store/notificationStore";
+import { useState, useEffect, useCallback, use } from "react";
 import { AI_PROVIDERS } from "@/shared/constants/providers";
 import { getRelativeTime } from "@/shared/utils";
-import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -106,11 +106,7 @@ export default function ProviderDetailPage({ params }) {
   const providerInfo =
     AI_PROVIDERS[id] ?? APIKEY_PROVIDERS[id] ?? OAUTH_PROVIDERS?.[id] ?? null;
 
-  useEffect(() => {
-    fetchConnections();
-  }, [id]);
-
-  async function fetchConnections() {
+  const fetchConnections = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch("/api/providers");
@@ -122,7 +118,11 @@ export default function ProviderDetailPage({ params }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [id, addNotification]);
+
+  useEffect(() => {
+    fetchConnections();
+  }, [fetchConnections]);
 
   async function handleToggle(connId, isActive) {
     try {

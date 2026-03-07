@@ -340,52 +340,117 @@ const worker = {
         return response;
       }
 
-      // Proxy dashboard/UI requests to local tunnel URL
-      {
-        let proxyTarget = env.LOCAL_URL || null;
+      // Cloud-mode API stubs — these endpoints are managed locally; return safe defaults
+      if (path === "/api/settings") {
+        if (request.method === "GET") {
+          return addCorsHeaders(
+            new Response(
+              JSON.stringify({
+                requireApiKey: false,
+                cloudProxyUrl:
+                  "https://involvex-claude-router-cloud.involvex.workers.dev",
+                cloudMode: true,
+              }),
+              { status: 200, headers: { "Content-Type": "application/json" } },
+            ),
+          );
+        }
+        if (request.method === "PATCH" || request.method === "PUT") {
+          return addCorsHeaders(
+            new Response(JSON.stringify({ ok: true }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            }),
+          );
+        }
+      }
 
-        if (!proxyTarget) {
-          // Try to resolve tunnel URL from KV using machineId in API key
-          const authHeader = request.headers.get("Authorization") || "";
-          if (authHeader.startsWith("Bearer sk-")) {
-            const token = authHeader.slice(7);
-            const parsed = await parseApiKey(token);
-            if (parsed?.machineId) {
-              proxyTarget = await env.KV.get(`tunnel:${parsed.machineId}`);
+      if (path === "/api/tunnel/status" && request.method === "GET") {
+        return addCorsHeaders(
+          new Response(
+            JSON.stringify({
+              enabled: false,
+              tunnelUrl: null,
+              shortId: null,
+              cloudMode: true,
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+        );
+      }
+
+      if (path === "/api/keys") {
+        if (request.method === "GET") {
+          return addCorsHeaders(
+            new Response(JSON.stringify({ keys: [] }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            }),
+          );
+        }
+        // POST/DELETE/PUT — no-op in cloud mode
+        return addCorsHeaders(
+          new Response(JSON.stringify({ ok: true }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      }
+
+      // GET /v1 — base info endpoint (used by dashboards to verify connectivity)
+      if (path === "/v1" && request.method === "GET") {
+        return addCorsHeaders(
+          new Response(
+            JSON.stringify({ object: "api", version: "v1", status: "ok" }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+        );
+      }
+
+      // Landing page for root
+      if (path === "/" && request.method === "GET") {
+        const response = createLandingPageResponse();
+        log.response(response.status, Date.now() - startTime);
+        return response;
+      }
+
+      // Serve Next.js static dashboard from ASSETS; SPA fallback for dynamic routes
+      if (env.ASSETS) {
+        try {
+          const assetResponse = await env.ASSETS.fetch(request);
+          if (assetResponse.status !== 404) {
+            return assetResponse;
+          }
+          // SPA fallback: walk up the URL path for /dashboard/* dynamic segments
+          if (path.startsWith("/dashboard/")) {
+            const segments = path.split("/").filter(Boolean);
+            for (let len = segments.length - 1; len >= 1; len--) {
+              const fallbackPath = "/" + segments.slice(0, len).join("/") + "/";
+              try {
+                const fb = await env.ASSETS.fetch(
+                  new Request(new URL(fallbackPath, request.url).toString()),
+                );
+                if (fb.status === 200) {
+                  return new Response(fb.body, {
+                    status: 200,
+                    headers: fb.headers,
+                  });
+                }
+              } catch (_) {}
             }
           }
-          // Fallback: use the last-registered default tunnel
-          if (!proxyTarget) {
-            proxyTarget = await env.KV.get("tunnel:default");
-          }
-        }
-
-        if (proxyTarget) {
-          const targetUrl =
-            proxyTarget.replace(/\/$/, "") + url.pathname + url.search;
-          const proxyReq = new Request(targetUrl, {
-            method: request.method,
-            headers: request.headers,
-            body: ["GET", "HEAD"].includes(request.method)
-              ? undefined
-              : request.body,
-            redirect: "follow",
-          });
-          const proxyRes = await fetch(proxyReq);
-          log.info("PROXY", "Proxied to tunnel", {
-            path,
-            target: proxyTarget,
-            status: proxyRes.status,
-          });
-          return proxyRes;
+        } catch (_) {
+          // ASSETS fetch failed — fall through
         }
       }
 
       log.warn("ROUTER", "Not found", { path });
-      return new Response(JSON.stringify({ error: "Not Found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+      return addCorsHeaders(
+        new Response(JSON.stringify({ error: "Not Found", path }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
     } catch (error) {
       log.error("ROUTER", error.message, { stack: error.stack });
       return new Response(JSON.stringify({ error: error.message }), {

@@ -17,7 +17,8 @@ const nextConfig = {
     unoptimized: true,
   },
   env: {
-    NEXT_PUBLIC_CLOUD_URL: "https://9router.com",
+    NEXT_PUBLIC_CLOUD_URL:
+      "https://involvex-claude-router-cloud.involvex.workers.dev",
   },
   typescript: {
     ignoreBuildErrors: true,
