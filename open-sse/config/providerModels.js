@@ -1,3 +1,5 @@
+import generated from "./providerModels.generated.json" with { type: "json" };
+
 // Provider models - Single source of truth
 // Key = alias (cc, cx, gc, qw, if, ag, gh for OAuth; id for API Key)
 // Field "provider" for special cases (e.g. AntiGravity models that call different backends)
@@ -185,7 +187,13 @@ export const PROVIDER_MODELS = {
       type: "embedding",
     },
   ],
-  openrouter: [{ id: "auto", name: "Auto (Best Available)" }],
+  openrouter: [
+    { id: "auto", name: "Auto (Best Available)" },
+    {
+      id: "openrouter/free",
+      name: "OpenRouter Free Router (auto-select free model)",
+    },
+  ],
   glm: [
     { id: "glm-5", name: "GLM 5" },
     { id: "glm-4.7", name: "GLM 4.7" },
@@ -334,6 +342,25 @@ export const PROVIDER_MODELS = {
     { id: "qwen/qwen3-235b-a22b", name: "Qwen3 235B" },
     { id: "moonshotai/kimi-k2", name: "Kimi K2" },
   ],
+  kilogateway: [
+    {
+      id: "openrouter/free",
+      name: "OpenRouter Free Router (auto-select free model)",
+    },
+    { id: "minimax/minimax-m2.5", name: "MiniMax M2.5 (recommended)" },
+    { id: "minimax/minimax-m2.1", name: "MiniMax M2.1" },
+    { id: "minimax/minimax", name: "MiniMax" },
+    { id: "arcee-ai/trinity-large", name: "Arcee AI Trinity Large" },
+    {
+      id: "z-ai/glm-4-7-flash-preview",
+      name: "Z.ai GLM 4.7 Flash Preview (free)",
+    },
+    { id: "qwen/qwen3-coder-next", name: "Qwen3 Coder Next" },
+    { id: "qwen/qwen3-coder-480b-a35b", name: "Qwen3 Coder 480B A35B" },
+    { id: "xai/grok-code-fast-1", name: "xAI Grok Code Fast 1" },
+    { id: "kwaipilot/kat-coder-pro-v1", name: "KwaiPilot KAT-Coder-Pro V1" },
+    { id: "deepseek/deepseek-chat-v3.1", name: "DeepSeek V3.1 Terminus" },
+  ],
   cloudflare: [
     {
       id: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
@@ -374,6 +401,21 @@ export const PROVIDER_MODELS = {
     { id: "grok-code-fast-1", name: "Grok Code Fast 1" },
   ],
 };
+
+// Merge generated models if available
+if (generated && generated.providers) {
+  for (const [provider, models] of Object.entries(generated.providers)) {
+    if (PROVIDER_MODELS[provider]) {
+      // Merge: keep static models that aren't in the generated list
+      const staticModels = PROVIDER_MODELS[provider];
+      const generatedIds = new Set(models.map(m => m.id));
+      const preservedModels = staticModels.filter(m => !generatedIds.has(m.id));
+      PROVIDER_MODELS[provider] = [...preservedModels, ...models];
+    } else {
+      PROVIDER_MODELS[provider] = models;
+    }
+  }
+}
 
 // Helper functions
 export function getProviderModels(aliasOrId) {
@@ -448,6 +490,7 @@ export const PROVIDER_ID_TO_ALIAS = {
   hyperbolic: "hyperbolic",
   opencode: "opencode",
   "kilo-ai": "kilo-ai",
+  kilogateway: "kilogateway",
   cloudflare: "cloudflare",
   mulerouter: "mulerouter",
 };

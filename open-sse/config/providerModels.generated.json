@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-03-03T08:36:30.025Z",
+  "syncedAt": "2026-03-08T12:18:08.779Z",
   "providers": {
     "nvidia": [
       {
@@ -108,8 +108,8 @@
         "free": true
       },
       {
-        "id": "minimaxai/minimax-m2",
-        "name": "MiniMax-M2",
+        "id": "minimaxai/minimax-m2.5",
+        "name": "MiniMax-M2.5",
         "free": true
       },
       {
@@ -604,7 +604,7 @@
       },
       {
         "id": "devstral-medium-latest",
-        "name": "Devstral 2"
+        "name": "Devstral 2 (latest)"
       },
       {
         "id": "open-mistral-7b",
@@ -620,11 +620,11 @@
       },
       {
         "id": "codestral-latest",
-        "name": "Codestral"
+        "name": "Codestral (latest)"
       },
       {
         "id": "ministral-8b-latest",
-        "name": "Ministral 8B"
+        "name": "Ministral 8B (latest)"
       },
       {
         "id": "magistral-small",
@@ -636,7 +636,7 @@
       },
       {
         "id": "ministral-3b-latest",
-        "name": "Ministral 3B"
+        "name": "Ministral 3B (latest)"
       },
       {
         "id": "devstral-small-2505",
@@ -652,7 +652,7 @@
       },
       {
         "id": "pixtral-large-latest",
-        "name": "Pixtral Large"
+        "name": "Pixtral Large (latest)"
       },
       {
         "id": "mistral-nemo",
@@ -664,7 +664,7 @@
       },
       {
         "id": "mistral-large-latest",
-        "name": "Mistral Large"
+        "name": "Mistral Large (latest)"
       },
       {
         "id": "mistral-medium-2508",
@@ -676,7 +676,7 @@
       },
       {
         "id": "mistral-small-latest",
-        "name": "Mistral Small"
+        "name": "Mistral Small (latest)"
       },
       {
         "id": "open-mixtral-8x22b",
@@ -684,7 +684,7 @@
       },
       {
         "id": "mistral-medium-latest",
-        "name": "Mistral Medium"
+        "name": "Mistral Medium (latest)"
       },
       {
         "id": "devstral-small-2507",
@@ -692,7 +692,7 @@
       },
       {
         "id": "magistral-medium-latest",
-        "name": "Magistral Medium"
+        "name": "Magistral Medium (latest)"
       }
     ],
     "siliconflow": [
@@ -1057,6 +1057,18 @@
         "free": true
       },
       {
+        "id": "inception/mercury-2",
+        "name": "Mercury 2"
+      },
+      {
+        "id": "inception/mercury",
+        "name": "Mercury"
+      },
+      {
+        "id": "inception/mercury-coder",
+        "name": "Mercury Coder"
+      },
+      {
         "id": "thudm/glm-z1-32b:free",
         "name": "GLM Z1 32B (free)",
         "free": true
@@ -1158,6 +1170,11 @@
       {
         "id": "openrouter/sherlock-dash-alpha",
         "name": "Sherlock Dash Alpha",
+        "free": true
+      },
+      {
+        "id": "openrouter/free",
+        "name": "Free Models Router",
         "free": true
       },
       {
@@ -1588,6 +1605,10 @@
         "name": "Mistral Medium 3.1"
       },
       {
+        "id": "openai/gpt-5.3-codex",
+        "name": "GPT-5.3-Codex"
+      },
+      {
         "id": "openai/gpt-5-codex",
         "name": "GPT-5 Codex"
       },
@@ -1663,6 +1684,14 @@
       {
         "id": "openai/gpt-4.1-mini",
         "name": "GPT-4.1 Mini"
+      },
+      {
+        "id": "openai/gpt-5.4",
+        "name": "GPT-5.4"
+      },
+      {
+        "id": "openai/gpt-5.4-pro",
+        "name": "GPT-5.4 Pro"
       },
       {
         "id": "openai/gpt-oss-safeguard-20b",
@@ -1804,6 +1833,14 @@
       {
         "id": "gemini-2.5-flash",
         "name": "Gemini 2.5 Flash"
+      },
+      {
+        "id": "gemini-3.1-flash-image-preview",
+        "name": "Gemini 3.1 Flash Image (Preview)"
+      },
+      {
+        "id": "gemini-3.1-flash-lite-preview",
+        "name": "Gemini 3.1 Flash Lite Preview"
       },
       {
         "id": "gemini-live-2.5-flash",
@@ -1984,8 +2021,16 @@
         "name": "GPT-4.1 mini"
       },
       {
+        "id": "gpt-5.4",
+        "name": "GPT-5.4"
+      },
+      {
         "id": "o1-preview",
         "name": "o1-preview"
+      },
+      {
+        "id": "gpt-5.4-pro",
+        "name": "GPT-5.4 Pro"
       },
       {
         "id": "o1-pro",

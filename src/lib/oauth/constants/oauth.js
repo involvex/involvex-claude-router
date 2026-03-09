@@ -135,7 +135,7 @@ export const GITHUB_CONFIG = {
   deviceCodeUrl: "https://github.com/login/device/code",
   tokenUrl: "https://github.com/login/oauth/access_token",
   userInfoUrl: "https://api.github.com/user",
-  scopes: "read:user",
+  scopes: "read:user,user:email",
   apiVersion: "2022-11-28", // Updated to supported version
   copilotTokenUrl: "https://api.github.com/copilot_internal/v2/token",
   userAgent: "GitHubCopilotChat/0.26.7",

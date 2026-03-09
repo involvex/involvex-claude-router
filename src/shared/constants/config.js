@@ -42,6 +42,7 @@ export const PROVIDER_ENDPOINTS = {
   gemini: "https://generativelanguage.googleapis.com/v1beta/models",
   opencode: "https://opencode.ai/zen/v1/chat/completions",
   "kilo-ai": "https://api.kilo.ai/api/gateway/chat/completions",
+  kilogateway: "https://api.kilo.ai/api/gateway/chat/completions",
   cloudflare:
     "https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/ai/v1/chat/completions",
 };

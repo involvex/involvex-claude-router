@@ -82,7 +82,6 @@ export const APIKEY_PROVIDERS = {
     icon: "router",
     color: "#F97316",
     textIcon: "OR",
-    passthroughModels: true,
     website: "https://openrouter.ai",
   },
   glm: {
@@ -308,6 +307,15 @@ export const APIKEY_PROVIDERS = {
     icon: "hub",
     color: "#6366F1",
     textIcon: "KA",
+    website: "https://kilo.ai",
+  },
+  kilogateway: {
+    id: "kilogateway",
+    alias: "kilogateway",
+    name: "Kilo Gateway",
+    icon: "hub",
+    color: "#6366F1",
+    textIcon: "KG",
     website: "https://kilo.ai",
   },
   cloudflare: {

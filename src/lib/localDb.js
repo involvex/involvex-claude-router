@@ -958,6 +958,7 @@ export async function getPricingForModel(provider, model) {
     glm: "glm",
     kimi: "kimi",
     minimax: "minimax",
+    kilogateway: "kilogateway",
   };
 
   const alias = PROVIDER_ID_TO_ALIAS[provider];
