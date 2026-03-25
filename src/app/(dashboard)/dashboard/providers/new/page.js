@@ -7,9 +7,9 @@ import {
   APIKEY_PROVIDERS,
   FREE_PROVIDERS,
 } from "@/shared/constants/providers";
+import { useState, useEffect, Suspense, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import OAuthModal from "@/shared/components/OAuthModal";
-import { useState, useEffect, Suspense } from "react";
 import Toggle from "@/shared/components/Toggle";
 import Select from "@/shared/components/Select";
 import Button from "@/shared/components/Button";
@@ -65,29 +65,32 @@ function NewProviderForm() {
     if (initialProvider && !formData.provider) {
       handleChange("provider", initialProvider);
     }
-  }, [initialProvider]);
+  }, [initialProvider, formData.provider, handleChange]);
 
-  const handleChange = (field, value) => {
-    setFormData(prev => {
-      const updates = { [field]: value };
+  const handleChange = useCallback(
+    (field, value) => {
+      setFormData(prev => {
+        const updates = { [field]: value };
 
-      // Reset fields when provider changes
-      if (field === "provider") {
-        updates.authMethod = OAUTH_PROVIDERS[value] ? "oauth" : "apikey";
-        updates.name = ALL_PROVIDERS[value]?.name || "";
-        updates.apiKey = "";
-        updates.accessToken = "";
-        updates.refreshToken = "";
-        setOAuthData(null);
+        // Reset fields when provider changes
+        if (field === "provider") {
+          updates.authMethod = OAUTH_PROVIDERS[value] ? "oauth" : "apikey";
+          updates.name = ALL_PROVIDERS[value]?.name || "";
+          updates.apiKey = "";
+          updates.accessToken = "";
+          updates.refreshToken = "";
+          setOAuthData(null);
+        }
+
+        return { ...prev, ...updates };
+      });
+      // Clear error when field changes
+      if (errors[field]) {
+        setErrors(prev => ({ ...prev, [field]: null }));
       }
-
-      return { ...prev, ...updates };
-    });
-    // Clear error when field changes
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: null }));
-    }
-  };
+    },
+    [errors],
+  );
 
   const handleOAuthSuccess = data => {
     setOAuthData(data);

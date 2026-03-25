@@ -336,6 +336,15 @@ export const APIKEY_PROVIDERS = {
     textIcon: "MR",
     website: "https://api.mulerouter.ai",
   },
+  ezif: {
+    id: "ezif",
+    alias: "ezif",
+    name: "EZIF AI",
+    icon: "bolt",
+    color: "#4F46E5",
+    textIcon: "EZ",
+    website: "https://ai.ezif.in",
+  },
 };
 
 export const OPENAI_COMPATIBLE_PREFIX = "openai-compatible-";

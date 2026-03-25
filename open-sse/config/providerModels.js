@@ -400,6 +400,13 @@ export const PROVIDER_MODELS = {
     { id: "grok-4-fast-reasoning", name: "Grok 4 Fast Reasoning" },
     { id: "grok-code-fast-1", name: "Grok Code Fast 1" },
   ],
+  ezif: [
+    { id: "gpt-4o", name: "GPT-4o" },
+    { id: "gpt-4o-mini", name: "GPT-4o Mini" },
+    { id: "claude-3-5-sonnet", name: "Claude 3.5 Sonnet" },
+    { id: "deepseek-chat", name: "DeepSeek Chat" },
+    { id: "deepseek-reasoner", name: "DeepSeek Reasoner" },
+  ],
 };
 
 // Merge generated models if available
@@ -493,6 +500,7 @@ export const PROVIDER_ID_TO_ALIAS = {
   kilogateway: "kilogateway",
   cloudflare: "cloudflare",
   mulerouter: "mulerouter",
+  ezif: "ezif",
 };
 
 export function getModelsByProviderId(providerId) {

@@ -75,6 +75,14 @@ const PROVIDER_MODELS_CONFIG = {
     authHeader: "x-api-key",
     parseResponse: data => data.data || [],
   },
+  ezif: {
+    url: "https://ai.ezif.in/v1/models",
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    authHeader: "Authorization",
+    authPrefix: "Bearer ",
+    parseResponse: data => data.data || [],
+  },
 };
 
 /**

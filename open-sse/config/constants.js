@@ -319,6 +319,10 @@ export const PROVIDERS = {
     baseUrl: "https://api.mulerouter.ai/vendors/openai/v1/chat/completions",
     format: "openai",
   },
+  ezif: {
+    baseUrl: "https://ai.ezif.in/v1/chat/completions",
+    format: "openai",
+  },
 };
 
 // Claude system prompt
