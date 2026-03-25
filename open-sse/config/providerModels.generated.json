@@ -1,7 +1,11 @@
 {
-  "syncedAt": "2026-03-08T12:18:08.779Z",
+  "syncedAt": "2026-03-25T23:27:01.739Z",
   "providers": {
     "nvidia": [
+      {
+        "id": "nvidia/nemotron-3-super-120b-a12b",
+        "name": "Nemotron 3 Super"
+      },
       {
         "id": "nvidia/llama-3.1-nemotron-70b-instruct",
         "name": "Llama 3.1 Nemotron 70b Instruct",
@@ -218,6 +222,11 @@
         "free": true
       },
       {
+        "id": "stepfun-ai/step-3.5-flash",
+        "name": "Step 3.5 Flash",
+        "free": true
+      },
+      {
         "id": "qwen/qwen3-next-80b-a3b-thinking",
         "name": "Qwen3-Next-80B-A3B-Thinking",
         "free": true
@@ -235,6 +244,11 @@
       {
         "id": "qwen/qwen2.5-coder-7b-instruct",
         "name": "Qwen2.5 Coder 7b Instruct",
+        "free": true
+      },
+      {
+        "id": "qwen/qwen3.5-397b-a17b",
+        "name": "Qwen3.5-397B-A17B",
         "free": true
       },
       {
@@ -350,35 +364,43 @@
     ],
     "nebius": [
       {
-        "id": "zai-org/glm-4.7-fp8",
+        "id": "zai-org/GLM-4.7-FP8",
         "name": "GLM-4.7 (FP8)"
       },
       {
-        "id": "zai-org/glm-4.5-air",
+        "id": "zai-org/GLM-4.5-Air",
         "name": "GLM-4.5-Air"
       },
       {
-        "id": "zai-org/glm-4.5",
+        "id": "zai-org/GLM-4.5",
         "name": "GLM-4.5"
       },
       {
-        "id": "nvidia/llama-3_1-nemotron-ultra-253b-v1",
+        "id": "zai-org/GLM-5",
+        "name": "GLM-5"
+      },
+      {
+        "id": "nvidia/nemotron-3-super-120b-a12b",
+        "name": "Nemotron-3-Super-120B-A12B"
+      },
+      {
+        "id": "nvidia/Llama-3_1-Nemotron-Ultra-253B-v1",
         "name": "Llama-3.1-Nemotron-Ultra-253B-v1"
       },
       {
-        "id": "nvidia/nemotron-nano-v2-12b",
+        "id": "nvidia/Nemotron-Nano-V2-12b",
         "name": "Nemotron-Nano-V2-12b"
       },
       {
-        "id": "nvidia/nvidia-nemotron-3-nano-30b-a3b",
+        "id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
         "name": "Nemotron-3-Nano-30B-A3B"
       },
       {
-        "id": "NousResearch/hermes-4-405b",
+        "id": "NousResearch/Hermes-4-405B",
         "name": "Hermes-4-405B"
       },
       {
-        "id": "NousResearch/hermes-4-70b",
+        "id": "NousResearch/Hermes-4-70B",
         "name": "Hermes-4-70B"
       },
       {
@@ -390,47 +412,51 @@
         "name": "bge-multilingual-gemma2"
       },
       {
-        "id": "PrimeIntellect/intellect-3",
+        "id": "PrimeIntellect/INTELLECT-3",
         "name": "INTELLECT-3"
       },
       {
-        "id": "MiniMaxAI/minimax-m2.1",
+        "id": "MiniMaxAI/MiniMax-M2.1",
         "name": "MiniMax-M2.1"
       },
       {
-        "id": "deepseek-ai/deepseek-v3-0324-fast",
+        "id": "deepseek-ai/DeepSeek-V3-0324-fast",
         "name": "DeepSeek-V3-0324 (Fast)"
       },
       {
-        "id": "deepseek-ai/deepseek-r1-0528-fast",
-        "name": "DeepSeek R1 0528 Fast"
-      },
-      {
-        "id": "deepseek-ai/deepseek-r1-0528",
+        "id": "deepseek-ai/DeepSeek-R1-0528",
         "name": "DeepSeek-R1-0528"
       },
       {
-        "id": "deepseek-ai/deepseek-v3-0324",
+        "id": "deepseek-ai/DeepSeek-V3.2",
+        "name": "DeepSeek-V3.2"
+      },
+      {
+        "id": "deepseek-ai/DeepSeek-V3-0324",
         "name": "DeepSeek-V3-0324"
       },
       {
-        "id": "deepseek-ai/deepseek-v3.2",
-        "name": "DeepSeek-V3.2"
+        "id": "deepseek-ai/DeepSeek-R1-0528-fast",
+        "name": "DeepSeek R1 0528 Fast"
       },
       {
         "id": "intfloat/e5-mistral-7b-instruct",
         "name": "e5-mistral-7b-instruct"
       },
       {
-        "id": "moonshotai/kimi-k2-instruct",
+        "id": "moonshotai/Kimi-K2-Instruct",
         "name": "Kimi-K2-Instruct"
+      },
+      {
+        "id": "moonshotai/Kimi-K2.5-fast",
+        "name": "Kimi-K2.5-fast"
       },
       {
         "id": "moonshotai/Kimi-K2.5",
         "name": "Kimi-K2.5"
       },
       {
-        "id": "moonshotai/kimi-k2-thinking",
+        "id": "moonshotai/Kimi-K2-Thinking",
         "name": "Kimi-K2-Thinking"
       },
       {
@@ -450,68 +476,68 @@
         "name": "Gemma-3-27b-it"
       },
       {
-        "id": "qwen/qwen3-235b-a22b-instruct-2507",
-        "name": "Qwen3 235B A22B Instruct 2507"
+        "id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "name": "Meta-Llama-3.1-8B-Instruct"
       },
       {
-        "id": "qwen/qwen3-next-80b-a3b-thinking",
-        "name": "Qwen3-Next-80B-A3B-Thinking"
-      },
-      {
-        "id": "qwen/qwen2.5-coder-7b-fast",
-        "name": "Qwen2.5-Coder-7B (Fast)"
-      },
-      {
-        "id": "qwen/qwen3-coder-480b-a35b-instruct",
-        "name": "Qwen3 Coder 480B A35B Instruct"
-      },
-      {
-        "id": "qwen/qwen3-32b",
-        "name": "Qwen3-32B"
-      },
-      {
-        "id": "qwen/qwen3-30b-a3b-instruct-2507",
-        "name": "Qwen3-30B-A3B-Instruct-2507"
-      },
-      {
-        "id": "qwen/qwen2.5-vl-72b-instruct",
-        "name": "Qwen2.5-VL-72B-Instruct"
-      },
-      {
-        "id": "qwen/qwen3-coder-30b-a3b-instruct",
-        "name": "Qwen3-Coder-30B-A3B-Instruct"
-      },
-      {
-        "id": "qwen/qwen3-30b-a3b-thinking-2507",
-        "name": "Qwen3-30B-A3B-Thinking-2507"
-      },
-      {
-        "id": "qwen/qwen3-32b-fast",
-        "name": "Qwen3-32B (Fast)"
-      },
-      {
-        "id": "qwen/qwen3-235b-a22b-thinking-2507",
-        "name": "Qwen3 235B A22B Thinking 2507"
-      },
-      {
-        "id": "meta-llama/llama-guard-3-8b",
+        "id": "meta-llama/Llama-Guard-3-8B",
         "name": "Llama-Guard-3-8B"
       },
       {
-        "id": "meta-llama/meta-llama-3.1-8b-instruct",
-        "name": "Meta-Llama-3.1-8B-Instruct"
+        "id": "meta-llama/Llama-3.3-70B-Instruct-fast",
+        "name": "Llama-3.3-70B-Instruct (Fast)"
+      },
+      {
+        "id": "meta-llama/Meta-Llama-3.1-8B-Instruct-fast",
+        "name": "Meta-Llama-3.1-8B-Instruct (Fast)"
       },
       {
         "id": "meta-llama/Llama-3.3-70B-Instruct",
         "name": "Llama-3.3-70B-Instruct"
       },
       {
-        "id": "meta-llama/llama-3.3-70b-instruct-fast",
-        "name": "Llama-3.3-70B-Instruct (Fast)"
+        "id": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+        "name": "Qwen3-30B-A3B-Instruct-2507"
       },
       {
-        "id": "meta-llama/meta-llama-3.1-8b-instruct-fast",
-        "name": "Meta-Llama-3.1-8B-Instruct (Fast)"
+        "id": "Qwen/Qwen3-32B",
+        "name": "Qwen3-32B"
+      },
+      {
+        "id": "Qwen/Qwen3-235B-A22B-Thinking-2507",
+        "name": "Qwen3 235B A22B Thinking 2507"
+      },
+      {
+        "id": "Qwen/Qwen3-30B-A3B-Thinking-2507",
+        "name": "Qwen3-30B-A3B-Thinking-2507"
+      },
+      {
+        "id": "Qwen/Qwen3-Coder-480B-A35B-Instruct",
+        "name": "Qwen3 Coder 480B A35B Instruct"
+      },
+      {
+        "id": "Qwen/Qwen2.5-VL-72B-Instruct",
+        "name": "Qwen2.5-VL-72B-Instruct"
+      },
+      {
+        "id": "Qwen/Qwen3-32B-fast",
+        "name": "Qwen3-32B (Fast)"
+      },
+      {
+        "id": "Qwen/Qwen3-Next-80B-A3B-Thinking",
+        "name": "Qwen3-Next-80B-A3B-Thinking"
+      },
+      {
+        "id": "Qwen/Qwen2.5-Coder-7B-fast",
+        "name": "Qwen2.5-Coder-7B (Fast)"
+      },
+      {
+        "id": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+        "name": "Qwen3-Coder-30B-A3B-Instruct"
+      },
+      {
+        "id": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+        "name": "Qwen3 235B A22B Instruct 2507"
       },
       {
         "id": "openai/gpt-oss-120b",
@@ -727,6 +753,10 @@
       {
         "id": "zai-org/GLM-5",
         "name": "zai-org/GLM-5"
+      },
+      {
+        "id": "MiniMaxAI/MiniMax-M2.5",
+        "name": "MiniMaxAI/MiniMax-M2.5"
       },
       {
         "id": "MiniMaxAI/MiniMax-M2.1",
@@ -994,14 +1024,8 @@
         "name": "Intellect 3"
       },
       {
-        "id": "featherless/qwerky-72b",
-        "name": "Qwerky 72B",
-        "free": true
-      },
-      {
-        "id": "allenai/molmo-2-8b:free",
-        "name": "Molmo2 8B (free)",
-        "free": true
+        "id": "nvidia/nemotron-3-super-120b-a12b",
+        "name": "Nemotron 3 Super"
       },
       {
         "id": "nvidia/nemotron-nano-9b-v2:free",
@@ -1023,6 +1047,11 @@
         "name": "nvidia-nemotron-nano-9b-v2"
       },
       {
+        "id": "nvidia/nemotron-3-super-120b-a12b-free",
+        "name": "Nemotron 3 Super (free)",
+        "free": true
+      },
+      {
         "id": "arcee-ai/trinity-large-preview:free",
         "name": "Trinity Large Preview",
         "free": true
@@ -1033,18 +1062,16 @@
         "free": true
       },
       {
+        "id": "xiaomi/mimo-v2-omni",
+        "name": "MiMo-V2-Omni"
+      },
+      {
         "id": "xiaomi/mimo-v2-flash",
         "name": "MiMo-V2-Flash"
       },
       {
-        "id": "microsoft/mai-ds-r1:free",
-        "name": "MAI DS R1 (free)",
-        "free": true
-      },
-      {
-        "id": "sarvamai/sarvam-m:free",
-        "name": "Sarvam-M (free)",
-        "free": true
+        "id": "xiaomi/mimo-v2-pro",
+        "name": "MiMo-V2-Pro"
       },
       {
         "id": "liquid/lfm-2.5-1.2b-thinking:free",
@@ -1069,16 +1096,6 @@
         "name": "Mercury Coder"
       },
       {
-        "id": "thudm/glm-z1-32b:free",
-        "name": "GLM Z1 32B (free)",
-        "free": true
-      },
-      {
-        "id": "rekaai/reka-flash-3",
-        "name": "Reka Flash 3",
-        "free": true
-      },
-      {
         "id": "stepfun/step-3.5-flash:free",
         "name": "Step 3.5 Flash (free)",
         "free": true
@@ -1088,48 +1105,13 @@
         "name": "Step 3.5 Flash"
       },
       {
-        "id": "cognitivecomputations/dolphin3.0-r1-mistral-24b",
-        "name": "Dolphin3.0 R1 Mistral 24B",
-        "free": true
-      },
-      {
-        "id": "cognitivecomputations/dolphin3.0-mistral-24b",
-        "name": "Dolphin3.0 Mistral 24B",
-        "free": true
-      },
-      {
         "id": "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
         "name": "Uncensored (free)",
         "free": true
       },
       {
-        "id": "kwaipilot/kat-coder-pro:free",
-        "name": "Kat Coder Pro (free)",
-        "free": true
-      },
-      {
         "id": "deepseek/deepseek-v3.1-terminus:exacto",
         "name": "DeepSeek V3.1 Terminus (exacto)"
-      },
-      {
-        "id": "deepseek/deepseek-r1-0528:free",
-        "name": "R1 0528 (free)",
-        "free": true
-      },
-      {
-        "id": "deepseek/deepseek-r1-distill-qwen-14b",
-        "name": "DeepSeek R1 Distill Qwen 14B",
-        "free": true
-      },
-      {
-        "id": "deepseek/deepseek-r1:free",
-        "name": "R1 (free)",
-        "free": true
-      },
-      {
-        "id": "deepseek/deepseek-r1-0528-qwen3-8b:free",
-        "name": "Deepseek R1 0528 Qwen3 8B (free)",
-        "free": true
       },
       {
         "id": "deepseek/deepseek-v3.2-speciale",
@@ -1158,33 +1140,8 @@
         "name": "DeepSeek V3.2"
       },
       {
-        "id": "deepseek/deepseek-v3-base:free",
-        "name": "DeepSeek V3 Base (free)",
-        "free": true
-      },
-      {
-        "id": "openrouter/sherlock-think-alpha",
-        "name": "Sherlock Think Alpha",
-        "free": true
-      },
-      {
-        "id": "openrouter/sherlock-dash-alpha",
-        "name": "Sherlock Dash Alpha",
-        "free": true
-      },
-      {
         "id": "openrouter/free",
         "name": "Free Models Router",
-        "free": true
-      },
-      {
-        "id": "openrouter/aurora-alpha",
-        "name": "Aurora Alpha",
-        "free": true
-      },
-      {
-        "id": "moonshotai/kimi-dev-72b:free",
-        "name": "Kimi Dev 72b (free)",
         "free": true
       },
       {
@@ -1251,6 +1208,10 @@
         "name": "Gemini 2.0 Flash"
       },
       {
+        "id": "google/gemini-3.1-flash-lite-preview",
+        "name": "Gemini 3.1 Flash Lite Preview"
+      },
+      {
         "id": "google/gemini-3-flash-preview",
         "name": "Gemini 3 Flash Preview"
       },
@@ -1266,11 +1227,6 @@
       {
         "id": "google/gemini-3.1-pro-preview",
         "name": "Gemini 3.1 Pro Preview"
-      },
-      {
-        "id": "google/gemini-2.0-flash-exp:free",
-        "name": "Gemini 2.0 Flash Experimental (free)",
-        "free": true
       },
       {
         "id": "google/gemma-2-9b-it",
@@ -1352,16 +1308,6 @@
         "name": "Qwen3 Next 80B A3B Thinking"
       },
       {
-        "id": "qwen/qwen-2.5-vl-7b-instruct:free",
-        "name": "Qwen2.5-VL 7B Instruct (free)",
-        "free": true
-      },
-      {
-        "id": "qwen/qwen3-32b:free",
-        "name": "Qwen3 32B (free)",
-        "free": true
-      },
-      {
         "id": "qwen/qwen3-coder:free",
         "name": "Qwen3 Coder 480B A35B Instruct (free)",
         "free": true
@@ -1371,28 +1317,8 @@
         "name": "Qwen3 Coder Flash"
       },
       {
-        "id": "qwen/qwen3-30b-a3b:free",
-        "name": "Qwen3 30B A3B (free)",
-        "free": true
-      },
-      {
-        "id": "qwen/qwen3-235b-a22b-07-25:free",
-        "name": "Qwen3 235B A22B Instruct 2507 (free)",
-        "free": true
-      },
-      {
-        "id": "qwen/qwen3-14b:free",
-        "name": "Qwen3 14B (free)",
-        "free": true
-      },
-      {
         "id": "qwen/qwen3-coder",
         "name": "Qwen3 Coder"
-      },
-      {
-        "id": "qwen/qwq-32b:free",
-        "name": "QwQ 32B (free)",
-        "free": true
       },
       {
         "id": "qwen/qwen3.5-397b-a17b",
@@ -1429,11 +1355,6 @@
         "name": "Qwen3 235B A22B Instruct 2507"
       },
       {
-        "id": "qwen/qwen3-235b-a22b:free",
-        "name": "Qwen3 235B A22B (free)",
-        "free": true
-      },
-      {
         "id": "qwen/qwen3-next-80b-a3b-instruct:free",
         "name": "Qwen3 Next 80B A3B Instruct (free)",
         "free": true
@@ -1444,18 +1365,8 @@
         "free": true
       },
       {
-        "id": "qwen/qwen3-8b:free",
-        "name": "Qwen3 8B (free)",
-        "free": true
-      },
-      {
         "id": "qwen/qwen3-30b-a3b-thinking-2507",
         "name": "Qwen3 30B A3B Thinking 2507"
-      },
-      {
-        "id": "qwen/qwen2.5-vl-32b-instruct:free",
-        "name": "Qwen2.5 VL 32B Instruct (free)",
-        "free": true
       },
       {
         "id": "qwen/qwen3-235b-a22b-thinking-2507",
@@ -1464,11 +1375,6 @@
       {
         "id": "qwen/qwen3-next-80b-a3b-instruct",
         "name": "Qwen3 Next 80B A3B Instruct"
-      },
-      {
-        "id": "qwen/qwen2.5-vl-72b-instruct:free",
-        "name": "Qwen2.5 VL 72B Instruct (free)",
-        "free": true
       },
       {
         "id": "qwen/qwen3-max",
@@ -1503,17 +1409,20 @@
         "name": "Grok 3 Mini"
       },
       {
+        "id": "x-ai/grok-4.20-multi-agent-beta",
+        "name": "Grok 4.20 Multi - Agent Beta"
+      },
+      {
+        "id": "x-ai/grok-4.20-beta",
+        "name": "Grok 4.20 Beta"
+      },
+      {
         "id": "x-ai/grok-3-beta",
         "name": "Grok 3 Beta"
       },
       {
         "id": "meta-llama/llama-3.3-70b-instruct:free",
         "name": "Llama 3.3 70B Instruct (free)",
-        "free": true
-      },
-      {
-        "id": "meta-llama/llama-4-scout:free",
-        "name": "Llama 4 Scout (free)",
         "free": true
       },
       {
@@ -1527,28 +1436,8 @@
         "free": true
       },
       {
-        "id": "meta-llama/llama-3.1-405b-instruct:free",
-        "name": "Llama 3.1 405B Instruct (free)",
-        "free": true
-      },
-      {
-        "id": "tngtech/tng-r1t-chimera:free",
-        "name": "R1T Chimera (free)",
-        "free": true
-      },
-      {
-        "id": "tngtech/deepseek-r1t2-chimera:free",
-        "name": "DeepSeek R1T2 Chimera (free)",
-        "free": true
-      },
-      {
         "id": "mistralai/devstral-medium-2507",
         "name": "Devstral Medium"
-      },
-      {
-        "id": "mistralai/devstral-small-2505:free",
-        "name": "Devstral Small 2505 (free)",
-        "free": true
       },
       {
         "id": "mistralai/mistral-medium-3",
@@ -1557,11 +1446,6 @@
       {
         "id": "mistralai/codestral-2508",
         "name": "Codestral 2508"
-      },
-      {
-        "id": "mistralai/devstral-2512:free",
-        "name": "Devstral 2 2512 (free)",
-        "free": true
       },
       {
         "id": "mistralai/mistral-small-3.1-24b-instruct",
@@ -1573,11 +1457,6 @@
         "name": "Devstral Small"
       },
       {
-        "id": "mistralai/mistral-7b-instruct:free",
-        "name": "Mistral 7B Instruct (free)",
-        "free": true
-      },
-      {
         "id": "mistralai/devstral-2512",
         "name": "Devstral 2 2512"
       },
@@ -1587,18 +1466,8 @@
         "free": true
       },
       {
-        "id": "mistralai/mistral-small-3.2-24b-instruct:free",
-        "name": "Mistral Small 3.2 24B (free)",
-        "free": true
-      },
-      {
         "id": "mistralai/devstral-small-2507",
         "name": "Devstral Small 1.1"
-      },
-      {
-        "id": "mistralai/mistral-nemo:free",
-        "name": "Mistral Nemo (free)",
-        "free": true
       },
       {
         "id": "mistralai/mistral-medium-3.1",
@@ -1710,6 +1579,10 @@
         "name": "GPT-5 Mini"
       },
       {
+        "id": "openai/gpt-5.4-nano",
+        "name": "GPT-5.4 Nano"
+      },
+      {
         "id": "openai/gpt-oss-20b",
         "name": "GPT OSS 20B"
       },
@@ -1723,6 +1596,10 @@
         "name": "GPT-5 Nano"
       },
       {
+        "id": "openai/gpt-5.4-mini",
+        "name": "GPT-5.4 Mini"
+      },
+      {
         "id": "minimax/minimax-m1",
         "name": "MiniMax M1"
       },
@@ -1733,6 +1610,10 @@
       {
         "id": "minimax/minimax-m2.1",
         "name": "MiniMax M2.1"
+      },
+      {
+        "id": "minimax/minimax-m2.7",
+        "name": "MiniMax M2.7"
       },
       {
         "id": "minimax/minimax-m2",
@@ -1789,11 +1670,6 @@
       {
         "id": "nousresearch/hermes-4-70b",
         "name": "Hermes 4 70B"
-      },
-      {
-        "id": "nousresearch/deephermes-3-llama-3-8b-preview",
-        "name": "DeepHermes 3 Llama 3 8B Preview",
-        "free": true
       },
       {
         "id": "nousresearch/hermes-3-llama-3.1-405b:free",
@@ -2057,6 +1933,10 @@
         "name": "GPT-5 Mini"
       },
       {
+        "id": "gpt-5.4-nano",
+        "name": "GPT-5.4 nano"
+      },
+      {
         "id": "gpt-5.1-chat-latest",
         "name": "GPT-5.1 Chat"
       },
@@ -2075,6 +1955,10 @@
       {
         "id": "gpt-4o",
         "name": "GPT-4o"
+      },
+      {
+        "id": "gpt-5.4-mini",
+        "name": "GPT-5.4 mini"
       }
     ],
     "cohere": [
@@ -2133,6 +2017,10 @@
         "name": "MiniMax-M2.5"
       },
       {
+        "id": "MiniMax-M2.7-highspeed",
+        "name": "MiniMax-M2.7-highspeed"
+      },
+      {
         "id": "MiniMax-M2",
         "name": "MiniMax-M2"
       },
@@ -2143,6 +2031,10 @@
       {
         "id": "MiniMax-M2.1",
         "name": "MiniMax-M2.1"
+      },
+      {
+        "id": "MiniMax-M2.7",
+        "name": "MiniMax-M2.7"
       }
     ],
     "perplexity": [
@@ -2281,6 +2173,10 @@
         "name": "Grok 2 (1212)"
       },
       {
+        "id": "grok-4.20-multi-agent-0309",
+        "name": "Grok 4.20 Multi-Agent"
+      },
+      {
         "id": "grok-2",
         "name": "Grok 2"
       },
@@ -2349,6 +2245,10 @@
         "name": "Grok 3 Mini Fast Latest"
       },
       {
+        "id": "grok-4.20-0309-reasoning",
+        "name": "Grok 4.20 (Reasoning)"
+      },
+      {
         "id": "grok-2-latest",
         "name": "Grok 2 Latest"
       },
@@ -2359,6 +2259,10 @@
       {
         "id": "grok-vision-beta",
         "name": "Grok Vision Beta"
+      },
+      {
+        "id": "grok-4.20-0309-non-reasoning",
+        "name": "Grok 4.20 (Non-Reasoning)"
       },
       {
         "id": "grok-3-fast",

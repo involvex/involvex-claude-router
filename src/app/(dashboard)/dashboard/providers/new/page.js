@@ -59,14 +59,6 @@ function NewProviderForm() {
     displayName: "",
     providerSpecificData: {},
   });
-
-  // Handle initial provider from URL
-  useEffect(() => {
-    if (initialProvider && !formData.provider) {
-      handleChange("provider", initialProvider);
-    }
-  }, [initialProvider, formData.provider, handleChange]);
-
   const handleChange = useCallback(
     (field, value) => {
       setFormData(prev => {
@@ -91,6 +83,12 @@ function NewProviderForm() {
     },
     [errors],
   );
+  // Handle initial provider from URL
+  useEffect(() => {
+    if (initialProvider && !formData.provider) {
+      handleChange("provider", initialProvider);
+    }
+  }, [initialProvider, formData.provider, handleChange]);
 
   const handleOAuthSuccess = data => {
     setOAuthData(data);
@@ -152,6 +150,7 @@ function NewProviderForm() {
         setErrors({ submit: data.error || "Failed to create provider" });
       }
     } catch (error) {
+      console.error("Error creating provider:", error);
       setErrors({ submit: "An error occurred. Please try again." });
     } finally {
       setLoading(false);
@@ -180,9 +179,9 @@ function NewProviderForm() {
         {/* Provider Info */}
         {selectedProvider && (
           <Card.Section className="flex items-center gap-3">
-            <div className="size-10 rounded-lg flex items-center justify-center bg-bg border border-border">
+            <div className="flex items-center justify-center border rounded-lg size-10 bg-bg border-border">
               <span
-                className="material-symbols-outlined text-xl"
+                className="text-xl material-symbols-outlined"
                 style={{ color: selectedProvider.color }}
               >
                 {selectedProvider.icon}
@@ -258,12 +257,12 @@ function NewProviderForm() {
               </p>
 
               {oauthData ? (
-                <div className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-600 dark:text-green-400">
+                <div className="flex items-center gap-3 p-3 text-green-600 border rounded-lg bg-green-500/10 border-green-500/20 dark:text-green-400">
                   <span className="material-symbols-outlined">
                     check_circle
                   </span>
                   <div className="flex-1">
-                    <p className="font-medium text-sm">
+                    <p className="text-sm font-medium">
                       Connected successfully
                     </p>
                     <p className="text-xs opacity-80">
@@ -274,7 +273,7 @@ function NewProviderForm() {
                   </div>
                   <button
                     type="button"
-                    className="text-xs font-medium text-red-500 hover:text-red-600 transition-colors"
+                    className="text-xs font-medium text-red-500 transition-colors hover:text-red-600"
                     onClick={() => {
                       setOAuthData(null);
                       setFormData(prev => ({
@@ -322,7 +321,7 @@ function NewProviderForm() {
 
         {/* Error Message */}
         {errors.submit && (
-          <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
+          <div className="p-4 text-sm text-red-600 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
             {errors.submit}
           </div>
         )}
@@ -373,15 +372,15 @@ export default function NewProviderPage() {
       <div className="mb-8">
         <Link
           href="/dashboard/providers"
-          className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-primary transition-colors mb-4"
+          className="inline-flex items-center gap-1 mb-4 text-sm transition-colors text-text-muted hover:text-primary"
         >
-          <span className="material-symbols-outlined text-lg">arrow_back</span>
+          <span className="text-lg material-symbols-outlined">arrow_back</span>
           Back to Providers
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight">
           Add New Provider
         </h1>
-        <p className="text-text-muted mt-2">
+        <p className="mt-2 text-text-muted">
           Configure a new AI provider to use with your applications.
         </p>
       </div>
