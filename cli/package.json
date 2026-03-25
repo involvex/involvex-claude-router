@@ -23,14 +23,14 @@
     "kill-port": "^2.0.1"
   },
   "devDependencies": {
-    "@types/bun": "^1.1.0",
+    "@types/bun": "^1.3.11",
     "@types/node": "^25.2.3",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
     "prettier": "^3.4.0",
     "prettier-plugin-organize-imports": "^4.0.0",
-    "prettier-plugin-packagejson": "^2.0.0",
+    "prettier-plugin-packagejson": "^3.0.2",
     "prettier-plugin-sort-imports": "^1.0.0",
     "typescript": "^5.7.0"
   }
