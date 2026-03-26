@@ -1,4 +1,3 @@
-import Database from "better-sqlite3";
 import path from "path";
 import os from "os";
 import fs from "fs";
@@ -69,6 +68,19 @@ async function getCachedObservabilityConfig() {
 }
 
 let dbInstance = null;
+let cachedDbFile = undefined;
+let sqliteCtor = null;
+
+async function getSqliteCtor() {
+  if (sqliteCtor) return sqliteCtor;
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return null;
+  }
+
+  const mod = await import("better-sqlite3");
+  sqliteCtor = mod.default || mod;
+  return sqliteCtor;
+}
 
 // Get app name
 function getAppName() {
@@ -102,31 +114,41 @@ function getUserDataDir() {
 
     if (platform === "win32") {
       return path.join(
-        process.env.APPDATA || path.join(homeDir, "AppData", "Roaming"),
+        process.env.APPDATA ||
+          path.join(/* turbopackIgnore: true */ homeDir, "AppData", "Roaming"),
         appName,
       );
     } else {
-      return path.join(homeDir, `.${appName}`);
+      return path.join(/* turbopackIgnore: true */ homeDir, `.${appName}`);
     }
   } catch (error) {
     console.error(
       "[requestDetailsDb] Failed to get user data directory:",
       error.message,
     );
-    return path.join(process.cwd(), ".involvex-claude-router");
+    return path.join(
+      /* turbopackIgnore: true */ os.homedir(),
+      ".involvex-claude-router",
+    );
   }
 }
 
-// Database file path
-const DATA_DIR = getUserDataDir();
-const DB_FILE =
-  isCloud || !DATA_DIR ? null : path.join(DATA_DIR, "request-details.sqlite");
+function getRequestDetailsDbFile() {
+  if (cachedDbFile !== undefined) return cachedDbFile;
+  if (isCloud) {
+    cachedDbFile = null;
+    return cachedDbFile;
+  }
 
-// Ensure data directory exists
-if (!isCloud && DATA_DIR && fs && typeof fs.existsSync === "function") {
+  const dataDir = getUserDataDir();
+  if (!dataDir) {
+    cachedDbFile = null;
+    return cachedDbFile;
+  }
+
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
     }
   } catch (error) {
     console.error(
@@ -134,6 +156,12 @@ if (!isCloud && DATA_DIR && fs && typeof fs.existsSync === "function") {
       error.message,
     );
   }
+
+  cachedDbFile = path.join(
+    /* turbopackIgnore: true */ dataDir,
+    "request-details.sqlite",
+  );
+  return cachedDbFile;
 }
 
 // ============================================================================
@@ -182,7 +210,35 @@ export async function getRequestDetailsDb() {
   }
 
   if (!dbInstance) {
-    const db = new Database(DB_FILE);
+    const dbFile = getRequestDetailsDbFile();
+    if (!dbFile) {
+      dbInstance = {
+        prepare: () => ({
+          run: () => {},
+          get: () => null,
+          all: () => [],
+        }),
+        exec: () => {},
+        pragma: () => {},
+      };
+      return dbInstance;
+    }
+
+    const Database = await getSqliteCtor();
+    if (!Database) {
+      dbInstance = {
+        prepare: () => ({
+          run: () => {},
+          get: () => null,
+          all: () => [],
+        }),
+        exec: () => {},
+        pragma: () => {},
+      };
+      return dbInstance;
+    }
+
+    const db = new Database(dbFile);
 
     // Configure for better concurrency
     db.pragma("journal_mode = WAL"); // Write-Ahead Logging for concurrent access

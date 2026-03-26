@@ -1,4 +1,4 @@
-import path from "path";
+import { fileURLToPath } from "url";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -16,6 +16,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  serverExternalPackages: ["better-sqlite3"],
   env: {
     NEXT_PUBLIC_CLOUD_URL:
       "https://involvex-claude-router-cloud.involvex.workers.dev",
@@ -39,9 +40,8 @@ const nextConfig = {
 
     if (process.env.NEXT_PUBLIC_CLOUD_MODE === "true") {
       // Alias initCloudSync to a no-op stub
-      config.resolve.alias["@/lib/initCloudSync"] = path.resolve(
-        process.cwd(),
-        "src/lib/initCloudSync.stub.js",
+      config.resolve.alias["@/lib/initCloudSync"] = fileURLToPath(
+        new URL("./src/lib/initCloudSync.stub.js", import.meta.url),
       );
 
       // Disable Webpack filesystem cache to prevent absolute path mapping issues

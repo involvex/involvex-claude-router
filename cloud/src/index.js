@@ -4,11 +4,16 @@ import { initTranslators } from "open-sse/translator/index.js";
 import * as log from "./utils/logger.js";
 
 // Static imports for handlers (avoid dynamic import CPU cost)
+import {
+  handleTunnelProvision,
+  handleTunnelProxy,
+  handleTunnelRegister,
+  handleTunnelSession,
+} from "./handlers/tunnel.js";
 import { createLandingPageResponse } from "./services/landingPage.js";
 import { handleTestClaude } from "./handlers/testClaude.js";
 import { handleForwardRaw } from "./handlers/forwardRaw.js";
 import { handleEmbeddings } from "./handlers/embeddings.js";
-import { handleTunnelRegister } from "./handlers/tunnel.js";
 import { handleProviders } from "./handlers/providers.js";
 import { handleCacheClear } from "./handlers/cache.js";
 import { handlePricing } from "./handlers/pricing.js";
@@ -18,7 +23,6 @@ import { handleVerify } from "./handlers/verify.js";
 import { handleModels } from "./handlers/models.js";
 import { handleSync } from "./handlers/sync.js";
 import { handleChat } from "./handlers/chat.js";
-import { parseApiKey } from "./utils/apiKey.js";
 
 // Initialize translators at module load (static imports)
 initTranslators();
@@ -92,6 +96,8 @@ const worker = {
     if (path.startsWith("/v1/v1/")) {
       path = path.replace("/v1/v1/", "/v1/");
     } else if (path === "/v1/v1") {
+      path = "/v1";
+    } else if (path === "/v1/") {
       path = "/v1";
     }
 
@@ -194,6 +200,30 @@ const worker = {
         const response = await handleTunnelRegister(request, env);
         log.response(response.status, Date.now() - startTime);
         return addCorsHeaders(response);
+      }
+
+      if (path === "/api/session/create" && request.method === "POST") {
+        const response = await handleTunnelSession(request, env);
+        log.response(response.status, Date.now() - startTime);
+        return addCorsHeaders(response);
+      }
+
+      if (path === "/api/tunnel/create" && request.method === "POST") {
+        const response = await handleTunnelProvision(request, env);
+        log.response(response.status, Date.now() - startTime);
+        return addCorsHeaders(response);
+      }
+
+      if (path === "/api/tunnel/delete" && request.method === "DELETE") {
+        const response = await handleTunnelProvision(request, env);
+        log.response(response.status, Date.now() - startTime);
+        return addCorsHeaders(response);
+      }
+
+      if (path.startsWith("/tunnel/")) {
+        const response = await handleTunnelProxy(request, env, path);
+        log.response(response.status, Date.now() - startTime);
+        return response;
       }
 
       // ========== NEW FORMAT: /v1/... (machineId in API key) ==========

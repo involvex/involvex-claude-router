@@ -1,20 +1,10 @@
 "use server";
 
 import { NextResponse } from "next/server";
-import { fileURLToPath } from "url";
-import path from "path";
 import os from "os";
-import fs from "fs";
 
 function getAppName() {
-  try {
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const rootPkgPath = path.resolve(__dirname, "../../../../../package.json");
-    const pkg = JSON.parse(fs.readFileSync(rootPkgPath, "utf-8"));
-    return pkg.config?.appName || "involvex-claude-router";
-  } catch {
-    return "involvex-claude-router";
-  }
+  return process.env.APP_NAME || "involvex-claude-router";
 }
 
 function expandTilde(dir) {
@@ -33,16 +23,15 @@ function getDataDir() {
   const appName = getAppName();
 
   if (platform === "win32") {
-    return path.join(
-      process.env.APPDATA || path.join(homeDir, "AppData", "Roaming"),
-      appName,
-    );
+    const appData = process.env.APPDATA || `${homeDir}\\AppData\\Roaming`;
+    return `${appData}\\${appName}`;
   }
-  return path.join(homeDir, `.${appName}`);
+  return `${homeDir}/.${appName}`;
 }
 
 export async function GET() {
   const dataDir = getDataDir();
-  const dbFile = path.join(dataDir, "db.json");
+  const sep = process.platform === "win32" ? "\\" : "/";
+  const dbFile = `${dataDir}${dataDir.endsWith(sep) ? "" : sep}db.json`;
   return NextResponse.json({ dataDir, dbFile });
 }

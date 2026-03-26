@@ -339,7 +339,7 @@ export const APIKEY_PROVIDERS = {
   ezif: {
     id: "ezif",
     alias: "ezif",
-    name: "EZIF AI",
+    name: "Kivest.ai",
     icon: "bolt",
     color: "#4F46E5",
     textIcon: "EZ",

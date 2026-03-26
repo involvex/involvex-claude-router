@@ -401,11 +401,22 @@ export const PROVIDER_MODELS = {
     { id: "grok-code-fast-1", name: "Grok Code Fast 1" },
   ],
   ezif: [
-    { id: "gpt-4o", name: "GPT-4o" },
-    { id: "gpt-4o-mini", name: "GPT-4o Mini" },
-    { id: "claude-3-5-sonnet", name: "Claude 3.5 Sonnet" },
-    { id: "deepseek-chat", name: "DeepSeek Chat" },
-    { id: "deepseek-reasoner", name: "DeepSeek Reasoner" },
+    { id: "gpt-5.4", name: "GPT-5.4" },
+    { id: "gpt-5.3-codex", name: "GPT-5.3 Codex" },
+    { id: "gpt-5.1", name: "GPT-5.1" },
+    { id: "gpt-oss-128b", name: "GPT OSS 128B" },
+    { id: "gpt-oss-20b", name: "GPT OSS 20B" },
+    { id: "gpt-image-1", name: "GPT Image 1" },
+    { id: "gpt-image-1.5", name: "GPT Image 1.5" },
+    { id: "claude-opus-4.5", name: "Claude Opus 4.5" },
+    { id: "claude-sonnet-4.6", name: "Claude Sonnet 4.6" },
+    { id: "gemini-3-flash", name: "Gemini 3 Flash" },
+    {
+      id: "gemini-3.1-flash-image-preview",
+      name: "Gemini 3.1 Flash Image Preview",
+    },
+    { id: "grok-4.1-fast", name: "Grok 4.1 Fast" },
+    { id: "grok-video-normal", name: "Grok Video Normal" },
   ],
 };
 

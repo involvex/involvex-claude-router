@@ -203,6 +203,63 @@ export async function spawnCloudflared(tunnelToken) {
   });
 }
 
+export async function spawnQuickCloudflared(localUrl) {
+  const binaryPath = await ensureCloudflared();
+
+  const child = spawn(binaryPath, ["tunnel", "--url", localUrl], {
+    detached: false,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+
+  cloudflaredProcess = child;
+  savePid(child.pid);
+
+  return new Promise((resolve, reject) => {
+    let resolved = false;
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        reject(new Error("Timed out waiting for quick tunnel URL"));
+      }
+    }, 90000);
+
+    const maybeResolveFromLog = data => {
+      const msg = data.toString();
+      const match = msg.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/i);
+      if (match && !resolved) {
+        resolved = true;
+        clearTimeout(timeout);
+        resolve({ child, url: match[0] });
+      }
+    };
+
+    child.stdout.on("data", maybeResolveFromLog);
+    child.stderr.on("data", maybeResolveFromLog);
+
+    child.on("error", err => {
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timeout);
+        reject(err);
+      }
+    });
+
+    child.on("exit", code => {
+      cloudflaredProcess = null;
+      clearPid();
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timeout);
+        reject(new Error(`cloudflared quick tunnel exited with code ${code}`));
+        return;
+      }
+      if (unexpectedExitHandler) {
+        unexpectedExitHandler();
+      }
+    });
+  });
+}
+
 export function killCloudflared() {
   if (cloudflaredProcess) {
     try {
