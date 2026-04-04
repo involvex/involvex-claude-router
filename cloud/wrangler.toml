@@ -4,9 +4,9 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 account_id = "d4e0f1c1c830642168db2f4ea3aece58"
 
-[assets]
-directory = "../out"
-binding = "ASSETS"
+# [assets]
+# directory = "../out"
+# binding = "ASSETS"
 
 [alias]
 "@/lib/usageDb.js" = "./src/stubs/usageDb.js"
