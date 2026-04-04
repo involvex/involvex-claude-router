@@ -9,7 +9,7 @@
     "test:watch": "NODE_PATH=/node_modules ./node_modules/.bin/vitest --reporter=verbose"
   },
   "devDependencies": {
-    "vitest": "^4.0.0"
+    "vitest": "^4.1.2"
   },
   "engines": {
     "node": ">=18"

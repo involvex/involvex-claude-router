@@ -19,7 +19,6 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "types": ["bun", "node"],
-    "moduleResolution": "node",
     "resolveJsonModule": true
   },
   "include": ["src/**/*"],
