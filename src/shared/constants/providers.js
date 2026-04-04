@@ -318,6 +318,15 @@ export const APIKEY_PROVIDERS = {
     textIcon: "KG",
     website: "https://kilo.ai",
   },
+  cline: {
+    id: "cline",
+    alias: "cline",
+    name: "Cline",
+    icon: "hub",
+    color: "#6366F1",
+    textIcon: "CL",
+    website: "https://api.cline.bot",
+  },
   cloudflare: {
     id: "cloudflare",
     alias: "cf",

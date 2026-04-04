@@ -83,6 +83,29 @@ const PROVIDER_MODELS_CONFIG = {
     authPrefix: "Bearer ",
     parseResponse: data => data.data || [],
   },
+  kilogateway: {
+    url: "https://api.kilo.ai/api/gateway/models",
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    authHeader: "Authorization",
+    authPrefix: "Bearer ",
+    parseResponse: data => {
+      const models = data.models || [];
+      const hasKiloAuto = models.some(m => m.id === "kilo-auto/free");
+      if (!hasKiloAuto) {
+        models.unshift({ id: "kilo-auto/free", name: "Kilo Auto Free" });
+      }
+      return models;
+    },
+  },
+  cline: {
+    url: "https://api.cline.bot/api/v1/models",
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    authHeader: "Authorization",
+    authPrefix: "Bearer ",
+    parseResponse: data => data.data || [],
+  },
 };
 
 /**
