@@ -13,7 +13,7 @@ const TUNNEL_WORKER_URL =
   process.env.TUNNEL_WORKER_URL ||
   (process.env.TUNNEL_DOMAIN
     ? `https://${process.env.TUNNEL_DOMAIN}`
-    : "https://tunnel.9router.com");
+    : "https://involvex-claude-router.involvex.workers.dev");
 const MACHINE_ID_SALT = "9router-tunnel-salt";
 const API_KEY_SECRET = "9router-tunnel-api-key-secret";
 // Cloud routing worker uses a different HMAC secret for its API keys
@@ -67,13 +67,41 @@ function generateCloudApiKey(machineId) {
   return generateApiKey(machineId, CLOUD_API_KEY_SECRET);
 }
 
-async function workerFetch(reqPath, options = {}) {
-  const url = `${TUNNEL_WORKER_URL}${reqPath}`;
-  const res = await fetch(url, {
-    ...options,
-    headers: { "Content-Type": "application/json", ...options.headers },
-  });
-  return res.json();
+async function workerFetch(reqPath, options = {}, retries = 3) {
+  const RETRY_DELAYS = [2000, 5000, 10000];
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const url = `${TUNNEL_WORKER_URL}${reqPath}`;
+      if (attempt > 0) {
+        console.log(
+          `[Tunnel] Worker API retry ${attempt + 1}/${retries + 1} for ${reqPath}...`,
+        );
+        await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt - 1]));
+      }
+
+      const res = await fetch(url, {
+        ...options,
+        headers: { "Content-Type": "application/json", ...options.headers },
+      });
+
+      if (!res.ok && attempt < retries) {
+        const errText = await res.text().catch(() => "");
+        console.warn(`[Tunnel] Worker API ${res.status}: ${errText}`);
+        continue; // Retry
+      }
+
+      return await res.json();
+    } catch (err) {
+      console.error(
+        `[Tunnel] Worker API error (attempt ${attempt + 1}):`,
+        err.message,
+      );
+      if (attempt >= retries) {
+        throw err;
+      }
+    }
+  }
 }
 
 export async function enableTunnel() {
@@ -93,28 +121,42 @@ export async function enableTunnel() {
   const shortId = existing?.shortId || generateShortId();
   const apiKey = existing?.apiKey || generateApiKey(machineId);
 
-  await workerFetch("/api/session/create", {
+  console.log(`[Tunnel] Creating session with worker ${TUNNEL_WORKER_URL}...`);
+  const sessionResult = await workerFetch("/api/session/create", {
     method: "POST",
     body: JSON.stringify({ apiKey, shortId }),
   });
 
+  if (sessionResult.error) {
+    throw new Error(`Session creation failed: ${sessionResult.error}`);
+  }
+  console.log(`[Tunnel] Session created, shortId: ${shortId}`);
+
+  console.log(`[Tunnel] Provisioning tunnel...`);
   const tunnelResult = await workerFetch("/api/tunnel/create", {
     method: "POST",
     body: JSON.stringify({ apiKey }),
   });
 
   if (tunnelResult.error) {
-    throw new Error(tunnelResult.error);
+    throw new Error(`Tunnel provisioning failed: ${tunnelResult.error}`);
   }
+
+  console.log(
+    `[Tunnel] Tunnel mode: ${tunnelResult.mode}, hostname: ${tunnelResult.hostname}`,
+  );
 
   let hostname = tunnelResult.hostname;
   let tunnelUpstreamUrl = null;
   if (tunnelResult.mode === "quick") {
     const localPort = process.env.PORT || "20128";
+    console.log(`[Tunnel] Starting quick tunnel to localhost:${localPort}...`);
     const quick = await spawnQuickCloudflared(`http://localhost:${localPort}`);
     tunnelUpstreamUrl = quick.url;
+    console.log(`[Tunnel] Quick tunnel URL: ${quick.url}`);
   } else {
     const { token } = tunnelResult;
+    console.log(`[Tunnel] Starting token-based tunnel...`);
     await spawnCloudflared(token);
   }
 
@@ -140,6 +182,7 @@ export async function enableTunnel() {
   try {
     const { getCloudUrl } = await import("@/lib/localDb");
     const cloudUrl = await getCloudUrl();
+    console.log(`[Tunnel] Registering with cloud worker at ${cloudUrl}...`);
     const regRes = await fetch(`${cloudUrl}/api/tunnel/register`, {
       method: "POST",
       headers: {
@@ -154,6 +197,8 @@ export async function enableTunnel() {
         `[Tunnel] Cloud registration returned ${regRes.status}:`,
         errBody,
       );
+    } else {
+      console.log(`[Tunnel] Cloud registration successful`);
     }
   } catch (err) {
     // Non-fatal — tunnel still works for direct access

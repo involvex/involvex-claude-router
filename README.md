@@ -839,26 +839,26 @@ docker stop 9router && docker rm 9router
 
 ### Environment Variables
 
-| Variable                                             | Default                            | Description                                                                         |
-| ---------------------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------- |
-| `JWT_SECRET`                                         | `9router-default-secret-change-me` | JWT signing secret for dashboard auth cookie (**change in production**)             |
-| `INITIAL_PASSWORD`                                   | `123456`                           | First login password when no saved hash exists                                      |
-| `DATA_DIR`                                           | `~/.9router`                       | Main app database location (`db.json`)                                              |
-| `PORT`                                               | framework default                  | Service port (`20128` in examples)                                                  |
-| `HOSTNAME`                                           | framework default                  | Bind host (Docker defaults to `0.0.0.0`)                                            |
-| `NODE_ENV`                                           | runtime default                    | Set `production` for deploy                                                         |
-| `BASE_URL`                                           | `http://localhost:20128`           | Server-side internal base URL used by cloud sync jobs                               |
-| `CLOUD_URL`                                          | `https://9router.com`              | Server-side cloud sync endpoint base URL                                            |
-| `NEXT_PUBLIC_BASE_URL`                               | `http://localhost:3000`            | Backward-compatible/public base URL (prefer `BASE_URL` for server runtime)          |
-| `NEXT_PUBLIC_CLOUD_URL`                              | `https://9router.com`              | Backward-compatible/public cloud URL (prefer `CLOUD_URL` for server runtime)        |
-| `API_KEY_SECRET`                                     | `endpoint-proxy-api-key-secret`    | HMAC secret for generated API keys                                                  |
-| `MACHINE_ID_SALT`                                    | `endpoint-proxy-salt`              | Salt for stable machine ID hashing                                                  |
-| `ENABLE_REQUEST_LOGS`                                | `false`                            | Enables request/response logs under `logs/`                                         |
-| `AUTH_COOKIE_SECURE`                                 | `false`                            | Force `Secure` auth cookie (set `true` behind HTTPS reverse proxy)                  |
-| `REQUIRE_API_KEY`                                    | `false`                            | Enforce Bearer API key on `/v1/*` routes (recommended for internet-exposed deploys) |
-| `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, `NO_PROXY` | empty                              | Optional outbound proxy for upstream provider calls                                 |
-| `TUNNEL_WORKER_URL`                                  | `https://tunnel.9router.com`       | Tunnel worker endpoint for remote access                                            |
-| `TUNNEL_DOMAIN`                                      | -                                  | Custom tunnel domain (e.g., `tunnel.example.com`)                                   |
+| Variable                                             | Default                                               | Description                                                                         |
+| ---------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `JWT_SECRET`                                         | `9router-default-secret-change-me`                    | JWT signing secret for dashboard auth cookie (**change in production**)             |
+| `INITIAL_PASSWORD`                                   | `123456`                                              | First login password when no saved hash exists                                      |
+| `DATA_DIR`                                           | `~/.9router`                                          | Main app database location (`db.json`)                                              |
+| `PORT`                                               | framework default                                     | Service port (`20128` in examples)                                                  |
+| `HOSTNAME`                                           | framework default                                     | Bind host (Docker defaults to `0.0.0.0`)                                            |
+| `NODE_ENV`                                           | runtime default                                       | Set `production` for deploy                                                         |
+| `BASE_URL`                                           | `http://localhost:20128`                              | Server-side internal base URL used by cloud sync jobs                               |
+| `CLOUD_URL`                                          | `https://9router.com`                                 | Server-side cloud sync endpoint base URL                                            |
+| `NEXT_PUBLIC_BASE_URL`                               | `http://localhost:3000`                               | Backward-compatible/public base URL (prefer `BASE_URL` for server runtime)          |
+| `NEXT_PUBLIC_CLOUD_URL`                              | `https://9router.com`                                 | Backward-compatible/public cloud URL (prefer `CLOUD_URL` for server runtime)        |
+| `API_KEY_SECRET`                                     | `endpoint-proxy-api-key-secret`                       | HMAC secret for generated API keys                                                  |
+| `MACHINE_ID_SALT`                                    | `endpoint-proxy-salt`                                 | Salt for stable machine ID hashing                                                  |
+| `ENABLE_REQUEST_LOGS`                                | `false`                                               | Enables request/response logs under `logs/`                                         |
+| `AUTH_COOKIE_SECURE`                                 | `false`                                               | Force `Secure` auth cookie (set `true` behind HTTPS reverse proxy)                  |
+| `REQUIRE_API_KEY`                                    | `false`                                               | Enforce Bearer API key on `/v1/*` routes (recommended for internet-exposed deploys) |
+| `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, `NO_PROXY` | empty                                                 | Optional outbound proxy for upstream provider calls                                 |
+| `TUNNEL_WORKER_URL`                                  | `https://involvex-claude-router.involvex.workers.dev` | Tunnel worker endpoint for remote access                                            |
+| `TUNNEL_DOMAIN`                                      | -                                                     | Custom tunnel domain (e.g., `tunnel.example.com`)                                   |
 
 Notes:
 
@@ -1033,6 +1033,41 @@ Notes:
 **No request logs under `logs/`**
 
 - Set `ENABLE_REQUEST_LOGS=true`
+
+### 🌐 Tunnel (Remote Access) Troubleshooting
+
+**Tunnel connection fails at startup**
+
+1. **Check your Cloudflare Worker has tunnel handlers**:
+   - Verify your worker responds to `POST /api/session/create`
+   - Test: `curl -X POST https://your-worker.workers.dev/api/session/create -H "Content-Type: application/json" -d '{"apiKey":"test","shortId":"test"}'`
+   - If you get `{"error":"Not Found","path":"/api/session/create"}`, you need to add tunnel handlers to your worker
+
+2. **Configure the correct tunnel worker URL**:
+
+   ```bash
+   # In your .env file, set:
+   TUNNEL_WORKER_URL=https://involvex-claude-router.involvex.workers.dev
+   ```
+
+3. **Add tunnel handlers to your Cloudflare Worker**:
+   Copy these handlers from `cloud/src/handlers/tunnel.js` to your worker's `index.js`:
+   - `handleTunnelSession` → route: `POST /api/session/create`
+   - `handleTunnelProvision` → routes: `POST /api/tunnel/create`, `DELETE /api/tunnel/delete`
+   - `handleTunnelRegister` → route: `POST /api/tunnel/register`
+   - `handleTunnelProxy` → route: `/tunnel/{shortId}/*`
+
+**Tunnel URL changes or becomes invalid**
+
+- The quick tunnel mode uses `*.try.cloudflare.com` which can change
+- For more stable URLs, set a custom domain in your Cloudflare dashboard
+- The tunnel auto-reconnects on unexpected exit (configured with backoff delays)
+
+**Cloudflare tunnel not installed**
+
+- The router auto-downloads cloudflared to `~/.9router/bin/`
+- On first tunnel start, this may take a moment
+- If download fails, manually install from: https://github.com/cloudflare/cloudflared/releases
 
 ---
 

@@ -157,19 +157,34 @@ export async function spawnCloudflared(tunnelToken) {
     let connectionCount = 0;
     let resolved = false;
     const timeout = setTimeout(() => {
-      resolved = true;
-      resolve(child);
+      if (!resolved) {
+        resolved = true;
+        // Don't reject immediately on timeout - wait for any connection
+        if (connectionCount > 0) {
+          resolve(child);
+        } else {
+          reject(new Error("Timed out waiting for tunnel connection (90s)"));
+        }
+      }
     }, 90000);
 
     const handleLog = data => {
       const msg = data.toString();
+      console.log("[cloudflared]", msg.trim());
       if (msg.includes("Registered tunnel connection")) {
         connectionCount++;
-        if (connectionCount >= 4 && !resolved) {
+        if (connectionCount >= 1 && !resolved) {
           resolved = true;
           clearTimeout(timeout);
           resolve(child);
         }
+      }
+      if (
+        msg.includes("error") ||
+        msg.includes("failed") ||
+        msg.includes("Failed")
+      ) {
+        console.error("[cloudflared error]", msg.trim());
       }
     };
 
@@ -177,6 +192,7 @@ export async function spawnCloudflared(tunnelToken) {
     child.stderr.on("data", handleLog);
 
     child.on("error", err => {
+      console.error("[cloudflared process error]", err.message);
       if (!resolved) {
         resolved = true;
         clearTimeout(timeout);
@@ -187,6 +203,7 @@ export async function spawnCloudflared(tunnelToken) {
     child.on("exit", code => {
       cloudflaredProcess = null;
       clearPid();
+      console.log(`[cloudflared] Process exited with code ${code}`);
       if (!resolved) {
         resolved = true;
         clearTimeout(timeout);
@@ -203,7 +220,34 @@ export async function spawnCloudflared(tunnelToken) {
   });
 }
 
-export async function spawnQuickCloudflared(localUrl) {
+export async function spawnQuickCloudflared(localUrl, retries = 3) {
+  const RETRY_DELAYS = [5000, 15000, 30000];
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      if (attempt > 0) {
+        console.log(
+          `[cloudflared] Quick tunnel attempt ${attempt + 1}/${retries + 1}, waiting ${RETRY_DELAYS[attempt - 1] / 1000}s...`,
+        );
+        await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt - 1]));
+      }
+
+      return await doSpawnQuickCloudflared(localUrl);
+    } catch (err) {
+      console.error(
+        `[cloudflared] Quick tunnel attempt ${attempt + 1} failed:`,
+        err.message,
+      );
+      if (attempt >= retries) {
+        throw new Error(
+          `Quick tunnel failed after ${retries + 1} attempts: ${err.message}`,
+        );
+      }
+    }
+  }
+}
+
+async function doSpawnQuickCloudflared(localUrl) {
   const binaryPath = await ensureCloudflared();
 
   const child = spawn(binaryPath, ["tunnel", "--url", localUrl], {
@@ -219,24 +263,34 @@ export async function spawnQuickCloudflared(localUrl) {
     const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true;
-        reject(new Error("Timed out waiting for quick tunnel URL"));
+        reject(new Error("Timed out waiting for quick tunnel URL (120s)"));
       }
-    }, 90000);
+    }, 120000);
 
-    const maybeResolveFromLog = data => {
+    const handleLog = data => {
       const msg = data.toString();
+      console.log("[cloudflared quick]", msg.trim());
       const match = msg.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/i);
       if (match && !resolved) {
         resolved = true;
         clearTimeout(timeout);
+        console.log(`[cloudflared] Quick tunnel ready: ${match[0]}`);
         resolve({ child, url: match[0] });
+      }
+      if (
+        msg.includes("error") ||
+        msg.includes("failed") ||
+        msg.includes("Failed")
+      ) {
+        console.error("[cloudflared quick error]", msg.trim());
       }
     };
 
-    child.stdout.on("data", maybeResolveFromLog);
-    child.stderr.on("data", maybeResolveFromLog);
+    child.stdout.on("data", handleLog);
+    child.stderr.on("data", handleLog);
 
     child.on("error", err => {
+      console.error("[cloudflared quick process error]", err.message);
       if (!resolved) {
         resolved = true;
         clearTimeout(timeout);
@@ -247,6 +301,7 @@ export async function spawnQuickCloudflared(localUrl) {
     child.on("exit", code => {
       cloudflaredProcess = null;
       clearPid();
+      console.log(`[cloudflared quick] Process exited with code ${code}`);
       if (!resolved) {
         resolved = true;
         clearTimeout(timeout);
