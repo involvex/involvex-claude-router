@@ -1,11 +1,9 @@
 <div align="center">
   <img src="./images/9router.png?1" alt="involvex-claude-router Dashboard" width="800"/>
   
-  # involvex-claude-router - Free AI Router
+  # involvex-claude-router - AI Router
   
   **Never stop coding. Auto-route to FREE & cheap AI models with smart fallback.**
-  
-  **Free AI Provider for OpenClaw.**
   
   <p align="center">
     <img src="./public/providers/openclaw.png" alt="OpenClaw" width="80"/>
@@ -129,6 +127,7 @@ Default URLs:
 | 💾 **Cloud Sync**               | Sync config across devices                 | Same setup everywhere            |
 | 📊 **Usage Analytics**          | Track tokens, cost, trends over time       | Optimize spending                |
 | 🌐 **Deploy Anywhere**          | Localhost, VPS, Docker, Cloudflare Workers | Flexible deployment options      |
+| 🔗 **Remote Tunnel Access**     | Access dashboard from anywhere via tunnel  | Use from any location            |
 
 <details>
 <summary><b>📖 Feature Details</b></summary>
@@ -227,24 +226,62 @@ Seamless translation between formats:
 - 🐳 **Docker** - One-command deployment
 - 🚀 **Cloudflare Workers** - Global edge network
 
+### 🔗 Remote Tunnel Access
+
+Access your dashboard from anywhere without opening ports on your local network:
+
+```
+Dashboard → Endpoint → Enable Tunnel
+```
+
+**How it works:**
+
+- Uses Cloudflare tunnel to create a secure tunnel to your local instance
+- Generates a unique URL (e.g., `https://xyz.9router.com`)
+- Works even behind NAT/firewall - no port forwarding needed
+- Auto-reconnects on network changes or machine wake
+
+**Environment Variables:**
+
+| Variable            | Default                      | Description                   |
+| ------------------- | ---------------------------- | ----------------------------- |
+| `TUNNEL_WORKER_URL` | `https://tunnel.9router.com` | Custom tunnel worker endpoint |
+| `TUNNEL_DOMAIN`     | -                            | Custom tunnel domain          |
+
+**Tunnel API Endpoints:**
+
+| Endpoint              | Method | Description       |
+| --------------------- | ------ | ----------------- |
+| `/api/tunnel/status`  | GET    | Get tunnel status |
+| `/api/tunnel/enable`  | POST   | Enable tunnel     |
+| `/api/tunnel/disable` | POST   | Disable tunnel    |
+
 </details>
 
 ---
 
 ## 💰 Pricing at a Glance
 
-| Tier                | Provider          | Cost       | Quota Reset      | Best For           |
-| ------------------- | ----------------- | ---------- | ---------------- | ------------------ |
-| **💳 SUBSCRIPTION** | Claude Code (Pro) | $20/mo     | 5h + weekly      | Already subscribed |
-|                     | Codex (Plus/Pro)  | $20-200/mo | 5h + weekly      | OpenAI users       |
-|                     | Gemini CLI        | **FREE**   | 180K/mo + 1K/day | Everyone!          |
-|                     | GitHub Copilot    | $10-19/mo  | Monthly          | GitHub users       |
-| **💰 CHEAP**        | GLM-4.7           | $0.6/1M    | Daily 10AM       | Budget backup      |
-|                     | MiniMax M2.1      | $0.2/1M    | 5-hour rolling   | Cheapest option    |
-|                     | Kimi K2           | $9/mo flat | 10M tokens/mo    | Predictable cost   |
-| **🆓 FREE**         | iFlow             | $0         | Unlimited        | 8 models free      |
-|                     | Qwen              | $0         | Unlimited        | 3 models free      |
-|                     | Kiro              | $0         | Unlimited        | Claude free        |
+| Tier                | Provider           | Cost       | Quota Reset      | Best For            |
+| ------------------- | ------------------ | ---------- | ---------------- | ------------------- |
+| **💳 SUBSCRIPTION** | Claude Code (Pro)  | $20/mo     | 5h + weekly      | Already subscribed  |
+|                     | Codex (Plus/Pro)   | $20-200/mo | 5h + weekly      | OpenAI users        |
+|                     | Gemini CLI         | **FREE**   | 180K/mo + 1K/day | Everyone!           |
+|                     | GitHub Copilot     | $10-19/mo  | Monthly          | GitHub users        |
+|                     | OpenAI (Direct)    | Varies     | Per model        | Full OpenAI access  |
+|                     | Anthropic (Direct) | Varies     | Per model        | Claude direct       |
+| **💰 CHEAP**        | GLM-4.7            | $0.6/1M    | Daily 10AM       | Budget backup       |
+|                     | MiniMax M2.1       | $0.2/1M    | 5-hour rolling   | Cheapest option     |
+|                     | Kimi K2            | $9/mo flat | 10M tokens/mo    | Predictable cost    |
+|                     | DeepSeek           | $0.2/1M    | Daily            | DeepSeek models     |
+|                     | Groq               | $0.2/1M    | Varies           | Fast inference      |
+|                     | Cerebras           | $0.4/1M    | Varies           | Fast inference      |
+| **🆓 FREE**         | iFlow              | $0         | Unlimited        | 8 models free       |
+|                     | Qwen               | $0         | Unlimited        | 3 models free       |
+|                     | Kiro               | $0         | Unlimited        | Claude free         |
+|                     | SiliconFlow        | $0         | Limited          | Free tier available |
+| **🌐 AGGREGATORS**  | OpenRouter         | Varies     | Per model        | 100+ models         |
+|                     | Nebius             | $0.2/1M    | Varies           | EU-based inference  |
 
 **💡 Pro Tip:** Start with Gemini CLI (180K free/month) + iFlow (unlimited free) combo = $0 cost!
 
@@ -820,6 +857,8 @@ docker stop 9router && docker rm 9router
 | `AUTH_COOKIE_SECURE`                                 | `false`                            | Force `Secure` auth cookie (set `true` behind HTTPS reverse proxy)                  |
 | `REQUIRE_API_KEY`                                    | `false`                            | Enforce Bearer API key on `/v1/*` routes (recommended for internet-exposed deploys) |
 | `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, `NO_PROXY` | empty                              | Optional outbound proxy for upstream provider calls                                 |
+| `TUNNEL_WORKER_URL`                                  | `https://tunnel.9router.com`       | Tunnel worker endpoint for remote access                                            |
+| `TUNNEL_DOMAIN`                                      | -                                  | Custom tunnel domain (e.g., `tunnel.example.com`)                                   |
 
 Notes:
 
@@ -888,6 +927,54 @@ Notes:
 
 - `kr/claude-sonnet-4.5`
 - `kr/claude-haiku-4.5`
+
+**DeepSeek (`ds/`)** - $0.2/1M:
+
+- `ds/deepseek-chat`
+- `ds/deepseek-coder`
+
+**Groq (`gr/`)** - $0.2/1M:
+
+- `gr/llama-3.3-70b`
+- `gr/mixtral-8x7b`
+
+**Cerebras (`ce/`)** - $0.4/1M:
+
+- `ce/llama-3.3-70b`
+
+**SiliconFlow (`sf/`)** - Free tier:
+
+- `sf/Qwen2.5-Coder-32B`
+- `sf/DeepSeek-V2-Chat`
+
+**OpenRouter (`or/`)** - Varies:
+
+- Access to 100+ models via OpenRouter
+
+**Nebius (`nb/`)** - $0.2/1M:
+
+- `nb/llama-3.3-70b`
+
+**xAI (`xai/`)**:
+
+- `xai/grok-2`
+
+**NVIDIA (`nv/`)**:
+
+- `nv/nemotron-70b`
+
+**Cohere (`co/`)**:
+
+- `co/command-r-plus`
+
+**Perplexity (`pp/`)**:
+
+- `pp/llama-3.1-sonar-small`
+- `pp/llama-3.1-sonar-large`
+
+**Mistral (`mt/`)**:
+
+- `mt/mistral-large`
 
 </details>
 
