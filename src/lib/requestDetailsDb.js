@@ -100,24 +100,24 @@ function expandTilde(dir) {
 function getUserDataDir() {
   if (isCloud) return "/tmp";
 
-  if (process.env.DATA_DIR) return expandTilde(process.env.DATA_DIR);
-
-  // During Next.js build phase, we don't want to access the real data dir
+  // During Next.js build phase, return null to skip DB initialization
   if (process.env.NEXT_PHASE === "phase-production-build") {
     return null;
   }
 
+  if (process.env.DATA_DIR) return expandTilde(process.env.DATA_DIR);
+
   try {
     const platform = process.platform;
+    /* turbopackIgnore: true */
     const homeDir = os.homedir();
     const appName = getAppName();
 
     if (platform === "win32") {
-      return path.join(
+      const appDataRoot =
         process.env.APPDATA ||
-          path.join(/* turbopackIgnore: true */ homeDir, "AppData", "Roaming"),
-        appName,
-      );
+        /* turbopackIgnore: true */ path.join(homeDir, "AppData", "Roaming");
+      return path.join(appDataRoot, appName);
     } else {
       return path.join(/* turbopackIgnore: true */ homeDir, `.${appName}`);
     }
@@ -126,10 +126,8 @@ function getUserDataDir() {
       "[requestDetailsDb] Failed to get user data directory:",
       error.message,
     );
-    return path.join(
-      /* turbopackIgnore: true */ os.homedir(),
-      ".involvex-claude-router",
-    );
+    // Static fallback path
+    return ".involvex-claude-router";
   }
 }
 

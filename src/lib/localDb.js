@@ -11,9 +11,16 @@ const isCloud = typeof caches !== "undefined" || typeof caches === "object";
 // Get app name from root package.json config
 function getAppName() {
   if (isCloud) return "involvex-claude-router";
+
+  // Skip during build phase
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return "involvex-claude-router";
+  }
+
   try {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const rootPkgPath = path.resolve(__dirname, "../../../package.json");
+    /* turbopackIgnore: true */
     const pkg = JSON.parse(fs.readFileSync(rootPkgPath, "utf-8"));
     return pkg.config?.appName || "involvex-claude-router";
   } catch {
@@ -34,36 +41,57 @@ function expandTilde(dir) {
 function getUserDataDir() {
   if (isCloud) return "/tmp"; // Fallback for Workers
 
-  if (process.env.DATA_DIR) return expandTilde(process.env.DATA_DIR);
-
-  // During Next.js build phase, we don't want to access the real data dir
-  // which might trigger EPERM on restricted Windows folders if Webpack scans them.
+  // During Next.js build phase, return null to skip file operations
   if (process.env.NEXT_PHASE === "phase-production-build") {
     return null;
   }
 
+  if (process.env.DATA_DIR) return expandTilde(process.env.DATA_DIR);
+
   const platform = process.platform;
+  /* turbopackIgnore: true */
   const homeDir = os.homedir();
   const appName = getAppName();
 
   if (platform === "win32") {
-    return path.join(
-      process.env.APPDATA || path.join(homeDir, "AppData", "Roaming"),
-      appName,
-    );
+    const appDataRoot =
+      process.env.APPDATA ||
+      /* turbopackIgnore: true */ path.join(homeDir, "AppData", "Roaming");
+    return path.join(appDataRoot, appName);
   } else {
     // macOS & Linux: ~/.{appName}
-    return path.join(homeDir, `.${appName}`);
+    return path.join(/* turbopackIgnore: true */ homeDir, `.${appName}`);
   }
 }
 
 // Data file path - stored in user home directory
-const DATA_DIR = getUserDataDir();
-const DB_FILE = isCloud || !DATA_DIR ? null : path.join(DATA_DIR, "db.json");
+// Lazy evaluation to avoid Turbopack NFT warnings during build
+function getDataDir() {
+  return getUserDataDir();
+}
+
+let _dbFile = null;
+function getDbFile() {
+  if (_dbFile === null) {
+    const dataDir = getDataDir();
+    _dbFile = isCloud || !dataDir ? null : path.join(dataDir, "db.json");
+  }
+  return _dbFile;
+}
+
+const DB_FILE = null; // Lazy - use getDbFile() instead
 
 // Ensure data directory exists
-if (!isCloud && DATA_DIR && !fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// Skip during build phase
+if (
+  !isCloud &&
+  typeof window === "undefined" &&
+  process.env.NEXT_PHASE !== "phase-production-build"
+) {
+  const dir = getDataDir();
+  if (dir && !fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
 }
 
 // Default data structure
@@ -184,7 +212,7 @@ export async function getDb() {
   }
 
   if (!dbInstance) {
-    const adapter = new JSONFile(DB_FILE);
+    const adapter = new JSONFile(getDbFile());
     dbInstance = new Low(adapter, cloneDefaultData());
   }
 

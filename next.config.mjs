@@ -16,7 +16,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  serverExternalPackages: ["better-sqlite3"],
+  serverExternalPackages: ["better-sqlite3", "lowdb"],
   env: {
     NEXT_PUBLIC_CLOUD_URL:
       "https://involvex-claude-router-cloud.involvex.workers.dev",
@@ -24,7 +24,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  turbopack: {},
+  turbopack: {
+    // Suppress NFT warnings for known filesystem operations
+    resolveExtensions: [".tsx", ".ts", ".jsx", ".js", ".mjs"],
+  },
 
   webpack: (config, { isServer, dev }) => {
     // Standard standard-compliant fallback for browser

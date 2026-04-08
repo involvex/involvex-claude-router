@@ -1,5 +1,4 @@
 import { AI_PROVIDERS, getProviderByAlias } from "@/shared/constants/providers";
-import { getRequestDetailsDb } from "@/lib/requestDetailsDb";
 import { getProviderNodes } from "@/lib/localDb";
 import { NextResponse } from "next/server";
 
@@ -9,6 +8,8 @@ import { NextResponse } from "next/server";
  */
 export async function GET() {
   try {
+    // Dynamic import to avoid Turbopack NFT warnings during build
+    const { getRequestDetailsDb } = await import("@/lib/requestDetailsDb");
     const db = await getRequestDetailsDb();
 
     const stmt = db.prepare(`
