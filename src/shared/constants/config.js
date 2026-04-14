@@ -41,6 +41,7 @@ export const PROVIDER_ENDPOINTS = {
   anthropic: "https://api.anthropic.com/v1/messages",
   gemini: "https://generativelanguage.googleapis.com/v1beta/models",
   opencode: "https://opencode.ai/zen/v1/chat/completions",
+  "opencode-go": "https://opencode.ai/zen/go/v1/chat/completions",
   "kilo-ai": "https://api.kilo.ai/api/gateway/chat/completions",
   kilogateway: "https://api.kilo.ai/api/gateway/chat/completions",
   cline: "https://api.cline.bot/api/v1/chat/completions",

@@ -69,8 +69,8 @@ export async function POST(request) {
         // Return format: { timestamp, body }
         const actualBody = body.body || body;
         const sourceFormat = FORMATS.OPENAI;
-        const targetFormat = getTargetFormat(provider);
         const model = actualBody.model || "test-model";
+        const targetFormat = getTargetFormat(provider, model);
         const translated = translateRequest(
           sourceFormat,
           targetFormat,

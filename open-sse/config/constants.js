@@ -302,6 +302,13 @@ export const PROVIDERS = {
     baseUrl: "https://opencode.ai/zen/v1/chat/completions",
     format: "openai",
   },
+  "opencode-go": {
+    baseUrl: "https://opencode.ai/zen/go/v1/chat/completions",
+    format: "openai",
+    altFormat: "claude",
+    altFormatModels: ["minimax-m2.7", "minimax-m2.5"],
+    altFormatEndpoint: "https://opencode.ai/zen/go/v1/messages",
+  },
   "kilo-ai": {
     baseUrl: "https://api.kilo.ai/api/gateway/chat/completions",
     format: "openai",

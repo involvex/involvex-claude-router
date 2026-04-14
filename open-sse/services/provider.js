@@ -203,6 +203,15 @@ export function buildProviderUrl(provider, model, stream = true, options = {}) {
       // Claude-compatible providers
       return `${config.baseUrl}?beta=true`;
 
+    case "opencode-go": {
+      // Check if model uses alternate format (Claude)
+      const altModels = config.altFormatModels || [];
+      if (altModels.includes(model)) {
+        return config.altFormatEndpoint || config.baseUrl;
+      }
+      return config.baseUrl;
+    }
+
     default:
       return config.baseUrl;
   }
@@ -294,6 +303,7 @@ export function buildProviderHeaders(
       case "openai":
       case "openrouter":
       case "opencode":
+      case "opencode-go":
         headers["Authorization"] =
           `Bearer ${credentials.apiKey || credentials.accessToken}`;
         break;
@@ -321,7 +331,7 @@ export function buildProviderHeaders(
 }
 
 // Get target format for provider
-export function getTargetFormat(provider) {
+export function getTargetFormat(provider, model) {
   if (isOpenAICompatible(provider)) {
     return getOpenAICompatibleType(provider) === "responses"
       ? "openai-responses"
@@ -331,6 +341,12 @@ export function getTargetFormat(provider) {
     return "claude";
   }
   const config = getProviderConfig(provider);
+
+  // Handle providers with alternate formats for specific models (e.g., opencode-go)
+  if (config.altFormat && config.altFormatModels?.includes(model)) {
+    return config.altFormat;
+  }
+
   return config.format || "openai";
 }
 

@@ -422,6 +422,24 @@ async function testApiKeyConnection(connection) {
         });
         return { valid: res.ok, error: res.ok ? null : "Invalid API key" };
       }
+      case "opencode-go": {
+        const res = await fetch(
+          "https://opencode.ai/zen/go/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${connection.apiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "glm-5",
+              messages: [{ role: "user", content: "hi" }],
+              max_tokens: 1,
+            }),
+          },
+        );
+        return { valid: res.ok, error: res.ok ? null : "Invalid API key" };
+      }
       default:
         return { valid: false, error: "Provider test not supported" };
     }

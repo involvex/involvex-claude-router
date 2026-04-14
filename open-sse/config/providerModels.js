@@ -322,6 +322,15 @@ export const PROVIDER_MODELS = {
     { id: "deepseek-r1", name: "DeepSeek R1" },
     { id: "big-pickle", name: "Big Pickle" },
   ],
+  "opencode-go": [
+    { id: "glm-5.1", name: "GLM-5.1" },
+    { id: "glm-5", name: "GLM-5" },
+    { id: "kimi-k2.5", name: "Kimi K2.5" },
+    { id: "mimo-v2-pro", name: "MiMo-V2-Pro" },
+    { id: "mimo-v2-omni", name: "MiMo-V2-Omni" },
+    { id: "minimax-m2.7", name: "MiniMax M2.7" },
+    { id: "minimax-m2.5", name: "MiniMax M2.5" },
+  ],
   "kilo-ai": [
     { id: "anthropic/claude-opus-4-5", name: "Claude Opus 4.5" },
     { id: "anthropic/claude-sonnet-4-5", name: "Claude Sonnet 4.5" },
@@ -538,6 +547,7 @@ export const PROVIDER_ID_TO_ALIAS = {
   siliconflow: "siliconflow",
   hyperbolic: "hyperbolic",
   opencode: "opencode",
+  "opencode-go": "opencode-go",
   "kilo-ai": "kilo-ai",
   kilogateway: "kilogateway",
   cloudflare: "cloudflare",

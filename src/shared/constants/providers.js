@@ -300,6 +300,15 @@ export const APIKEY_PROVIDERS = {
     textIcon: "OC",
     website: "https://api.opencode.ai",
   },
+  "opencode-go": {
+    id: "opencode-go",
+    alias: "opencode-go",
+    name: "OpenCode Go",
+    icon: "code",
+    color: "#00D26A",
+    textIcon: "OG",
+    website: "https://opencode.ai/docs/go",
+  },
   "kilo-ai": {
     id: "kilo-ai",
     alias: "kilo-ai",

@@ -21,7 +21,9 @@ function getAppName() {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const rootPkgPath = path.resolve(__dirname, "../../../package.json");
     /* turbopackIgnore: true */
-    const pkg = JSON.parse(fs.readFileSync(rootPkgPath, "utf-8"));
+    const pkg = JSON.parse(
+      fs.readFileSync(/* turbopackIgnore: true */ rootPkgPath, "utf-8"),
+    );
     return pkg.config?.appName || "involvex-claude-router";
   } catch {
     return "involvex-claude-router";

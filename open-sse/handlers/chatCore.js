@@ -447,7 +447,7 @@ export async function handleChatCore({
 
   const alias = PROVIDER_ID_TO_ALIAS[provider] || provider;
   const modelTargetFormat = getModelTargetFormat(alias, model);
-  const targetFormat = modelTargetFormat || getTargetFormat(provider);
+  const targetFormat = modelTargetFormat || getTargetFormat(provider, model);
 
   // Track if client actually wants streaming (before we force it for providers)
   const clientRequestedStreaming =
