@@ -158,22 +158,43 @@ export const PROVIDER_MODELS = {
 
   // API Key Providers (alias = id)
   openai: [
+    { id: "gpt-5", name: "GPT-5" },
     { id: "gpt-4o", name: "GPT-4o" },
+    { id: "gpt-4.1", name: "GPT-4.1" },
     { id: "gpt-4o-mini", name: "GPT-4o Mini" },
-    { id: "gpt-4-turbo", name: "GPT-4 Turbo" },
+    { id: "gpt-4.1-mini", name: "GPT-4.1 Mini" },
+    { id: "gpt-4.1-nano", name: "GPT-4.1 Nano" },
+    { id: "gpt-5-mini", name: "GPT-5 Mini" },
+    { id: "gpt-5-nano", name: "GPT-5 Nano" },
+    { id: "gpt-5-pro", name: "GPT-5 Pro" },
+    { id: "o3", name: "O3" },
     { id: "o1", name: "O1" },
+    { id: "o1-pro", name: "O1 Pro" },
+    { id: "o3-pro", name: "O3 Pro" },
+    { id: "o3-mini", name: "O3 Mini" },
+    { id: "o4-mini", name: "O4 Mini" },
     { id: "o1-mini", name: "O1 Mini" },
+    { id: "gpt-4-turbo", name: "GPT-4 Turbo" },
+    { id: "gpt-4", name: "GPT-4" },
+    { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo" },
   ],
   anthropic: [
     { id: "claude-sonnet-4-20250514", name: "Claude Sonnet 4" },
     { id: "claude-opus-4-20250514", name: "Claude Opus 4" },
+    { id: "claude-3-7-sonnet-20250219", name: "Claude 3.7 Sonnet" },
     { id: "claude-3-5-sonnet-20241022", name: "Claude 3.5 Sonnet" },
   ],
   gemini: [
-    { id: "gemini-3-pro-preview", name: "Gemini 3 Pro Preview" },
     { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro" },
     { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash" },
+    { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash" },
     { id: "gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite" },
+    { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro" },
+    { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash" },
+    { id: "gemini-3-pro-preview", name: "Gemini 3 Pro Preview" },
+    { id: "gemma-3-27b-it", name: "Gemma 3 27B" },
+    { id: "gemma-3-12b-it", name: "Gemma 3 12B" },
+    { id: "gemma-3-4b-it", name: "Gemma 3 4B" },
     // Embedding models
     {
       id: "gemini-embedding-001",
@@ -219,8 +240,10 @@ export const PROVIDER_MODELS = {
     { id: "MiniMax-M2.1", name: "MiniMax M2.1" },
   ],
   deepseek: [
-    { id: "deepseek-chat", name: "DeepSeek V3.2 Chat" },
-    { id: "deepseek-reasoner", name: "DeepSeek V3.2 Reasoner" },
+    { id: "deepseek-chat", name: "DeepSeek V3" },
+    { id: "deepseek-reasoner", name: "DeepSeek R1" },
+    { id: "deepseek-v4-pro", name: "DeepSeek V4 Pro" },
+    { id: "deepseek-v4-flash", name: "DeepSeek V4 Flash" },
   ],
   groq: [
     { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B" },
@@ -236,15 +259,19 @@ export const PROVIDER_MODELS = {
     { id: "grok-4-fast-reasoning", name: "Grok 4 Fast Reasoning" },
     { id: "grok-code-fast-1", name: "Grok Code Fast" },
     { id: "grok-3", name: "Grok 3" },
+    { id: "grok-3-mini", name: "Grok 3 Mini" },
   ],
   mistral: [
     { id: "mistral-large-latest", name: "Mistral Large 3" },
-    { id: "codestral-latest", name: "Codestral" },
     { id: "mistral-medium-latest", name: "Mistral Medium 3" },
+    { id: "codestral-latest", name: "Codestral" },
+    { id: "devstral-latest", name: "Devstral" },
   ],
   perplexity: [
     { id: "sonar-pro", name: "Sonar Pro" },
     { id: "sonar", name: "Sonar" },
+    { id: "sonar-deep-research", name: "Sonar Deep Research" },
+    { id: "sonar-reasoning-pro", name: "Sonar Reasoning Pro" },
   ],
   together: [
     {
@@ -278,6 +305,9 @@ export const PROVIDER_MODELS = {
     { id: "command-r-plus-08-2024", name: "Command R+ (Aug 2024)" },
     { id: "command-r-08-2024", name: "Command R (Aug 2024)" },
     { id: "command-a-03-2025", name: "Command A (Mar 2025)" },
+    { id: "command-a-reasoning-08-2025", name: "Command A Reasoning" },
+    { id: "command-a-vision-07-2025", name: "Command A Vision" },
+    { id: "command-a-translate-08-2025", name: "Command A Translate" },
   ],
   nvidia: [
     { id: "moonshotai/kimi-k2.5", name: "Kimi K2.5" },

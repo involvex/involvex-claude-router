@@ -1,3 +1,15 @@
+## Unreleased
+
+### Features
+
+- **deps:** update minor/patch dependencies (next 16.3, react 19.2, undici 8.10, etc.)
+- **models:** sync latest model lists from models.dev via sync-models.mjs script (695 models across 15 providers)
+- **models:** add GPT-5/5.1/5.2/5.3, GPT-4.1 series, o3/o3-pro/o3-mini/o4-mini/o1-pro to OpenAI provider
+- **models:** add Claude 3.7 Sonnet to Anthropic provider
+- **models:** add Gemini 2.0 Flash, Gemini 1.5 Pro/Flash, Gemma 3 family to Gemini provider
+- **models:** add DeepSeek V4 Pro/Flash, Mistral Devstral, Cohere Command A Reasoning/Vision, Perplexity Deep Research, Grok 3 Mini
+- **cli-tools:** add OpenClaude CLI tool integration (dashboard card, settings API route, ~/.claude/settings.json env config)
+
 ## [0.2.97](https://github.com/involvex/involvex-claude-router/compare/v0.2.96...v0.2.97) (2026-02-28)
 
 ### Bug Fixes

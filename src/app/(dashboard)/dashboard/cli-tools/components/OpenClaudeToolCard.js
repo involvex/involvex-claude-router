@@ -1,0 +1,548 @@
+"use client";
+
+import {
+  Card,
+  Button,
+  ModelSelectModal,
+  ManualConfigModal,
+} from "@/shared/components";
+import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+
+const CLOUD_URL = process.env.NEXT_PUBLIC_CLOUD_URL;
+
+export default function OpenClaudeToolCard({
+  tool,
+  isExpanded,
+  onToggle,
+  activeProviders,
+  modelMappings,
+  onModelMappingChange,
+  baseUrl,
+  hasActiveProviders,
+  apiKeys,
+  cloudEnabled,
+}) {
+  const [openclaudeStatus, setOpenclaudeStatus] = useState(null);
+  const [checkingOpenclaude, setCheckingOpenclaude] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentEditingAlias, setCurrentEditingAlias] = useState(null);
+  const [selectedApiKey, setSelectedApiKey] = useState("");
+  const [modelAliases, setModelAliases] = useState({});
+  const [showManualConfigModal, setShowManualConfigModal] = useState(false);
+  const [customBaseUrl, setCustomBaseUrl] = useState("");
+  const hasInitializedModels = useRef(false);
+
+  const getConfigStatus = () => {
+    if (!openclaudeStatus?.installed) return null;
+    const currentUrl = openclaudeStatus.settings?.env?.ANTHROPIC_BASE_URL;
+    if (!currentUrl) return "not_configured";
+    const localMatch =
+      currentUrl.includes("localhost") || currentUrl.includes("127.0.0.1");
+    const cloudMatch =
+      cloudEnabled && CLOUD_URL && currentUrl.startsWith(CLOUD_URL);
+    const tunnelMatch = baseUrl && currentUrl.startsWith(baseUrl);
+    if (localMatch || cloudMatch || tunnelMatch) return "configured";
+    return "other";
+  };
+
+  const configStatus = getConfigStatus();
+
+  useEffect(() => {
+    if (apiKeys?.length > 0 && !selectedApiKey) {
+      setSelectedApiKey(apiKeys[0].key);
+    }
+  }, [apiKeys, selectedApiKey]);
+
+  useEffect(() => {
+    if (isExpanded && !openclaudeStatus) {
+      checkOpenclaudeStatus();
+      fetchModelAliases();
+    }
+  }, [isExpanded, openclaudeStatus]);
+
+  const fetchModelAliases = async () => {
+    try {
+      const res = await fetch("/api/models/alias");
+      const data = await res.json();
+      if (res.ok) setModelAliases(data.aliases || {});
+    } catch (error) {
+      console.log("Error fetching model aliases:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (openclaudeStatus?.installed && !hasInitializedModels.current) {
+      hasInitializedModels.current = true;
+      const env = openclaudeStatus.settings?.env || {};
+
+      tool.defaultModels.forEach(model => {
+        if (model.envKey) {
+          const value = env[model.envKey] || model.defaultValue || "";
+          if (value) {
+            onModelMappingChange(model.alias, value);
+          }
+        }
+      });
+      const tokenFromFile = env.ANTHROPIC_AUTH_TOKEN;
+      if (tokenFromFile && apiKeys?.some(k => k.key === tokenFromFile)) {
+        setSelectedApiKey(tokenFromFile);
+      }
+    }
+  }, [openclaudeStatus, apiKeys, tool.defaultModels, onModelMappingChange]);
+
+  const checkOpenclaudeStatus = async () => {
+    setCheckingOpenclaude(true);
+    try {
+      const res = await fetch("/api/cli-tools/openclaude-settings");
+      const data = await res.json();
+      setOpenclaudeStatus(data);
+    } catch (error) {
+      setOpenclaudeStatus({ installed: false, error: error.message });
+    } finally {
+      setCheckingOpenclaude(false);
+    }
+  };
+
+  const getEffectiveBaseUrl = () => {
+    const url = customBaseUrl || baseUrl;
+    return url.endsWith("/v1") ? url : `${url}/v1`;
+  };
+
+  const getDisplayUrl = () => {
+    const url = customBaseUrl || baseUrl;
+    return url.endsWith("/v1") ? url : `${url}/v1`;
+  };
+
+  const handleApplySettings = async () => {
+    setApplying(true);
+    setMessage(null);
+    try {
+      const env = { ANTHROPIC_BASE_URL: getEffectiveBaseUrl() };
+
+      const keyToUse =
+        selectedApiKey?.trim() ||
+        (apiKeys?.length > 0 ? apiKeys[0].key : null) ||
+        (!cloudEnabled ? "sk_9router" : null);
+
+      if (keyToUse) {
+        env.ANTHROPIC_AUTH_TOKEN = keyToUse;
+      }
+
+      tool.defaultModels.forEach(model => {
+        const targetModel = modelMappings[model.alias];
+        if (targetModel && model.envKey) env[model.envKey] = targetModel;
+      });
+
+      const res = await fetch("/api/cli-tools/openclaude-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ env }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage({ type: "success", text: "Settings applied successfully!" });
+        setOpenclaudeStatus(prev => ({
+          ...prev,
+          hasBackup: true,
+          settings: { ...prev?.settings, env },
+        }));
+      } else {
+        setMessage({
+          type: "error",
+          text: data.error || "Failed to apply settings",
+        });
+      }
+    } catch (error) {
+      setMessage({ type: "error", text: error.message });
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  const handleResetSettings = async () => {
+    setRestoring(true);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/cli-tools/openclaude-settings", {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage({ type: "success", text: "Settings reset successfully!" });
+        tool.defaultModels.forEach(model =>
+          onModelMappingChange(model.alias, model.defaultValue || ""),
+        );
+        setSelectedApiKey("");
+      } else {
+        setMessage({
+          type: "error",
+          text: data.error || "Failed to reset settings",
+        });
+      }
+    } catch (error) {
+      setMessage({ type: "error", text: error.message });
+    } finally {
+      setRestoring(false);
+    }
+  };
+
+  const openModelSelector = alias => {
+    setCurrentEditingAlias(alias);
+    setModalOpen(true);
+  };
+
+  const handleModelSelect = model => {
+    if (currentEditingAlias)
+      onModelMappingChange(currentEditingAlias, model.value);
+  };
+
+  const getManualConfigs = () => {
+    const keyToUse =
+      selectedApiKey && selectedApiKey.trim()
+        ? selectedApiKey
+        : !cloudEnabled
+          ? "sk_9router"
+          : "<API_KEY_FROM_DASHBOARD>";
+    const env = {
+      ANTHROPIC_BASE_URL: getEffectiveBaseUrl(),
+      ANTHROPIC_AUTH_TOKEN: keyToUse,
+    };
+    tool.defaultModels.forEach(model => {
+      const targetModel = modelMappings[model.alias];
+      if (targetModel && model.envKey) env[model.envKey] = targetModel;
+    });
+
+    return [
+      {
+        filename: "~/.claude/settings.json",
+        content: JSON.stringify({ env }, null, 2),
+      },
+    ];
+  };
+
+  return (
+    <Card
+      padding="sm"
+      className="overflow-hidden"
+    >
+      <div
+        className="flex items-center justify-between hover:cursor-pointer"
+        onClick={onToggle}
+      >
+        <div className="flex items-center gap-3">
+          <div className="size-8 flex items-center justify-center shrink-0">
+            <Image
+              src="/providers/openclaude.svg"
+              alt={tool.name}
+              width={32}
+              height={32}
+              className="size-8 object-contain rounded-lg"
+              sizes="32px"
+              onError={e => {
+                e.target.style.display = "none";
+              }}
+            />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium text-sm">{tool.name}</h3>
+              {configStatus === "configured" && (
+                <span className="px-1.5 py-0.5 text-[10px] font-medium bg-green-500/10 text-green-600 dark:text-green-400 rounded-full">
+                  Connected
+                </span>
+              )}
+              {configStatus === "not_configured" && (
+                <span className="px-1.5 py-0.5 text-[10px] font-medium bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 rounded-full">
+                  Not configured
+                </span>
+              )}
+              {configStatus === "other" && (
+                <span className="px-1.5 py-0.5 text-[10px] font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full">
+                  Other
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-text-muted truncate">
+              {tool.description}
+            </p>
+          </div>
+        </div>
+        <span
+          className={`material-symbols-outlined text-text-muted text-[20px] transition-transform ${isExpanded ? "rotate-180" : ""}`}
+        >
+          expand_more
+        </span>
+      </div>
+
+      {isExpanded && (
+        <div className="mt-4 pt-4 border-t border-border flex flex-col gap-4">
+          {checkingOpenclaude && (
+            <div className="flex items-center gap-2 text-text-muted">
+              <span className="material-symbols-outlined animate-spin">
+                progress_activity
+              </span>
+              <span>Checking OpenClaude CLI...</span>
+            </div>
+          )}
+
+          {!checkingOpenclaude &&
+            openclaudeStatus &&
+            !openclaudeStatus.installed && (
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                  <span className="material-symbols-outlined text-yellow-500">
+                    warning
+                  </span>
+                  <div className="flex-1">
+                    <p className="font-medium text-yellow-600 dark:text-yellow-400">
+                      OpenClaude CLI not installed
+                    </p>
+                    <p className="text-sm text-text-muted">
+                      Please install OpenClaude CLI to use this feature.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowInstallGuide(!showInstallGuide)}
+                  >
+                    <span className="material-symbols-outlined text-[18px] mr-1">
+                      {showInstallGuide ? "expand_less" : "help"}
+                    </span>
+                    {showInstallGuide ? "Hide" : "How to Install"}
+                  </Button>
+                </div>
+                {showInstallGuide && (
+                  <div className="p-4 bg-surface border border-border rounded-lg">
+                    <h4 className="font-medium mb-3">Installation Guide</h4>
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <p className="text-text-muted mb-1">
+                          Install via npm (recommended):
+                        </p>
+                        <code className="block px-3 py-2 bg-black/5 dark:bg-white/5 rounded font-mono text-xs">
+                          npm install -g @openclaudecode/openclaude
+                        </code>
+                      </div>
+                      <p className="text-text-muted">
+                        Alternatively, you can use{" "}
+                        <code className="px-1 bg-black/5 dark:bg-white/5 rounded">
+                          npx @openclaudecode/openclaude
+                        </code>{" "}
+                        to run without installing.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+          {!checkingOpenclaude && openclaudeStatus?.installed && (
+            <>
+              <div className="flex flex-col gap-2">
+                {openclaudeStatus?.settings?.env?.ANTHROPIC_BASE_URL && (
+                  <div className="flex items-center gap-2">
+                    <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                      Current
+                    </span>
+                    <span className="material-symbols-outlined text-text-muted text-[14px]">
+                      arrow_forward
+                    </span>
+                    <span className="flex-1 px-2 py-1.5 text-xs text-text-muted truncate">
+                      {openclaudeStatus.settings.env.ANTHROPIC_BASE_URL}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2">
+                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                    Base URL
+                  </span>
+                  <span className="material-symbols-outlined text-text-muted text-[14px]">
+                    arrow_forward
+                  </span>
+                  <input
+                    type="text"
+                    value={getDisplayUrl()}
+                    onChange={e => setCustomBaseUrl(e.target.value)}
+                    placeholder="https://.../v1"
+                    className="flex-1 px-2 py-1.5 bg-surface rounded border border-border text-xs focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  />
+                  {customBaseUrl && customBaseUrl !== baseUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setCustomBaseUrl("")}
+                      className="p-1 text-text-muted hover:text-primary rounded transition-colors"
+                      title="Reset to default"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">
+                        restart_alt
+                      </span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                    API Key
+                  </span>
+                  <span className="material-symbols-outlined text-text-muted text-[14px]">
+                    arrow_forward
+                  </span>
+                  {apiKeys.length > 0 ? (
+                    <select
+                      value={selectedApiKey}
+                      onChange={e => setSelectedApiKey(e.target.value)}
+                      className="flex-1 px-2 py-1.5 bg-surface rounded text-xs border border-border focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    >
+                      {apiKeys.map(key => (
+                        <option
+                          key={key.id}
+                          value={key.key}
+                        >
+                          {key.key}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className="flex-1 text-xs text-text-muted px-2 py-1.5">
+                      {cloudEnabled
+                        ? "No API keys - Create one in Keys page"
+                        : "sk_9router (default)"}
+                    </span>
+                  )}
+                </div>
+
+                {tool.defaultModels.map(model => (
+                  <div
+                    key={model.alias}
+                    className="flex items-center gap-2"
+                  >
+                    <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                      {model.name}
+                    </span>
+                    <span className="material-symbols-outlined text-text-muted text-[14px]">
+                      arrow_forward
+                    </span>
+                    <input
+                      type="text"
+                      value={modelMappings[model.alias] || ""}
+                      onChange={e =>
+                        onModelMappingChange(model.alias, e.target.value)
+                      }
+                      placeholder="provider/model-id"
+                      className="flex-1 px-2 py-1.5 bg-surface rounded border border-border text-xs focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => openModelSelector(model.alias)}
+                      disabled={!hasActiveProviders}
+                      className={`px-2 py-1.5 rounded border text-xs transition-colors shrink-0 whitespace-nowrap ${
+                        hasActiveProviders
+                          ? "bg-surface border-border text-text-main hover:border-primary cursor-pointer"
+                          : "opacity-50 cursor-not-allowed border-border"
+                      }`}
+                    >
+                      Select Model
+                    </button>
+                    {modelMappings[model.alias] && (
+                      <button
+                        type="button"
+                        onClick={() => onModelMappingChange(model.alias, "")}
+                        className="p-1 text-text-muted hover:text-red-500 rounded transition-colors"
+                        title="Clear"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">
+                          close
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {message && (
+                <div
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded text-xs ${
+                    message.type === "success"
+                      ? "bg-green-500/10 text-green-600"
+                      : "bg-red-500/10 text-red-600"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[14px]">
+                    {message.type === "success" ? "check_circle" : "error"}
+                  </span>
+                  <span>{message.text}</span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  type="button"
+                  onClick={handleApplySettings}
+                  disabled={!hasActiveProviders}
+                  loading={applying}
+                >
+                  <span className="material-symbols-outlined text-[14px] mr-1">
+                    save
+                  </span>
+                  Apply
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  onClick={handleResetSettings}
+                  disabled={!openclaudeStatus?.has9Router}
+                  loading={restoring}
+                >
+                  <span className="material-symbols-outlined text-[14px] mr-1">
+                    restore
+                  </span>
+                  Reset
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  onClick={() => setShowManualConfigModal(true)}
+                >
+                  <span className="material-symbols-outlined text-[14px] mr-1">
+                    content_copy
+                  </span>
+                  Manual Config
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      <ModelSelectModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSelect={handleModelSelect}
+        selectedModel={
+          currentEditingAlias ? modelMappings[currentEditingAlias] : null
+        }
+        activeProviders={activeProviders}
+        modelAliases={modelAliases}
+        title={`Select model for ${currentEditingAlias}`}
+      />
+
+      <ManualConfigModal
+        isOpen={showManualConfigModal}
+        onClose={() => setShowManualConfigModal(false)}
+        title="OpenClaude - Manual Configuration"
+        configs={getManualConfigs()}
+      />
+    </Card>
+  );
+}

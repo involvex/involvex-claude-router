@@ -2,6 +2,7 @@
 
 import {
   ClaudeToolCard,
+  OpenClaudeToolCard,
   CodexToolCard,
   DroidToolCard,
   OpenClawToolCard,
@@ -172,6 +173,20 @@ export default function CLIToolsPageClient({ machineId }) {
       case "claude":
         return (
           <ClaudeToolCard
+            key={toolId}
+            {...commonProps}
+            activeProviders={getActiveProviders()}
+            modelMappings={modelMappings[toolId] || {}}
+            onModelMappingChange={(alias, target) =>
+              handleModelMappingChange(toolId, alias, target)
+            }
+            hasActiveProviders={hasActiveProviders}
+            cloudEnabled={cloudEnabled}
+          />
+        );
+      case "openclaude":
+        return (
+          <OpenClaudeToolCard
             key={toolId}
             {...commonProps}
             activeProviders={getActiveProviders()}
