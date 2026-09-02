@@ -118,6 +118,15 @@ function extractTokens(db, platform) {
 export async function GET() {
   try {
     const platform = process.platform;
+
+    // Reject unsupported platforms early
+    if (!["darwin", "win32", "linux"].includes(platform)) {
+      return NextResponse.json(
+        { found: false, error: "Unsupported platform" },
+        { status: 400 },
+      );
+    }
+
     const candidates = getCandidatePaths(platform);
 
     // Find first readable db path

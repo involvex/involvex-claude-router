@@ -9,6 +9,7 @@ export default defineConfig({
     environment: "node",
     globals: true,
     include: ["**/*.test.js"],
+    exclude: ["**/node_modules/**", "**/.next/**", "**/.next-server/**"],
     // Suppress noisy console output from handlers under test
     silent: false,
   },

@@ -38,6 +38,9 @@
     "lint:cli": "bun run --cwd cli lint",
     "lint:fix": "eslint --fix .",
     "start": "next start",
+    "test": "bunx vitest --config tests/vitest.config.js",
+    "test:coverage": "bunx vitest --config tests/vitest.config.js run --coverage",
+    "test:run": "bunx vitest --config tests/vitest.config.js run",
     "typecheck:cli": "bun run --cwd cli typecheck"
   },
   "config": {

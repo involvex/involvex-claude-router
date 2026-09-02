@@ -1,4 +1,5 @@
 // Logger utility for cloud
+import { sanitizeForLog } from "open-sse/utils/sanitize.js";
 
 const LOG_LEVELS = {
   DEBUG: 0,
@@ -17,7 +18,7 @@ function formatData(data) {
   if (!data) return "";
   if (typeof data === "string") return data;
   try {
-    return JSON.stringify(data);
+    return JSON.stringify(sanitizeForLog(data));
   } catch {
     return String(data);
   }

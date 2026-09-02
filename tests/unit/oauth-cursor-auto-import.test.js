@@ -79,7 +79,7 @@ describe("GET /api/oauth/cursor/auto-import", () => {
 
     expect(response.body.found).toBe(false);
     expect(response.body.error).toContain(
-      "Cursor database not found in known macOS locations",
+      "Cursor database not found. Checked locations:",
     );
   });
 
@@ -170,7 +170,7 @@ describe("GET /api/oauth/cursor/auto-import", () => {
 
   // ── Backwards-compatible: linux/win32 keep original single-path logic ─
 
-  it("linux uses single hardcoded path and original error message", async () => {
+  it("linux uses same probing logic and error message", async () => {
     Object.defineProperty(process, "platform", {
       value: "linux",
       writable: true,
@@ -181,11 +181,11 @@ describe("GET /api/oauth/cursor/auto-import", () => {
     const response = await GET();
 
     expect(response.body.found).toBe(false);
-    expect(response.body.error).toBe(
-      "Cursor database not found. Make sure Cursor IDE is installed and you are logged in.",
+    expect(response.body.error).toContain(
+      "Cursor database not found. Checked locations:",
     );
-    // fs/promises.access should NOT have been called (linux skips probing)
-    expect(fsPromises.access).not.toHaveBeenCalled();
+    // fs/promises.access should have been called to probe paths
+    expect(fsPromises.access).toHaveBeenCalled();
   });
 
   it("unsupported platform returns 400", async () => {

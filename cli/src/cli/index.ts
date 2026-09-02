@@ -3,9 +3,11 @@ import { execSync } from "node:child_process";
 // import { createRequire } from 'node:module';
 import { status } from "./commands/status";
 import { models } from "./commands/models";
+import { config } from "./commands/config";
 import { start } from "./commands/start";
 import pkg from "../../../package.json";
 import { stop } from "./commands/stop";
+import { logs } from "./commands/logs";
 import process from "node:process";
 import console from "node:console";
 import { parseArgs } from "util";
@@ -45,6 +47,8 @@ Commands:
   stop           Stop the router dev server
   status         Show router status
   models         Manage models (list|add|remove)
+  config         Manage config (list|get|set|delete)
+  logs           View router logs (supports --follow, --lines)
   `);
       return;
     }
@@ -68,6 +72,12 @@ Commands:
         break;
       case "models":
         await models(positionals.slice(1));
+        break;
+      case "config":
+        await config(positionals.slice(1));
+        break;
+      case "logs":
+        await logs(positionals.slice(1));
         break;
       default:
         console.log("Starting router dev server by default");
