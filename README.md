@@ -1,19 +1,19 @@
 <div align="center">
   <img src="./images/9router.png?1" alt="involvex-claude-router Dashboard" width="800"/>
-  
-  # involvex-claude-router - AI Router
-  
-  **Never stop coding. Auto-route to FREE & cheap AI models with smart fallback.**
-  
+
+# involvex-claude-router - AI Router
+
+**Never stop coding. Auto-route to FREE & cheap AI models with smart fallback.**
+
   <p align="center">
     <img src="./public/providers/openclaw.png" alt="OpenClaw" width="80"/>
   </p>
-  
-  [![npm](https://img.shields.io/npm/v/9router.svg)](https://www.npmjs.com/package/9router)
-  [![Downloads](https://img.shields.io/npm/dm/9router.svg)](https://www.npmjs.com/package/9router)
-  [![License](https://img.shields.io/npm/l/9router.svg)](https://github.com/decolua/9router/blob/main/LICENSE)
-  
-  [🚀 Quick Start](#-quick-start) • [💡 Features](#-key-features) • [📖 Setup](#-setup-guide) • [🌐 Website](https://9router.com)
+
+[![npm](https://img.shields.io/npm/v/9router.svg)](https://www.npmjs.com/package/9router)
+[![Downloads](https://img.shields.io/npm/dm/9router.svg)](https://www.npmjs.com/package/9router)
+[![License](https://img.shields.io/npm/l/9router.svg)](https://github.com/decolua/9router/blob/main/LICENSE)
+
+[🚀 Quick Start](#-quick-start) • [💡 Features](#-key-features) • [📖 Setup](#-setup-guide) • [🌐 Website](https://9router.com)
 </div>
 
 ---
